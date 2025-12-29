@@ -1,0 +1,153 @@
+html,body{
+	height:100%;
+	margin:0;
+	background:#000;
+	overflow:hidden;
+	font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+}
+body{ touch-action:manipulation; }
+
+.stage{
+	position:fixed;
+	inset:0;
+	display:flex;
+	align-items:center;
+	justify-content:center;
+	padding: 7vmin;
+	opacity: var(--brightness-level);
+}
+
+.char{
+	position:relative;
+	width: min(60vw, 620px);
+	max-width: 60vw;
+	aspect-ratio: 1 / 1;
+	transform: translateZ(0);
+	animation: idleFloat 9s ease-in-out infinite;
+}
+
+.brow{
+	fill: var(--brow-fill);
+	stroke: var(--brow-fill);
+	stroke-width: 10;
+	stroke-linecap:round;
+	filter: drop-shadow(0 0 8px var(--brow-glow));
+	transform-origin:center;
+}
+
+.scleraOuterGlow{
+	fill:var(--sclera-gradient-fill);
+	opacity:1;
+	filter:url(#eyeOuterGlow);
+}
+
+.irisOuterGlow{
+	fill:var(--iris-fill);
+	opacity:1;
+	filter:url(#irisOuterGlow);
+}
+
+.pupil{
+	fill: var(--pupil-fill);
+	filter: drop-shadow(0 0 8px var(--pupil-outer-glow));
+	transform-origin:center;
+}
+
+.mouth{
+	fill: var(--mouth-fill);
+	stroke: var(--mouth-fill);
+	stroke-width: 10px;
+	stroke-linecap:round;
+	filter: drop-shadow(0 0 10px var(--mouth-glow));
+}
+
+/* Base animations */
+@keyframes idleFloat{
+	0%,100%{ transform: translate(0,0); }
+	50%{ transform: translate(0, 1.2vmin); }
+}
+
+.blink{
+	transform-origin:center;
+	animation: blink 6.2s infinite;
+}
+@keyframes blink{
+	0%,92%,100%{ transform: scaleY(1); }
+	94%{ transform: scaleY(0.08); }
+	96%{ transform: scaleY(1); }
+}
+
+/* Chat area */
+#messages{
+	position: absolute;
+	left: 0; right: 0; bottom: 0;
+	padding: 14px;
+	box-sizing: border-box;
+
+	height: 180px;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-end;
+
+	margin-left: auto;
+	margin-right: auto;
+	max-width: 600px;
+}
+
+#messages::before{
+	content:"";
+	position: absolute;
+	left: 0; right: 0; top: 0;
+	height: 40px;
+	pointer-events: none;
+	background: linear-gradient(to bottom, rgba(0,0,0,1), rgba(0,0,0,0.2));
+}
+
+.assist-chat{ display: flex; flex-direction: column; }
+
+.assist-turn{
+	display: flex;
+	flex-direction: column;
+}
+
+.bubble{
+	max-width: 78%;
+	font-size: 14px;
+	word-wrap: break-word;
+	overflow-wrap: anywhere;
+	padding: 5px 0px;
+}
+
+.bubble.user{
+	align-self: flex-end;
+	color: #fff;
+}
+
+.bubble.system{
+	align-self: flex-start;
+	color: var(--pupil-inner-glow);
+}
+
+.bubble-meta{
+	font-size: 11px;
+	margin-top: 4px;
+}
+
+.bubble.user .bubble-meta{
+	text-align: right;
+	color:#999;
+}
+
+.bubble.system .bubble-meta{
+	color:var(--sclera-inner-glow);
+}
+
+#debug{
+    position: fixed;
+    top: 4px;
+    right: 8px;
+    font-size: 10px;
+    color: #fff;
+    display:none;
+}
