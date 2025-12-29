@@ -7,6 +7,8 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import entity_registry as er
 
+from homeassistant.components.http import StaticPathConfig
+
 from .const import DOMAIN, MOODS, SERVICE_SET_MOOD, ATTR_MOOD
 
 PLATFORMS: list[str] = ["select"]
@@ -17,7 +19,8 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     # Serve frontend files from custom_components/macs/www at /macs/...
     www_path = Path(__file__).parent / "www"
-    hass.http.register_static_path("/macs", str(www_path), cache_headers=False)
+    await hass.http.async_register_static_paths([StaticPathConfig("/macs", str(www_path), cache_headers=False)])
+
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
