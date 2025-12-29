@@ -1,10 +1,10 @@
 {
   "domain": "macs",
   "name": "Macs",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "documentation": "https://github.com/glyndavidson/MACS",
   "issue_tracker": "https://github.com/glyndavidson/MACS/issues",
-  "requirements": [],
+  "dependencies": ["http", "lovelace"],
   "codeowners": ["@glyndavidson"],
   "config_flow": true,
   "iot_class": "local_push",

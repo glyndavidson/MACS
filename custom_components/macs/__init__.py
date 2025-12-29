@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from pathlib import Path
 import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
@@ -14,6 +15,10 @@ async def async_setup(hass: HomeAssistant, config: dict) -> bool:
     return True
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
+    # Serve frontend files from custom_components/macs/www at /macs/...
+    www_path = Path(__file__).parent / "www"
+    hass.http.register_static_path("/macs", str(www_path), cache_headers=False)
+
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     async def handle_set_mood(call: ServiceCall) -> None:
