@@ -584,21 +584,23 @@
 			setMood(e.data.mood || 'idle');
 		});
 
+
 (() => {
   "use strict";
 
-  
-  const MAX_TURNS = 2;
+  /* ===========================
+     ASSIST DISPLAY — BRIDGE MODE
+     Receives:
+       - macs:config { pipeline_id }
+       - macs:turns  { turns: [...] }
+       - macs:mood   { mood }
+     =========================== */
 
-  const FALLBACK_PIPELINE_ID = "01kdke01gb6nf2apqw3nm0f6wg";
+  const MAX_TURNS_FALLBACK = 2;
 
-  let injectedToken = "";
   let injectedPipelineId = "";
+  let turns = []; // newest first
 
-  
-  const turns = []; // [{runId, heard, reply, error, ts}]
-
-  
   const esc = (s) => (s ?? "").toString().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 
   const fmtTime = (iso) => {
@@ -609,32 +611,6 @@
     } catch { return ""; }
   };
 
-  const wsUrl = () => (location.protocol === "https:" ? "wss://" : "ws://") + location.host + "/api/websocket";
-
-  const getPipelineId = () => (injectedPipelineId || FALLBACK_PIPELINE_ID || "").toString().trim();
-
-  const getAccessToken = () => {
-    if (injectedToken) return injectedToken;
-    try { return JSON.parse(localStorage.getItem("hassTokens") || "null")?.access_token || ""; } catch { return ""; }
-  };
-
-  
-  const upsertTurn = (t) => {
-    const idx = turns.findIndex(x => x.runId === t.runId);
-
-    if (idx === 0) { turns[0] = { ...turns[0], ...t }; return; }
-
-    if (idx > 0) {
-      const merged = { ...turns[idx], ...t };
-      turns.splice(idx, 1);
-      turns.unshift(merged);
-    } else {
-      turns.unshift(t);
-      if (turns.length > MAX_TURNS) turns.length = MAX_TURNS;
-    }
-  };
-
-  
   const renderChat = () => {
     const el = document.getElementById("messages");
     if (!el) return;
@@ -663,203 +639,45 @@
     `;
   };
 
-  
-  const extract = (events) => {
-    let heard = "", reply = "", error = "", ts = "";
-    for (const ev of (events || [])) {
-      if (!ts && ev.timestamp) ts = ev.timestamp;
+  // Parent origin (works even if this iframe has origin "null" due to sandboxing)
+  const PARENT_ORIGIN = (() => {
+    try { return new URL(document.referrer).origin; } catch { return "*"; }
+  })();
 
-      if (!heard && ev.type === "intent-start") heard = ev.data?.intent_input || "";
-      if (ev.type === "stt-end") heard = ev.data?.stt_output?.text || heard;
-
-      if (ev.type === "intent-end") reply = ev.data?.intent_output?.response?.speech?.plain?.speech || reply;
-
-      if (ev.type === "error") error = `${ev.data?.code || "error"}: ${ev.data?.message || ""}`.trim();
-    }
-    return { heard, reply, error, ts };
+  const requestConfigFromParent = () => {
+    try { window.parent.postMessage({ type: "macs:request_config" }, PARENT_ORIGIN); } catch {}
   };
-
-  
-  let ws = null, msgId = 1;
-  let entitiesSubId = null;
-  let lastSeen = { runId: null, ts: null };
-
-  const sendWS = (payload) => {
-    if (!ws || ws.readyState !== 1) return;
-    ws.send(JSON.stringify({ id: msgId++, ...payload }));
-  };
-
-  const listRuns = () => {
-    const pid = getPipelineId();
-    if (!pid) return;
-    sendWS({ type: "assist_pipeline/pipeline_debug/list", pipeline_id: pid });
-  };
-
-  const getRun = (runId) => {
-    const pid = getPipelineId();
-    if (!pid) return;
-    sendWS({ type: "assist_pipeline/pipeline_debug/get", pipeline_id: pid, pipeline_run_id: runId });
-  };
-
-  
-  let fetchDebounce = null;
-  const triggerFetchNewest = () => {
-    if (fetchDebounce) return;
-    fetchDebounce = setTimeout(() => { fetchDebounce = null; listRuns(); }, 120);
-  };
-
-  
-// Parent origin (works even if this iframe has origin "null" due to sandboxing)
-const PARENT_ORIGIN = (() => {
-  try { return new URL(document.referrer).origin; } catch { return "*"; }
-})();
-
-const requestConfigFromParent = () => {
-  try { window.parent.postMessage({ type: "macs:request_config" }, PARENT_ORIGIN); } catch {}
-};
-
-window.addEventListener("message", (e) => {
-  // Only our parent window; origin can vary in some WebViews, but referrer-origin is usually correct
-  if (e.source !== window.parent) return;
-  if (PARENT_ORIGIN !== "*" && e.origin !== PARENT_ORIGIN) return;
-  if (!e.data || typeof e.data !== "object") return;
-
-  const oldToken = injectedToken;
-  const oldPid = injectedPipelineId;
-
-  if (e.data.type === "macs:config") {
-    injectedToken = (e.data.token || "").toString().trim();
-    injectedPipelineId = (e.data.pipeline_id || "").toString().trim();
-  } else if (e.data.type === "macs:token") {
-    injectedToken = (e.data.token || "").toString().trim();
-  } else if (e.data.type === "macs:pipeline") {
-    injectedPipelineId = (e.data.pipeline_id || "").toString().trim();
-  } else {
-    return;
-  }
-
-  if ((injectedToken && injectedToken !== oldToken) || (injectedPipelineId && injectedPipelineId !== oldPid)) {
-    // do whatever your code currently does after receiving config (connect/reconnect)
-  }
-});
 
   window.addEventListener("message", (e) => {
-    if (e.origin !== HA_ORIGIN) return;         // same-origin only
-    if (e.source !== window.parent) return;     // only our parent
+    if (e.source !== window.parent) return;
+    if (PARENT_ORIGIN !== "*" && e.origin !== PARENT_ORIGIN) return;
     if (!e.data || typeof e.data !== "object") return;
 
-    const oldToken = injectedToken;
-    const oldPid = injectedPipelineId;
-
     if (e.data.type === "macs:config") {
-      injectedToken = (e.data.token || "").toString().trim();
       injectedPipelineId = (e.data.pipeline_id || "").toString().trim();
-    } else if (e.data.type === "macs:token") {
-      injectedToken = (e.data.token || "").toString().trim();
-    } else if (e.data.type === "macs:pipeline") {
-      injectedPipelineId = (e.data.pipeline_id || "").toString().trim();
-    } else {
       return;
     }
 
-    const tokenChanged = injectedToken !== oldToken;
-    const pidChanged = injectedPipelineId !== oldPid;
-
-    if ((tokenChanged || pidChanged) && canConnect()) connect(true);
+    if (e.data.type === "macs:turns") {
+      const incoming = Array.isArray(e.data.turns) ? e.data.turns : [];
+      // Keep newest-first, cap to something sane (card already caps, but belt & braces)
+      turns = incoming.slice(0, 30);
+      renderChat();
+      return;
+    }
   });
 
-  const canConnect = () => !!getAccessToken() && !!getPipelineId();
-
-  
-  const connect = (reconnect = false) => {
-    const token = getAccessToken();
-    const pid = getPipelineId();
-
-    if (!pid) {
-      upsertTurn({
-        runId: "no-pipeline",
-        heard: "No pipeline id",
-        reply: "",
-        error: "Set pipeline_id in macs-card",
-        ts: new Date().toISOString()
-      });
-      renderChat();
-      requestConfigFromParent();
-      return;
-    }
-
-    if (!token) {
-      upsertTurn({
-        runId: "no-token",
-        heard: "Waiting for HA token...",
-        reply: "",
-        error: "Open this via the dashboard card (postMessage)",
-        ts: new Date().toISOString()
-      });
-      renderChat();
-      requestConfigFromParent();
-      return;
-    }
-
-    try { if (ws && ws.readyState <= 1) ws.close(); } catch {}
-    ws = new WebSocket(wsUrl());
-    msgId = 1;
-    entitiesSubId = null;
-
-    ws.onmessage = (ev) => {
-      let msg; try { msg = JSON.parse(ev.data); } catch { return; }
-
-      if (msg.type === "auth_required") {
-        ws.send(JSON.stringify({ type: "auth", access_token: token }));
-        return;
-      }
-
-      if (msg.type === "auth_ok") {
-        entitiesSubId = msgId;
-        sendWS({ type: "subscribe_entities" });
-        listRuns();
-        return;
-      }
-
-      if (msg.type === "event" && msg.id === entitiesSubId && msg.event?.c) {
-        if (msg.event.c["conversation.home_assistant"]) triggerFetchNewest();
-        return;
-      }
-
-      if (msg.type === "result" && msg.success && msg.result?.pipeline_runs) {
-        const newest = msg.result.pipeline_runs.at(-1);
-        if (!newest) return;
-
-        const changed = newest.pipeline_run_id !== lastSeen.runId || newest.timestamp !== lastSeen.ts;
-        if (changed) {
-          lastSeen = { runId: newest.pipeline_run_id, ts: newest.timestamp };
-          getRun(lastSeen.runId);
-
-          setTimeout(() => getRun(lastSeen.runId), 250);
-          setTimeout(() => getRun(lastSeen.runId), 700);
-        }
-        return;
-      }
-
-      if (msg.type === "result" && msg.success && msg.result?.events) {
-        const parsed = { ...extract(msg.result.events), runId: lastSeen.runId || "unknown" };
-        if (parsed.heard || parsed.reply || parsed.error) {
-          upsertTurn(parsed);
-          renderChat();
-        }
-        return;
-      }
-    };
-
-    ws.onclose = () => setTimeout(() => connect(true), 1000);
-    ws.onerror = () => { try { ws.close(); } catch {} };
-
-    if (!reconnect) requestConfigFromParent();
-  };
-
+  // Initial UI
+  turns = [{
+    runId: "boot",
+    heard: "",
+    reply: "",
+    error: "Ready (bridge mode)",
+    ts: new Date().toISOString()
+  }];
   renderChat();
+
   requestConfigFromParent();
-  connect(false);
 })();
 
 document.getElementById('debug').innerText = 'origin=' + location.origin + ' ref=' + document.referrer;
