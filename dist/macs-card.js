@@ -9,7 +9,7 @@
      =========================== */
 
   const DEFAULTS = {
-    url: "/local/macs/macs.html?v=1.0.12",
+    url: "/local/macs/macs.html?v=1.0.14",
     mode: "postMessage",
     param: "mood",
     cache_bust: false,

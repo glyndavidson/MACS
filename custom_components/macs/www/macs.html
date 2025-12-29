@@ -5,8 +5,8 @@
 	<meta charset="utf-8">
 	<title>M.A.C.S.</title>
 	<link rel="stylesheet" href="styles/themes/default.css?v=0.1">
-	<link rel="stylesheet" href="styles/base.css?v=0.1">
-	<link rel="stylesheet" href="styles/moods.css?v=0.1">
+	<link rel="stylesheet" href="styles/base.css?v=0.2">
+	<link rel="stylesheet" href="styles/moods.css?v=0.2">
 	<link rel="stylesheet" href="styles/weather.css?v=0.1">
 	<script src="scripts/moods.js" defer></script>
 	<script src="scripts/assist-bridge.js" defer></script>
@@ -15,33 +15,41 @@
 <body class="mood-idle wx-none">
 	<div class="stage">
 		<div class="char" id="char">
+			<!-- Face -->
 			<svg viewBox="0 0 600 600" width="100%" height="100%" id="face">
 				<defs>
+					<!-- EYE  BEZEL -->
+						<!-- Layer 1: dark bezel gradient -->
 						<linearGradient id="bezelDark" x1="0%" y1="0%" x2="0%" y2="100%">
 							<stop offset="40%" stop-color="#323941"/>
 							<stop offset="60%" stop-color="#111213"/>
 							<stop offset="80%" stop-color="#323941"/>
 						</linearGradient>
-						
+
+						<!-- Layer 2: metallic highlight gradient -->
 						<linearGradient id="bezelMetal" x1="0%" y1="0%" x2="0%" y2="100%">
 							<stop offset="30%" stop-color="#78838e"/>
 							<stop offset="50%" stop-color="#d6dbe0"/>
 							<stop offset="60%" stop-color="#d6dbe0"/>
 							<stop offset="80%" stop-color="#78838e"/>
 						</linearGradient>
-						
+
+					<!-- SCLERA -->
+						<!-- Sclera gradient fill -->
 						<radialGradient id="scleraFill" cx="50%" cy="90%" r="78%">
 							<stop offset="0%"  stop-color="var(--sclera-gradient-highlight)"/>
 							<stop offset="30%" stop-color="var(--sclera-gradient-fill)"/>
 							<stop offset="50%" stop-color="var(--sclera-gradient-fill)"/>
 							<stop offset="100%" stop-color="var(--sclera-gradient-shadow)"/>
 						</radialGradient>
-						
+
+						<!-- ScleraInner glow -->
 						<radialGradient id="scleraInnerGlow" cx="50%" cy="50%" r="55%">
 							<stop offset="80%" stop-color="var(--sclera-inner-glow)" stop-opacity="0"/>
 							<stop offset="100%" stop-color="var(--sclera-inner-glow)" stop-opacity="1"/>
 						</radialGradient>
-						
+
+						<!-- ScleraOuter glow filter -->
 						<filter id="scleraOuterGlow" x="-120%" y="-120%" width="340%" height="340%">
 							<feGaussianBlur in="SourceGraphic" stdDeviation="15" result="blur"/>
 							<feFlood flood-color="var(--sclera-outer-glow)" flood-opacity="0.4" result="col"/>
@@ -51,12 +59,15 @@
 							<feMergeNode in="SourceGraphic"/>
 							</feMerge>
 						</filter>
-						
+					
+					<!-- IRIS -->
+						<!-- Inner glow -->
 						<radialGradient id="irisInnerGlow" cx="50%" cy="50%" r="50%">
 							<stop offset="80%" stop-color="var(--iris-inner-glow)" stop-opacity="0"/>
 							<stop offset="100%" stop-color="var(--iris-inner-glow)" stop-opacity="0.3"/>
 						</radialGradient>
-						
+
+						<!-- Outer glow filter -->
 						<filter id="irisOuterGlow" x="-120%" y="-120%" width="340%" height="340%">
 							<feGaussianBlur in="SourceGraphic" stdDeviation="5" result="blur"/>
 							<feFlood flood-color="var(--iris-outer-glow)" flood-opacity="0.25" result="col"/>
@@ -67,11 +78,15 @@
 							</feMerge>
 						</filter>
 					
+					
+					<!-- Pupil -->
+						<!-- Inner glow-->
 						<radialGradient id="pupilInnerGlow" cx="50%" cy="50%" r="50%">
 							<stop offset="80%" stop-color="var(--pupil-inner-glow)" stop-opacity="0"/>
 							<stop offset="100%" stop-color="var(--pupil-inner-glow)" stop-opacity="0.5"/>
 						</radialGradient>
-						
+
+						<!-- Outer glow filter -->
 						<filter id="pupilOuterGlow" x="-120%" y="-120%" width="340%" height="340%">
 							<feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur"/>
 							<feFlood flood-color="var(--pupil-outer-glow)" flood-opacity="0.1" result="col"/>
@@ -83,63 +98,76 @@
 						</filter>
 				</defs>
 			
-				
-					<g id="leftEye" transform="translate(-10 0)">					
+				<!-- === LEFT EYE === -->
+					<g id="leftEye" transform="translate(-10 0)">
+					<!-- Eye Bezel -->
 						<g id="eyeBezelL">
 							<rect x="80" y="170" width="200" height="180" rx="80" fill="url(#bezelDark)"/>
 							<rect x="85" y="170" width="200" height="180" rx="80" fill="url(#bezelMetal)"/>
 							<rect x="94" y="173" width="190" height="174" rx="80" fill="#000000"/>
-						</g>					
-						<g class="eyeball blink">							
+						</g>
+					<!-- Eye Ball -->
+						<g class="eyeball blink">
+							<!-- Sclera (White part) -->
 							<g class="sclera">
 								<circle cx="200" cy="260" r="71" fill="var(--sclera-outer-glow)" filter="url(#scleraOuterGlow)"/>
 								<circle cx="200" cy="260" r="70" fill="url(#scleraFill)"/>
 								<circle cx="200" cy="260" r="70" fill="url(#scleraInnerGlow)"/>
-							</g>						
+							</g>
+						<!-- Iris -->
 							<g class="iris">
 								<circle cx="200" cy="260" r="38" fill="var(--iris-outer-glow)" filter="url(#irisOuterGlow)"/>
 								<circle cx="200" cy="260" r="40" fill="var(--iris-fill)"/>
-								<circle cx="200" cy="260" r="40" fill="url(#irisInnerGlow)"/>							
+								<circle cx="200" cy="260" r="40" fill="url(#irisInnerGlow)"/>
+							<!-- Pupil -->
 								<g class="pupil">
 									<circle cx="210" cy="250" r="10" fill="var(--pupil-outer-glow)" filter="url(#pupilOuterGlow)"/>
 									<circle cx="210" cy="250" r="10" fill="var(--pupil-fill)"/>
 									<circle cx="210" cy="250" r="10" fill="url(#pupilInnerGlow)"/>
 								</g>
-							</g>
-						</g>
-					</g>
+							</g><!-- Iris -->
+						</g><!-- Eye Ball -->
+					</g><!-- === LEFT EYE === -->
 
-				
-					<g id="rightEye" transform="translate(10 0)">					
+				<!-- === RIGHT EYE === -->
+					<g id="rightEye" transform="translate(10 0)">
+					<!-- Eye Bezel -->
 						<g id="eyeBezelR">
 							<rect x="320" y="170" width="200" height="180" rx="80" fill="url(#bezelDark)"/>
 							<rect x="315" y="170" width="200" height="180" rx="80" fill="url(#bezelMetal)"/>
 							<rect x="317" y="173" width="190" height="174" rx="80" fill="#000000"/>
-						</g>					
+						</g>
+					<!-- Eye Ball -->
 						<g class="eyeball blink">
 							<g class="sclera">
 								<circle cx="400" cy="260" r="71" fill="var(--sclera-outer-glow)" filter="url(#scleraOuterGlow)"/>
 								<circle cx="400" cy="260" r="70" fill="url(#scleraFill)"/>
 								<circle cx="400" cy="260" r="70" fill="url(#scleraInnerGlow)"/>
-							</g>						
+							</g>
+						<!-- Iris -->
 							<g class="iris">
 								<circle cx="400" cy="260" r="38" fill="var(--iris-outer-glow)" filter="url(#irisOuterGlow)"/>
 								<circle cx="400" cy="260" r="40" fill="var(--iris-fill)"/>
-								<circle cx="400" cy="260" r="40" fill="url(#irisInnerGlow)"/>							
+								<circle cx="400" cy="260" r="40" fill="url(#irisInnerGlow)"/>
+							<!-- Pupil -->
 								<g class="pupil">
 									<circle cx="410" cy="250" r="10" fill="var(--pupil-outer-glow)" filter="url(#pupilOuterGlow)"/>
 									<circle cx="410" cy="250" r="10" fill="var(--pupil-fill)"/>
 									<circle cx="410" cy="250" r="10" fill="url(#pupilInnerGlow)"/>
 								</g>
-							</g>
-						</g>
-					</g>
+							</g><!-- Iris -->
+						</g><!-- Eye Ball -->
+					</g><!-- === LEFT EYE === -->
 				
+			
+				<!-- EYEBROWS -->
 				 	<g id="brows">
 						<path class="brow browL" d="M 100 110 Q 150 100 200 110"/>
 						<path class="brow browR" d="M 400 110 Q 450 100 500 110"/>
 					</g>
-				
+
+
+				<!-- Mouth -->
 					<g id="mouth">
 						<path class="mouth" id="mouth-bored" d="M245 370 Q300 360 355 370"/>
 						<path class="mouth" id="mouth-confused" d="M240 410 Q270 395 300 410 T360 410"/>
@@ -150,8 +178,17 @@
 						<circle class="mouth" id="mouth-surprised" cx="300" cy="360" r="20"/>
 						<path class="mouth" id="mouth-thinking" d="M250 402 340 408"/>
 					</g>
-			</svg>
 
+				<!-- Cheeks / Blush -->
+					<!-- 
+					<ellipse cx="210" cy="340" rx="70" ry="30" fill="rgba(70,246,216,0.10)" filter="blur(8px)"/>
+					<ellipse cx="390" cy="340" rx="70" ry="30" fill="rgba(70,246,216,0.10)" filter="blur(8px)"/>
+					-->
+			</svg><!-- Face -->
+
+
+
+			<!-- FX layers -->
 			<svg class="fx fx-rain" viewBox="0 0 1000 1000" preserveAspectRatio="none">
 				<ellipse class="drop" cx="200" cy="100" rx="10" ry="24"/>
 				<ellipse class="drop d2" cx="360" cy="40" rx="10" ry="24"/>
@@ -180,8 +217,8 @@
 				<ellipse class="breath" cx="500" cy="620" rx="60" ry="30"/>
 			</svg>
 
-		</div> 
-	</div> 
+		</div> <!-- char -->
+	</div> <!-- stage -->
 
 	<div id="messages">Error - Unable to connect</div>
 	<div id="debug">Debugging</div>

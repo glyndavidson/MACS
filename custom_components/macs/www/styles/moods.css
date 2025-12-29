@@ -1,6 +1,26 @@
 /* Hide all mouths by default; moods selectively enable */
 #mouth-idle, #mouth-bored, #mouth-listening, #mouth-thinking, #mouth-surprised, #mouth-confused, #mouth-sleeping, #mouth-happy{ display:none; }
 
+
+/* Base animations */
+@keyframes idleFloat{
+	0%,100%{ transform: translate(0,0); }
+	50%{ transform: translate(0, 1.2vmin); }
+}
+
+.blink{
+	transform-origin:center;
+	animation: blink 6.2s infinite;
+}
+@keyframes blink{
+	0%,92%,100%{ transform: scaleY(1); }
+	94%{ transform: scaleY(0.08); }
+	96%{ transform: scaleY(1); }
+}
+
+
+
+
 /* CONFUSED */
 .mood-confused .browL{ transform: translate(10px, -40px) rotate(-10deg); }
 .mood-confused .browR{ transform: translate(-5px,40px) rotate(5deg); }

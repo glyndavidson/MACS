@@ -61,21 +61,6 @@ body{ touch-action:manipulation; }
 	filter: drop-shadow(0 0 10px var(--mouth-glow));
 }
 
-/* Base animations */
-@keyframes idleFloat{
-	0%,100%{ transform: translate(0,0); }
-	50%{ transform: translate(0, 1.2vmin); }
-}
-
-.blink{
-	transform-origin:center;
-	animation: blink 6.2s infinite;
-}
-@keyframes blink{
-	0%,92%,100%{ transform: scaleY(1); }
-	94%{ transform: scaleY(0.08); }
-	96%{ transform: scaleY(1); }
-}
 
 /* Chat area */
 #messages{
