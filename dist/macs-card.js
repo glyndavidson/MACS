@@ -8,8 +8,12 @@
      - Iframe is display-only
      =========================== */
 
+  const selfUrl = new URL(import.meta.url);
+  const htmlUrl = new URL("macs.html", selfUrl);
+  htmlUrl.search = selfUrl.search; // carries ?hacstag=...
+
   const DEFAULTS = {
-    url: "/local/macs/macs.html?v=1.0.14",
+    url: htmlUrl.toString(),
     mode: "postMessage",
     param: "mood",
     cache_bust: false,

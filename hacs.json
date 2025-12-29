@@ -1,7 +1,7 @@
 {
-  "name": "Macs Card",
+  "name": "M.A.C.S. Mood-Aware Contextual SVG",
   "content_in_root": false,
   "render_readme": true,
-  "domains": [],
-  "homeassistant": "2024.6.0"
+  "domains": ["macs"],
+  "homeassistant": "2025.12.4"
 }

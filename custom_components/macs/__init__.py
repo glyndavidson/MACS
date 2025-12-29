@@ -21,7 +21,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if mood not in MOODS:
             raise vol.Invalid(f"Invalid mood '{mood}'. Must be one of: {', '.join(MOODS)}")
 
-        # Find our select entity by unique_id (bulletproof; doesn't assume entity_id)
         registry = er.async_get(hass)
         entity_id = None
         for ent in registry.entities.values():
@@ -39,12 +38,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             blocking=True,
         )
 
-    hass.services.async_register(
-        DOMAIN,
-        SERVICE_SET_MOOD,
-        handle_set_mood,
-        schema=vol.Schema({vol.Required(ATTR_MOOD): vol.In(MOODS)}),
-    )
+    if not hass.services.has_service(DOMAIN, SERVICE_SET_MOOD):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_SET_MOOD,
+            handle_set_mood,
+            schema=vol.Schema({vol.Required(ATTR_MOOD): vol.In(MOODS)}),
+        )
 
     return True
 
