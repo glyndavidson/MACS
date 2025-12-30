@@ -1,5 +1,5 @@
 
-# M.A.C.S. – Mood-Aware Contextual SVG
+# M.A.C.S. – Mood-Aware Character SVG
 
 M.A.C.S. is a playful, expressive, animated companion for Home Assistant. 
 

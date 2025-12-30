@@ -365,7 +365,7 @@
 	window.customCards.push({
 		type: "macs-card",
 		name: "M.A.C.S.",
-		description: "M.A.C.S. (Macs) - Motion-Aware Character SVG",
+		description: "M.A.C.S. (Macs) - Mood-Aware Character SVG",
 		preview: true
 	});
 

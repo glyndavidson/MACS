@@ -1,7 +1,7 @@
 {
   "domain": "macs",
-  "name": "Macs",
-  "version": "0.3.2",
+  "name": "M.A.C.S. (Macs)",
+  "version": "0.3.3",
   "documentation": "https://github.com/glyndavidson/MACS",
   "issue_tracker": "https://github.com/glyndavidson/MACS/issues",
   "dependencies": ["http", "lovelace"],
