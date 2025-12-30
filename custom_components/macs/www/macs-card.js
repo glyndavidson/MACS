@@ -31,6 +31,7 @@
 		pipeline_id: "",
 		pipeline_custom: false,
 		max_turns: 2,
+			preview_image: new URL("images/card_preview.png", selfUrl).toString(),
 	};
 
 	// HA entity IDs this card listens to
@@ -54,7 +55,7 @@
 
 	class MacsCard extends HTMLElement {
 		static getStubConfig() { 
-			return { type: "custom:macs-card", assist_pipeline_enabled: false, pipeline_id: "", pipeline_custom: false, max_turns: 2 }; 
+			return { type: "custom:macs-card", assist_pipeline_enabled: false, pipeline_id: "", pipeline_custom: false, max_turns: 2, preview_image: DEFAULTS.preview_image }; 
 		}
 
 
@@ -76,12 +77,16 @@
 						:host { display: block; height: 100%; }
 						ha-card { height: 100%; overflow: hidden; border-radius: var(--ha-card-border-radius, 12px); }
 						.wrap { height: 100%; width: 100%; }
-						iframe { border: 0; width: 100%; height: 100%; display: block; }
+						iframe, img { border: 0; width: 100%; height: 100%; display: block; }
+						img { object-fit: cover; }
+						.hidden { display: none !important; }
 					</style>
-					<ha-card><div class="wrap"><iframe></iframe></div></ha-card>
+					<ha-card><div class="wrap"><img class="thumb" /><iframe class="hidden"></iframe></div></ha-card>
 				`;
 
 				this._iframe = this._root.querySelector("iframe");
+				this._thumb = this._root.querySelector("img.thumb");
+				if (this._thumb) this._thumb.src = (this._config.preview_image || DEFAULTS.preview_image).toString();
 				this._loadedOnce = false;
 				this._lastMood = undefined;
 				this._lastSrc = undefined;
@@ -304,6 +309,7 @@
 			if (!this._config || !this._iframe) return;
 
 			this._hass = hass;
+			if (this._thumb && this._iframe) { this._thumb.classList.add("hidden"); this._iframe.classList.remove("hidden"); }
 			this._ensureSubscriptions();
 
 			const st = hass.states[MOOD_ENTITY_ID] || null;
@@ -358,8 +364,9 @@
 	window.customCards = window.customCards || [];
 	window.customCards.push({
 		type: "macs-card",
-		name: "Macs Card",
-		description: "M.A.C.S. - Motion-Aware Character SVG"
+		name: "M.A.C.S.",
+		description: "M.A.C.S. (Macs) - Motion-Aware Character SVG",
+		preview: true
 	});
 
 
