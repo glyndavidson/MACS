@@ -2,7 +2,6 @@
   "name": "M.A.C.S. (Macs)",
   "content_in_root": false,
   "render_readme": true,
-  "domains": ["macs"],
   "homeassistant": "2025.12.4",
   "filename": "macs-card.js"
 }

@@ -12,6 +12,12 @@ from homeassistant.components.http import StaticPathConfig
 
 from .const import DOMAIN, MOODS, SERVICE_SET_MOOD, ATTR_MOOD
 
+
+from homeassistant.helpers import config_validation as cv
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
+
+
 PLATFORMS: list[str] = ["select"]
 
 RESOURCE_BASE_URL = "/macs/macs-card.js"
