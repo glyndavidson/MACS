@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, MOODS
@@ -22,3 +23,12 @@ class MacsMoodSelect(SelectEntity):
             return
         self._attr_current_option = option
         self.async_write_ha_state()
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return DeviceInfo(
+            identifiers={(DOMAIN, "macs")},
+            name="M.A.C.S.",
+            manufacturer="Glyn Davidson",
+            model="Mood-Aware Character SVG",
+        )

@@ -381,6 +381,7 @@
 	/* ---------- Editor ---------- */
 
 	class MacsCardEditor extends HTMLElement {
+		// get the defaults, and apply user's config
 		setConfig(config) {
 			this._config = { ...DEFAULTS, ...(config || {}) };
 			this._render();
@@ -391,7 +392,7 @@
 			if (this._rendered) this._sync();
 		}
 
-		// get assistant pipelines from HA
+		// get assistant pipelines from HA (Do this before rendering the editor so combobox can be populated)
 		async _loadPipelines() {
 			if (!this._hass) return { pipelines: [], preferred: "" };
 
@@ -412,16 +413,23 @@
 		async _render() {
 			if (!this.shadowRoot) this.attachShadow({ mode: "open" });
 
+			// Get Assistant Piplines. Set preferred as default option if user hasn't chosen one yet.
 			const pipelinesPayload = this._hass ? await this._loadPipelines() : { pipelines: [], preferred: "" };
 			const pipelines = pipelinesPayload.pipelines || [];
 			const preferred = pipelinesPayload.preferred || "";
 			const items = [{ id: "custom", name: "Custom" }, ...pipelines];
 
+			
+
+			// Build DOM
 			this.shadowRoot.innerHTML = `
 				<style>
 					.row{display:block;width:100%;margin-bottom:16px;}
 					.hint{opacity:0.7;font-size:90%;margin-top:4px;}
 					#pipeline_select, #pipeline_id, #max_turns { width: 100%; }
+					.about{margin-top25px;border-top:1px solid var(--divider-color);padding-top:10px;}
+					.about-toggle{cursor:pointer;opacity:0.8;}
+					.about-content{padding-left:10px;opacity:0.9;}
 				</style>
 
 				<div class="row">
@@ -438,8 +446,47 @@
 					<ha-textfield id="pipeline_id" label="Pipeline ID (manual fallback)" placeholder="01k..."></ha-textfield>
 				</div>
 	
+				<div class="row about">
+				<div class="about-toggle" tabindex="0" role="button">
+					About M.A.C.S. 
+					<span class="about-arrow">&gt;</span>
+				</div>
+
+				<div class="about-content" hidden>
+					<p>
+						<strong>M.A.C.S.</strong> (Mood-Aware Character SVG) is a playful Home Assistant card that adds personality to your smart home, responding visually to system events such as voice interactions and custom automations.
+					</p>
+
+					<p>
+						M.A.C.S. is being developed by <strong>Glyn Davidson</strong> (Developer, climber, and chronic tinkerer of occasionally useful tools) in his free time.
+					</p>
+
+					<p class="support">
+						If you find M.A.C.S. useful and would like to encourage its ongoing development with new features and bug fixes, please consider 
+						<br>
+						<ha-icon icon="mdi:coffee"></ha-icon>
+						<a href="https://buymeacoffee.com/glyndavidson" target="_blank" rel="noopener">
+							buying me a coffee
+						</a>.
+					</p>
+				</div>
+				</div>
 			`;
 
+			// About/Support toggle
+			const toggle = this.shadowRoot.querySelector(".about-toggle");
+			const arrow = this.shadowRoot.querySelector(".about-arrow");
+			const content = this.shadowRoot.querySelector(".about-content");
+
+			if (toggle && arrow && content) {
+				toggle.addEventListener("click", () => {
+					const open = !content.hasAttribute("hidden");
+					content.toggleAttribute("hidden", open);
+					arrow.textContent = open ? "›" : "▾";
+				});
+			}
+
+			// Page has rendered
 			this._rendered = true;
 			this._pipelinesLoaded = false;
 
