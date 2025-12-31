@@ -10,10 +10,20 @@ from .const import DOMAIN, MOODS, WEATHERS
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities: AddEntitiesCallback) -> None:
     async_add_entities([MacsMoodSelect(), MacsWeatherSelect()])
 
+
+MACS_DEVICE = DeviceInfo(
+    identifiers={(DOMAIN, "macs")},
+    name="M.A.C.S.",
+    manufacturer="Glyn Davidson",
+    model="Mood-Aware Character SVG",
+)
+
+
 class MacsMoodSelect(SelectEntity):
     _attr_has_entity_name = True
     _attr_name = "Mood"
-    _attr_unique_id = f"{DOMAIN}_mood"
+    _attr_unique_id = "macs_mood"
+    _attr_suggested_object_id = "macs_mood"
     _attr_icon = "mdi:emoticon"
     _attr_options = MOODS
     _attr_current_option = "idle"
@@ -26,17 +36,13 @@ class MacsMoodSelect(SelectEntity):
 
     @property
     def device_info(self) -> DeviceInfo:
-        return DeviceInfo(
-            identifiers={(DOMAIN, "macs")},
-            name="M.A.C.S.",
-            manufacturer="Glyn Davidson",
-            model="Mood-Aware Character SVG",
-        )
+        return MACS_DEVICE
 
 class MacsWeatherSelect(SelectEntity):
     _attr_has_entity_name = True
     _attr_name = "Weather"
-    _attr_unique_id = f"{DOMAIN}_weather"
+    _attr_unique_id = "macs_weather"
+    _attr_suggested_object_id = "macs_weather"
     _attr_icon = "mdi:weather-partly-cloudy"
     _attr_options = WEATHERS
     _attr_current_option = "none"
@@ -49,10 +55,4 @@ class MacsWeatherSelect(SelectEntity):
 
     @property
     def device_info(self) -> DeviceInfo:
-        # Same device as the mood entity so they group together
-        return DeviceInfo(
-            identifiers={(DOMAIN, "macs")},
-            name="M.A.C.S.",
-            manufacturer="Glyn Davidson",
-            model="Mood-Aware Character SVG",
-        )
+        return MACS_DEVICE

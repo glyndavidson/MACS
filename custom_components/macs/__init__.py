@@ -9,6 +9,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, ServiceCall
 from homeassistant.helpers import entity_registry as er
 from homeassistant.components.http import StaticPathConfig
+from homeassistant.helpers import config_validation as cv
 
 from .const import (
     DOMAIN,
@@ -20,11 +21,7 @@ from .const import (
     ATTR_WEATHER,
 )
 
-
-from homeassistant.helpers import config_validation as cv
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
-
-
 
 PLATFORMS: list[str] = ["select"]
 
@@ -82,7 +79,25 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         await hass.http.async_register_static_paths([StaticPathConfig("/macs", str(www_path), cache_headers=False)])
         hass.data[DOMAIN]["static_path_registered"] = True
 
+    # Create entities first
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+
+    # ---- entity_id migration (fix ugly auto-generated IDs like select.m_a_c_s_weather) ----
+    reg = er.async_get(hass)
+
+    def migrate(unique_id: str, desired_entity_id: str) -> None:
+        entry_obj = next((e for e in reg.entities.values() if e.platform == DOMAIN and e.unique_id == unique_id), None)
+        if not entry_obj:
+            return
+        if entry_obj.entity_id == desired_entity_id:
+            return
+        # Only rename if the desired entity_id is free
+        if desired_entity_id not in reg.entities:
+            reg.async_update_entity(entry_obj.entity_id, new_entity_id=desired_entity_id)
+
+    # These must match the _attr_unique_id values in select.py
+    migrate("macs_mood", "select.macs_mood")
+    migrate("macs_weather", "select.macs_weather")
 
     async def handle_set_mood(call: ServiceCall) -> None:
         mood = str(call.data.get(ATTR_MOOD, "")).strip().lower()
@@ -92,7 +107,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         registry = er.async_get(hass)
         entity_id = None
         for ent in registry.entities.values():
-            if ent.platform == DOMAIN and ent.unique_id == f"{DOMAIN}_mood":
+            if ent.platform == DOMAIN and ent.unique_id == "macs_mood":
                 entity_id = ent.entity_id
                 break
 
@@ -109,7 +124,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         registry = er.async_get(hass)
         entity_id = None
         for ent in registry.entities.values():
-            if ent.platform == DOMAIN and ent.unique_id == f"{DOMAIN}_weather":
+            if ent.platform == DOMAIN and ent.unique_id == "macs_weather":
                 entity_id = ent.entity_id
                 break
 
