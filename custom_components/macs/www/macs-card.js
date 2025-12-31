@@ -449,7 +449,7 @@
 				<div class="row">
 					Enable Assist pipeline
 					<ha-switch id="assist_pipeline_enabled"></ha-switch>
-					<div class="hint"> (Allow Macs to react to interactions with the assistant. For custom automations, use macs.set_mood.)</div>
+					<div class="hint"> (Allow Macs to react to interactions with the assistant. For custom automations, use macs.set_mood, macs.set_weather.)</div>
 				</div>
 
 				<div class="row">
