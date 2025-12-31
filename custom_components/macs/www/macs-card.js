@@ -36,6 +36,7 @@
 
 	// HA entity IDs this card listens to
 	const MOOD_ENTITY_ID = "select.macs_mood";
+	const WEATHER_ENTITY_ID = "select.macs_weather";
 	const CONVERSATION_ENTITY_ID = "conversation.home_assistant";
 
 
@@ -43,7 +44,9 @@
 	function normMood(v) {
 		return (typeof v === "string" ? v : "idle").trim().toLowerCase() || "idle";
 	}
-
+	function normWeather(v) {
+	return (typeof v === "string" ? v : "none").trim().toLowerCase() || "none";
+	}
 
 	function safeUrl(baseUrl) {
 		return new URL(baseUrl || DEFAULTS.url, window.location.origin);
@@ -151,6 +154,9 @@
 
 		_sendMoodToIframe(mood) {
 			this._postToIframe({ type: "macs:mood", mood });
+		}
+		_sendWeatherToIframe(weather) {
+			this._postToIframe({ type: "macs:weather", weather });
 		}
 
 		_sendTurnsToIframe() {
@@ -315,16 +321,21 @@
 			const st = hass.states[MOOD_ENTITY_ID] || null;
 			const mood = normMood(st?.state);
 
+			const stWx = hass.states[WEATHER_ENTITY_ID] || null;
+			const weather = normWeather(stWx?.state);
+
 			const base = safeUrl(this._config.url);
 			const sendAll = () => {
 				this._sendConfigToIframe();
 				this._sendMoodToIframe(mood);
+  				this._sendWeatherToIframe(weather);
 				this._sendTurnsToIframe();
 			};
 
 			if (!this._loadedOnce) {
 				// First load: set iframe src and send initial state
 				base.searchParams.set(this._config.param || DEFAULTS.param, mood);
+				base.searchParams.set("weather", weather);
 
 				const src = base.toString();
 				this._iframe.onload = () => {
@@ -340,6 +351,7 @@
 
 				this._loadedOnce = true;
 				this._lastMood = mood;
+				this._lastWeather = undefined;
 
 				setTimeout(sendAll, 0);
 			} else {
@@ -347,6 +359,10 @@
 				if (mood !== this._lastMood) {
 					this._lastMood = mood;
 					this._sendMoodToIframe(mood);
+				}
+				if (weather !== this._lastWeather) {
+					this._lastWeather = weather;
+					this._sendWeatherToIframe(weather);
 				}
 				// keep config/turns fresh
 				this._sendConfigToIframe();
@@ -418,8 +434,6 @@
 			const pipelines = pipelinesPayload.pipelines || [];
 			const preferred = pipelinesPayload.preferred || "";
 			const items = [{ id: "custom", name: "Custom" }, ...pipelines];
-
-			
 
 			// Build DOM
 			this.shadowRoot.innerHTML = `

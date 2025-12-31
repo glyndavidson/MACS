@@ -2,7 +2,6 @@ const moods = ['idle','bored','listening','thinking','surprised','confused','sle
 const weathers = ['none','rain','wind','hot','cold'];
 
 function applyBodyClass(prefix, value, allowed, fallback){
-
     [...document.body.classList].forEach(c => { if (c.startsWith(prefix + '-')) document.body.classList.remove(c); });
     const v = (value || '').toString().trim().toLowerCase();
     document.body.classList.add(prefix + '-' + (allowed.includes(v) ? v : fallback));
@@ -11,7 +10,9 @@ function applyBodyClass(prefix, value, allowed, fallback){
 function setMood(m){ 
     applyBodyClass('mood', m, moods, 'idle'); 
 }
-function setWeather(wx){ applyBodyClass('wx', wx, weathers, 'none'); }
+function setWeather(weather){ 
+    applyBodyClass('weather', weather, weathers, 'none'); 
+}
 
 function setWeatherIntensity(intensity){
     if (intensity === null || intensity === undefined) return;
@@ -21,10 +22,22 @@ function setWeatherIntensity(intensity){
 
 const qs = new URLSearchParams(location.search);
 setMood(qs.get('mood') || 'idle');
-setWeather(qs.get('wx') || 'none');
+setWeather(qs.get('weather') || 'none');
 setWeatherIntensity(qs.get('int'));
 
 window.addEventListener('message', (e) => {
-    if (!e.data || e.data.type !== 'macs:mood') return;
-    setMood(e.data.mood || 'idle');
+    if (!e.data || typeof e.data !== 'object') return;
+
+    if (e.data.type === 'macs:mood') {
+        setMood(e.data.mood || 'idle');
+        return;
+    }
+    if (e.data.type === 'macs:weather') {
+        setWeather(e.data.weather || 'none');
+        return;
+    }
+    if (e.data.type === 'macs:weather_intensity') {
+        setWeatherIntensity(e.data.intensity);
+        return;
+    }
 });

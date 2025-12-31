@@ -1,8 +1,8 @@
 .fx{ position:absolute; inset:-10vmin; pointer-events:none; opacity:0; }
-body.wx-rain .fx-rain{ opacity: calc(0.9 * var(--weather-intensity)); }
-body.wx-wind .fx-wind{ opacity: calc(0.9 * var(--weather-intensity)); }
-body.wx-hot  .fx-hot{  opacity: calc(0.9 * var(--weather-intensity)); }
-body.wx-cold .fx-cold{ opacity: calc(0.9 * var(--weather-intensity)); }
+body.weather-rain .fx-rain{ opacity: calc(0.9 * var(--weather-intensity)); }
+body.weather-wind .fx-wind{ opacity: calc(0.9 * var(--weather-intensity)); }
+body.weather-hot  .fx-hot{  opacity: calc(0.9 * var(--weather-intensity)); }
+body.weather-cold .fx-cold{ opacity: calc(0.9 * var(--weather-intensity)); }
 
 /* Rain */
 .drop{ fill: rgba(190,240,255,0.35); filter: blur(0.2px); animation: rainFall 1.2s linear infinite; }
@@ -14,7 +14,7 @@ body.wx-cold .fx-cold{ opacity: calc(0.9 * var(--weather-intensity)); }
 }
 
 /* Wind */
-body.wx-wind .char{ animation: windSway 2.8s ease-in-out infinite; }
+body.weather-wind .char{ animation: windSway 2.8s ease-in-out infinite; }
 @keyframes windSway{
 	0%,100%{ transform: translate(-0.6vmin, 0.4vmin) rotate(-0.8deg); }
 	50%{ transform: translate(0.8vmin, -0.4vmin) rotate(1deg); }
@@ -37,7 +37,7 @@ body.wx-wind .char{ animation: windSway 2.8s ease-in-out infinite; }
 @keyframes shimmer{ from{ transform: translateY(0); } to{ transform: translateY(-6px); } }
 
 /* Cold */
-body.wx-cold .char{ animation: coldShiver 0.22s infinite alternate; }
+body.weather-cold .char{ animation: coldShiver 0.22s infinite alternate; }
 @keyframes coldShiver{
 	from{ transform: translate(-1px,1px); }
 	to{ transform: translate(1px,-1px); }
