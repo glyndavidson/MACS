@@ -5,7 +5,10 @@ html,body{
 	overflow:hidden;
 	font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
 }
-body{ touch-action:manipulation; }
+body{ 
+	touch-action:manipulation; 
+	opacity: var(--brightness-level);
+}
 
 .stage{
 	position:fixed;
@@ -14,7 +17,6 @@ body{ touch-action:manipulation; }
 	align-items:center;
 	justify-content:center;
 	padding: 7vmin;
-	opacity: var(--brightness-level);
 }
 
 .char{

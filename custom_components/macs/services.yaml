@@ -36,3 +36,19 @@ set_weather:
             - wind
             - hot
             - cold
+
+set_brightness:
+  name: Set brightness
+  description: Set MACS brightness (0–100).
+  fields:
+    brightness:
+      name: Brightness
+      description: 0 (dim) to 100 (bright)
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 100
+          step: 1
+          mode: slider
+          unit_of_measurement: "%"
