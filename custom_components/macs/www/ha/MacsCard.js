@@ -39,8 +39,10 @@ import {
 function assistStateToMood(state) {
     state = (state || "").toString().trim().toLowerCase();
     if (state === "listening") return "listening";
+    if (state === "thinking") return "thinking";
     if (state === "processing") return "thinking";
     if (state === "responding") return "thinking";
+    if (state === "speaking") return "thinking";
     if (state === "idle") return "idle";
     return "idle";
 }
@@ -97,7 +99,7 @@ export class MacsCard extends HTMLElement {
             this._assistOverrideMood = null;     // "happy" / "confused" / etc.
             this._assistOverrideUntil = 0;       // ms timestamp
             this._assistOverrideTimer = null;
-            this._lastAssistState = null;
+            this._lastAssistState = "idle";
             this._assistRun = null; // { startedAt, sawListening, sawProcessing, sawResponding }
 
 
@@ -205,49 +207,49 @@ export class MacsCard extends HTMLElement {
     }
 
 
-// Monitor the satellite state. 
-// If the assistant understood a voice request, satellite goes idle > listening > processing > responding > idle. 
-// If the state goes idle > listening > idle, then it hasn't understood.
-// this functions keeps track of the satellite's state.
-_updateAssistOutcome(satState) {
-    const now = Date.now();
-    const state = (satState || "").toString().trim().toLowerCase();
+    // Monitor the satellite state. 
+    // If the assistant understood a voice request, satellite goes idle > listening > processing > responding > idle. 
+    // If the state goes idle > listening > idle, then it hasn't understood.
+    // this functions keeps track of the satellite's state.
+    _updateAssistOutcome(satState) {
+        const now = Date.now();
+        const state = (satState || "").toString().trim().toLowerCase();
 
-    // If no run yet, create on first "listening"
-    if (!this._assistRun) this._assistRun = { startedAt: 0, sawListening: false, sawProcessing: false, sawResponding: false };
+        // If no run yet, create on first "listening"
+        if (!this._assistRun) this._assistRun = { startedAt: 0, sawListening: false, sawProcessing: false, sawResponding: false };
 
-    // Safety: reset stale runs (e.g. satellite gets stuck)
-    if (this._assistRun.startedAt && (now - this._assistRun.startedAt) > 15000) this._assistRun = { startedAt: 0, sawListening: false, sawProcessing: false, sawResponding: false };
+        // Safety: reset stale runs (e.g. satellite gets stuck)
+        if (this._assistRun.startedAt && (now - this._assistRun.startedAt) > 15000) this._assistRun = { startedAt: 0, sawListening: false, sawProcessing: false, sawResponding: false };
 
-    // Detect transitions
-    const prev = this._lastAssistState;
-    this._lastAssistState = state;
+        // Detect transitions
+        const prev = this._lastAssistState;
+        this._lastAssistState = state;
 
-    // Start a run when we enter listening (from idle or anything else)
-    if (state === "listening" && prev !== "listening") {
-        this._assistRun = { startedAt: now, sawListening: true, sawProcessing: false, sawResponding: false };
-        return;
-    }
+        // Start a run when we enter listening (from idle or anything else)
+        if (state === "listening" && prev !== "listening") {
+            this._assistRun = { startedAt: now, sawListening: true, sawProcessing: false, sawResponding: false };
+            return;
+        }
 
-    // If a run is active, record milestones
-    if (this._assistRun.startedAt) {
-        if (state === "processing") this._assistRun.sawProcessing = true;
-        if (state === "responding") this._assistRun.sawResponding = true;
+        // If a run is active, record milestones
+        if (this._assistRun.startedAt) {
+            if (state === "processing") this._assistRun.sawProcessing = true;
+            if (state === "responding") this._assistRun.sawResponding = true;
 
-        // End of run: return to idle
-        if (state === "idle" && prev !== "idle") {
-            const ok = this._assistRun.sawListening && this._assistRun.sawProcessing && this._assistRun.sawResponding;
+            // End of run: return to idle
+            if (state === "idle" && prev !== "idle") {
+                const ok = this._assistRun.sawListening && this._assistRun.sawProcessing && this._assistRun.sawResponding;
 
-            // Your requested rule:
-            // - full sequence => happy
-            // - anything else that ends early => confused
-            this._setAssistOverride(ok ? "happy" : "confused", 2500);
+                // Your requested rule:
+                // - full sequence => happy
+                // - anything else that ends early => confused
+                this._setAssistOverride(ok ? "happy" : "confused", DEFAULTS.assist_outcome_duration_ms);
 
-            // reset run
-            this._assistRun = { startedAt: 0, sawListening: false, sawProcessing: false, sawResponding: false };
+                // reset run
+                this._assistRun = { startedAt: 0, sawListening: false, sawProcessing: false, sawResponding: false };
+            }
         }
     }
-}
 
 
 
@@ -391,13 +393,13 @@ _updateAssistOutcome(satState) {
         const baseMood = normMood(moodState?.state);
         // Optional: auto mood from selected satellite state
         let assistMood = null;
-        let satState = ""; // add this
+        let satState = ""; 
 
         if (this._config?.assist_states_enabled) {
             const satId = (this._config.assist_satellite_entity || "").toString().trim();
             if (satId) {
                 const satStateObj = hass.states[satId] || null;
-                satState = (satStateObj?.state || "").toString().trim().toLowerCase(); // add this
+                satState = (satStateObj?.state || "").toString().trim().toLowerCase(); 
                 assistMood = assistStateToMood(satState);
                 if (this._config?.assist_states_enabled && satState) this._updateAssistOutcome(satState);
             }
