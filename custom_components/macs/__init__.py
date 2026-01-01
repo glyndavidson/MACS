@@ -11,19 +11,23 @@ from homeassistant.helpers import entity_registry as er
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.helpers import config_validation as cv
 
+# import constants
 from .const import (
     DOMAIN,
     MOODS,
     WEATHERS,
     SERVICE_SET_MOOD,
     SERVICE_SET_WEATHER,
+    SERVICE_SET_BRIGHTNESS,
     ATTR_MOOD,
     ATTR_WEATHER,
+    ATTR_BRIGHTNESS,
 )
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
-PLATFORMS: list[str] = ["select"]
+# user dropdown/select and number entities
+PLATFORMS: list[str] = ["select", "number"]
 
 RESOURCE_BASE_URL = "/macs/macs-card.js"
 RESOURCE_TYPE = "module"
@@ -95,9 +99,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         if desired_entity_id not in reg.entities:
             reg.async_update_entity(entry_obj.entity_id, new_entity_id=desired_entity_id)
 
-    # These must match the _attr_unique_id values in select.py
+    # These must match the _attr_unique_id values in entities.py
     migrate("macs_mood", "select.macs_mood")
     migrate("macs_weather", "select.macs_weather")
+    migrate("macs_brightness", "number.macs_brightness")
 
     async def handle_set_mood(call: ServiceCall) -> None:
         mood = str(call.data.get(ATTR_MOOD, "")).strip().lower()
@@ -138,6 +143,33 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             blocking=True,
         )
 
+    async def handle_set_brightness(call: ServiceCall) -> None:
+        raw = call.data.get(ATTR_BRIGHTNESS, None)
+        try:
+            brightness = float(raw)
+        except (TypeError, ValueError):
+            raise vol.Invalid(f"Invalid brightness '{raw}'. Must be a number between 0 and 100.")
+
+        if not (0 <= brightness <= 100):
+            raise vol.Invalid(f"Invalid brightness '{brightness}'. Must be between 0 and 100.")
+
+        registry = er.async_get(hass)
+        entity_id = None
+        for ent in registry.entities.values():
+            if ent.platform == DOMAIN and ent.unique_id == "macs_brightness":
+                entity_id = ent.entity_id
+                break
+
+        if not entity_id:
+            raise vol.Invalid("Macs brightness entity not found (number not created)")
+
+        await hass.services.async_call(
+            "number",
+            "set_value",
+            {"entity_id": entity_id, "value": brightness},
+            blocking=True,
+        )
+
     if not hass.services.has_service(DOMAIN, SERVICE_SET_MOOD):
         hass.services.async_register(
             DOMAIN,
@@ -154,6 +186,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             schema=vol.Schema({vol.Required(ATTR_WEATHER): vol.In(WEATHERS)}),
         )
 
+    if not hass.services.has_service(DOMAIN, SERVICE_SET_BRIGHTNESS):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_SET_BRIGHTNESS,
+            handle_set_brightness,
+            schema=vol.Schema({vol.Required(ATTR_BRIGHTNESS): vol.Coerce(float)}),
+        )
+
     # Auto-add/update Lovelace resource (storage mode)
     await _ensure_lovelace_resource(hass)
 
@@ -165,5 +205,6 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok and not hass.config_entries.async_entries(DOMAIN):
         hass.services.async_remove(DOMAIN, SERVICE_SET_MOOD)
         hass.services.async_remove(DOMAIN, SERVICE_SET_WEATHER)
+        hass.services.async_remove(DOMAIN, SERVICE_SET_BRIGHTNESS)
         hass.data.get(DOMAIN, {}).pop("static_path_registered", None)
     return unload_ok

@@ -37,6 +37,7 @@
 	// HA entity IDs this card listens to
 	const MOOD_ENTITY_ID = "select.macs_mood";
 	const WEATHER_ENTITY_ID = "select.macs_weather";
+	const BRIGHTNESS_ENTITY_ID = "number.macs_brightness";
 	const CONVERSATION_ENTITY_ID = "conversation.home_assistant";
 
 
@@ -45,7 +46,12 @@
 		return (typeof v === "string" ? v : "idle").trim().toLowerCase() || "idle";
 	}
 	function normWeather(v) {
-	return (typeof v === "string" ? v : "none").trim().toLowerCase() || "none";
+		return (typeof v === "string" ? v : "none").trim().toLowerCase() || "none";
+	}
+	function normBrightness(v) {
+		const n = Number(v);
+		if (!Number.isFinite(n)) return 100;
+		return Math.max(0, Math.min(100, n));
 	}
 
 	function safeUrl(baseUrl) {
@@ -157,6 +163,9 @@
 		}
 		_sendWeatherToIframe(weather) {
 			this._postToIframe({ type: "macs:weather", weather });
+		}
+		_sendBrightnessToIframe(brightness) {
+			this._postToIframe({ type: "macs:brightness", brightness });
 		}
 
 		_sendTurnsToIframe() {
@@ -318,17 +327,21 @@
 			if (this._thumb && this._iframe) { this._thumb.classList.add("hidden"); this._iframe.classList.remove("hidden"); }
 			this._ensureSubscriptions();
 
-			const st = hass.states[MOOD_ENTITY_ID] || null;
-			const mood = normMood(st?.state);
+			const moodState = hass.states[MOOD_ENTITY_ID] || null;
+			const mood = normMood(moodState?.state);
 
-			const stWx = hass.states[WEATHER_ENTITY_ID] || null;
-			const weather = normWeather(stWx?.state);
+			const weatherState = hass.states[WEATHER_ENTITY_ID] || null;
+			const weather = normWeather(weatherState?.state);
+
+			const brightnessState = hass.states[BRIGHTNESS_ENTITY_ID] || null;
+			const brightness = normBrightness(brightnessState?.state);
 
 			const base = safeUrl(this._config.url);
 			const sendAll = () => {
 				this._sendConfigToIframe();
 				this._sendMoodToIframe(mood);
   				this._sendWeatherToIframe(weather);
+				this._sendBrightnessToIframe(brightness);
 				this._sendTurnsToIframe();
 			};
 
@@ -336,6 +349,7 @@
 				// First load: set iframe src and send initial state
 				base.searchParams.set(this._config.param || DEFAULTS.param, mood);
 				base.searchParams.set("weather", weather);
+				base.searchParams.set("brightness", brightness.toString());
 
 				const src = base.toString();
 				this._iframe.onload = () => {
@@ -354,7 +368,8 @@
 				this._lastWeather = undefined;
 
 				setTimeout(sendAll, 0);
-			} else {
+			}
+			else {
 				// Subsequent updates: only send what changed
 				if (mood !== this._lastMood) {
 					this._lastMood = mood;
@@ -364,6 +379,11 @@
 					this._lastWeather = weather;
 					this._sendWeatherToIframe(weather);
 				}
+				if(brightness !== this._lastBrightness) {
+					this._lastBrightness = brightness;
+					this._sendBrightnessToIframe(brightness);
+				}
+
 				// keep config/turns fresh
 				this._sendConfigToIframe();
 				this._sendTurnsToIframe();
@@ -390,11 +410,9 @@
 
 	// ##################################################################################################
 	//																									#
-	//                                        FRONTEND													#
+	//                                        CARD EDITOR												#
 	//																									#
 	// ##################################################################################################
-
-	/* ---------- Editor ---------- */
 
 	class MacsCardEditor extends HTMLElement {
 		// get the defaults, and apply user's config
@@ -449,7 +467,7 @@
 				<div class="row">
 					Enable Assist pipeline
 					<ha-switch id="assist_pipeline_enabled"></ha-switch>
-					<div class="hint"> (Allow Macs to react to interactions with the assistant. For custom automations, use macs.set_mood, macs.set_weather.)</div>
+					<div class="hint"> (Allow Macs to react to interactions with the assistant. For custom automations, Macs acts like any other device where you can adjust brightness, mood, weather etc.)</div>
 				</div>
 
 				<div class="row">
