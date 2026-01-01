@@ -1,3 +1,21 @@
+/**
+ * MacsCardEditor
+ * ---------------
+ * Home Assistant Lovelace card editor for M.A.C.S. (Mood-Aware Character SVG).
+ *
+ * This file defines the custom editor UI shown in the Lovelace card configuration
+ * panel. It allows users to configure how M.A.C.S. integrates with Home Assistant’s
+ * Assist system, including:
+ * - Enabling automatic mood changes based on assistant state
+ * - Enabling or disabling dialogue display from the assistant
+ *
+ * User selections are merged with default values and emitted via `config-changed`
+ * events so Home Assistant can persist the card configuration.
+ *
+ * This file is frontend-only and does not perform any backend logic.
+ */
+
+
 import {
   DEFAULTS,
 } from "./constants.js";

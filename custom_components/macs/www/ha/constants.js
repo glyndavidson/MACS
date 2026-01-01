@@ -1,3 +1,8 @@
+/**
+ * Shared constants and default configuration for the M.A.C.S. Lovelace card.
+ */
+
+
 // get URL for macs.html
 const selfUrl = new URL(import.meta.url);
 export const rootUrl = new URL("../", selfUrl);

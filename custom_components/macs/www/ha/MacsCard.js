@@ -1,3 +1,23 @@
+/**
+ * MacsCard
+ * --------
+ * Main Home Assistant Lovelace card implementation for M.A.C.S.
+ * (Mood-Aware Character SVG).
+ *
+ * This file defines the custom Lovelace card element responsible for:
+ * - Rendering the M.A.C.S. UI inside an iframe
+ * - Passing Home Assistant state (mood, weather, brightness, etc) to the iframe
+ * - Bridging Assist pipeline data (conversation turns) from Home Assistant
+ *   to the frontend character via postMessage
+ *
+ * All backend interaction (WebSocket calls, event subscriptions, auth usage)
+ * occurs here, while the iframe is kept sandboxed and display-focused.
+ *
+ * This file represents the core integration layer between Home Assistant
+ * and the M.A.C.S. frontend character.
+ */
+
+
 import {
   DEFAULTS,
   MOOD_ENTITY_ID,
