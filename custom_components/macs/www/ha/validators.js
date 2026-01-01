@@ -1,5 +1,8 @@
-import {DEFAULTS} from "./constants.js";
+/**
+ * Shared helpers for normalising values and safely handling URLs
+ */
 
+import {DEFAULTS} from "./constants.js";
 
 // normalize mood string
 export function normMood(v) {
