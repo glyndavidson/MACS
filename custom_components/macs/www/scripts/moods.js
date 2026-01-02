@@ -59,6 +59,8 @@ setWeather(qs.get('weather') || 'none');
 setBrightness(qs.get('brightness') ?? '100');
 
 window.addEventListener('message', (e) => {
+    if (e.source !== window.parent) return;
+    if (e.origin !== window.location.origin) return;
     if (!e.data || typeof e.data !== 'object') return;
 
     if (e.data.type === 'macs:mood') {

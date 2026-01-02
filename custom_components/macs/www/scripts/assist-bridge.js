@@ -53,10 +53,8 @@
     `;
   };
 
-  // Parent origin (works even if this iframe has origin "null" due to sandboxing)
-  const PARENT_ORIGIN = (() => {
-    try { return new URL(document.referrer).origin; } catch { return "*"; }
-  })();
+  // Lock to same-origin parent.
+  const PARENT_ORIGIN = window.location.origin;
 
   const requestConfigFromParent = () => {
     try { window.parent.postMessage({ type: "macs:request_config" }, PARENT_ORIGIN); } catch {}
@@ -64,7 +62,7 @@
 
   window.addEventListener("message", (e) => {
     if (e.source !== window.parent) return;
-    if (PARENT_ORIGIN !== "*" && e.origin !== PARENT_ORIGIN) return;
+    if (e.origin !== PARENT_ORIGIN) return;
     if (!e.data || typeof e.data !== "object") return;
 
     if (e.data.type === "macs:config") {

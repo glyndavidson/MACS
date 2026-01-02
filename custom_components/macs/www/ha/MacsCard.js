@@ -168,8 +168,9 @@ export class MacsCard extends HTMLElement {
 
     _postToIframe(payload) {
         if (!this._iframe?.contentWindow) return;
-        // Post to the iframe window; targetOrigin "*" is safe here because we target a specific window.
-        try { this._iframe.contentWindow.postMessage(payload, "*"); } catch (_) {}
+        const base = safeUrl(this._config?.url);
+        const targetOrigin = getTargetOrigin(base.toString());
+        try { this._iframe.contentWindow.postMessage(payload, targetOrigin); } catch (_) {}
     }
 
 
