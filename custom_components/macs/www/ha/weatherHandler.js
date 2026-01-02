@@ -9,6 +9,40 @@ function toNumber(value) {
     return Number.isFinite(n) ? n : null;
 }
 
+function normalizeTempUnitValue(value) {
+    const u = (value || "").toString().trim().toLowerCase();
+    if (!u) return "";
+    if (u.indexOf("f") !== -1) return "f";
+    if (u.indexOf("c") !== -1) return "c";
+    return "";
+}
+
+function normalizeWindUnitValue(value) {
+    const u = (value || "").toString().trim().toLowerCase();
+    if (!u) return "";
+    if (u === "kph" || u === "km/h") return "kph";
+    if (u === "mps" || u === "m/s") return "mps";
+    if (u === "knots" || u === "kn" || u === "kt" || u === "kt/h") return "knots";
+    if (u === "mph") return "mph";
+    return "";
+}
+
+function normalizeRainUnitValue(value) {
+    const u = (value || "").toString().trim().toLowerCase();
+    if (!u) return "";
+    if (u === "%" || u.indexOf("percent") !== -1) return "%";
+    if (u === "in" || u === "inch" || u === "inches") return "in";
+    if (u === "mm") return "mm";
+    return "";
+}
+
+function normalizeUnit(kind, value) {
+    if (kind === "temp") return normalizeTempUnitValue(value);
+    if (kind === "wind") return normalizeWindUnitValue(value);
+    if (kind === "rain") return normalizeRainUnitValue(value);
+    return "";
+}
+
 export class WeatherHandler {
     constructor() {
         this._config = null;
@@ -34,26 +68,22 @@ export class WeatherHandler {
     }
 
     _resolveUnit(sensorUnit, configUnit, kind) {
-        const cfg = (configUnit || "").toString().trim().toLowerCase();
+        const cfg = normalizeUnit(kind, configUnit);
         if (cfg) return cfg;
-        const su = (sensorUnit || "").toString().trim().toLowerCase();
+
+        const su = normalizeUnit(kind, sensorUnit);
+        if (su) return su;
+
         if (kind === "temp") {
-            if (su.indexOf("f") !== -1) return "f";
-            if (su.indexOf("c") !== -1) return "c";
             return "c";
         }
         if (kind === "wind") {
-            if (su === "km/h" || su === "kph") return "kph";
-            if (su === "m/s" || su === "mps") return "mps";
-            if (su === "knots" || su === "kn" || su === "kt" || su === "kt/h") return "knots";
             return "mph";
         }
         if (kind === "rain") {
-            if (su === "%" || su.includes("percent")) return "%";
-            if (su === "in" || su === "inch" || su === "inches") return "in";
             return "mm";
         }
-        return su || cfg || "";
+        return "";
     }
 
     _normalizeTemperature() {

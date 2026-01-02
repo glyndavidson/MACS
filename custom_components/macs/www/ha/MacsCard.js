@@ -118,6 +118,15 @@ export class MacsCard extends HTMLElement {
         }
         else {
             if (this._weatherHandler) this._weatherHandler.setConfig(this._config);
+            if (this._hass && this._weatherHandler) {
+                this._weatherHandler.setHass(this._hass);
+                const weather = this._weatherHandler.getWeather();
+                const weatherJson = weather ? JSON.stringify(weather) : null;
+                if (weatherJson !== this._lastWeather) {
+                    this._lastWeather = weatherJson;
+                    if (weather) this._sendWeatherToIframe(weather);
+                }
+            }
         }
     }
 
@@ -272,7 +281,10 @@ export class MacsCard extends HTMLElement {
         const sendAll = () => {
             this._sendConfigToIframe();
             this._sendMoodToIframe(mood);
-            if (weather) this._sendWeatherToIframe(weather);
+            if (weather && weatherJson !== this._lastWeather) {
+                this._lastWeather = weatherJson;
+                this._sendWeatherToIframe(weather);
+            }
             this._sendBrightnessToIframe(brightness);
             this._sendTurnsToIframe();
         };
@@ -301,7 +313,6 @@ export class MacsCard extends HTMLElement {
             this._loadedOnce = true;
             this._lastMood = mood;
             this._lastBrightness = brightness;
-            this._lastWeather = weatherJson;
 
             setTimeout(sendAll, 0);
         }
