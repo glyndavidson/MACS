@@ -6,7 +6,7 @@
  *
  * This file defines the custom Lovelace card element responsible for:
  * - Rendering the M.A.C.S. UI inside an iframe
- * - Passing Home Assistant state (mood, weather, brightness, etc) to the iframe
+ * - Passing Home Assistant state (mood, brightness, etc) to the iframe
  * - Bridging Assist pipeline data (conversation turns) from Home Assistant
  *   to the frontend character via postMessage
  *
@@ -17,8 +17,8 @@
  * and the M.A.C.S. frontend character.
  */
 
-import { DEFAULTS, MOOD_ENTITY_ID, WEATHER_ENTITY_ID, BRIGHTNESS_ENTITY_ID } from "./constants.js";
-import { normMood, normWeather, normBrightness, safeUrl, getTargetOrigin, assistStateToMood} from "./validators.js";
+import { DEFAULTS, MOOD_ENTITY_ID, BRIGHTNESS_ENTITY_ID } from "./constants.js";
+import { normMood, normBrightness, safeUrl, getTargetOrigin, assistStateToMood} from "./validators.js";
 import { SatelliteTracker } from "./assistSatellite.js";
 import { AssistPipelineTracker } from "./assistPipeline.js";
 import { createDebugger } from "./debugger.js";
@@ -173,9 +173,6 @@ export class MacsCard extends HTMLElement {
     _sendMoodToIframe(mood) {
         this._postToIframe({ type: "macs:mood", mood });
     }
-    _sendWeatherToIframe(weather) {
-        this._postToIframe({ type: "macs:weather", weather });
-    }
     _sendBrightnessToIframe(brightness) {
         this._postToIframe({ type: "macs:brightness", brightness });
     }
@@ -249,11 +246,6 @@ export class MacsCard extends HTMLElement {
         const overrideMood = this._assistSatelliteOutcome?.getOverrideMood?.();
         const mood = overrideMood ? overrideMood : ((this._config?.assist_states_enabled && assistMood) ? assistMood : baseMood);
 
-
-
-        const weatherState = hass.states[WEATHER_ENTITY_ID] || null;
-        const weather = normWeather(weatherState?.state);
-
         const brightnessState = hass.states[BRIGHTNESS_ENTITY_ID] || null;
         const brightness = normBrightness(brightnessState?.state);
 
@@ -261,7 +253,6 @@ export class MacsCard extends HTMLElement {
         const sendAll = () => {
             this._sendConfigToIframe();
             this._sendMoodToIframe(mood);
-            this._sendWeatherToIframe(weather);
             this._sendBrightnessToIframe(brightness);
             this._sendTurnsToIframe();
         };
@@ -269,7 +260,6 @@ export class MacsCard extends HTMLElement {
         if (!this._loadedOnce) {
             // First load: set iframe src and send initial state
             base.searchParams.set("mood", mood);
-            base.searchParams.set("weather", weather);
             base.searchParams.set("brightness", brightness.toString());
 
             const src = base.toString();
@@ -291,7 +281,6 @@ export class MacsCard extends HTMLElement {
             this._loadedOnce = true;
             this._lastMood = mood;
             this._lastBrightness = brightness;
-            this._lastWeather = undefined;
 
             setTimeout(sendAll, 0);
         }
@@ -300,10 +289,6 @@ export class MacsCard extends HTMLElement {
             if (mood !== this._lastMood) {
                 this._lastMood = mood;
                 this._sendMoodToIframe(mood);
-            }
-            if (weather !== this._lastWeather) {
-                this._lastWeather = weather;
-                this._sendWeatherToIframe(weather);
             }
             if(brightness !== this._lastBrightness) {
                 this._lastBrightness = brightness;

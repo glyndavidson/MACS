@@ -45,7 +45,6 @@ export const DEFAULTS = {
 
 // HA entity IDs this card listens to
 export const MOOD_ENTITY_ID = "select.macs_mood";
-export const WEATHER_ENTITY_ID = "select.macs_weather";
 export const BRIGHTNESS_ENTITY_ID = "number.macs_brightness";
 export const CONVERSATION_ENTITY_ID = "conversation.home_assistant";
 

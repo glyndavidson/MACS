@@ -8,9 +8,6 @@ import {DEFAULTS} from "./constants.js";
 export function normMood(v) {
     return (typeof v === "string" ? v : "idle").trim().toLowerCase() || "idle";
 }
-export function normWeather(v) {
-    return (typeof v === "string" ? v : "none").trim().toLowerCase() || "none";
-}
 export function normBrightness(v) {
     const n = Number(v);
     if (!Number.isFinite(n)) return 100;
