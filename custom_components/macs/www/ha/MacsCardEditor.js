@@ -19,6 +19,13 @@
 import {
   DEFAULTS,
 } from "./constants.js";
+import {
+	loadAssistantOptions,
+	readAssistStateInputs,
+	readPipelineInputs,
+	syncAssistStateControls,
+	syncPipelineControls
+} from "./editorOptions.js";
 
 
 
@@ -34,55 +41,11 @@ export class MacsCardEditor extends HTMLElement {
 		if (this._rendered) this._sync();
 	}
 
-	// get assistant satellites from HA ready to populate the combobox
-	async _loadSatellites() {
-		if (!this._hass?.states) return { satellites: [] };
-		const satellites = Object.keys(this._hass.states)
-			.filter((id) => id.startsWith("assist_satellite."))
-			.map((id) => {
-			const st = this._hass.states[id];
-			const name = (st?.attributes?.friendly_name || id).toString();
-			return { id, name };
-			})
-			.sort((a, b) => a.name.localeCompare(b.name));
-		return { satellites };
-	}
-
-
-	// get assistant pipelines from HA (Do this before rendering the editor so combobox can be populated)
-	async _loadPipelines() {
-		if (!this._hass) return { pipelines: [], preferred: "" };
-		const res = await this._hass.callWS({ type: "assist_pipeline/pipeline/list" });
-		const pipelines = Array.isArray(res?.pipelines) ? res.pipelines : [];
-		const preferred = (res?.preferred_pipeline || "").toString();
-		return {
-			preferred,
-			pipelines: pipelines
-				.map(p => ({ id: (p.id || "").toString(), name: (p.name || p.id || "Unnamed").toString() }))
-				.filter(p => p.id),
-		};
-	}
-
 			// render the card editor UI
 		async _render() {
 			if (!this.shadowRoot) this.attachShadow({ mode: "open" });
 
-			// Get Assist Satellites. 
-			let satellitesPayload = { satellites: [] };
-			if (this._hass) {
-				try { satellitesPayload = await this._loadSatellites(); } catch (_) {}
-			}
-			const satellites = satellitesPayload.satellites || [];
-			const satItems = [{ id: "custom", name: "Custom" }, ...satellites.map(s => ({ id: s.id, name: s.name }))];
-
-			// Get Assistant Piplines. Set preferred as default option if user hasn't chosen one yet.
-			let pipelinesPayload = { pipelines: [], preferred: "" };
-			if (this._hass) {
-				try { pipelinesPayload = await this._loadPipelines(); } catch (_) {}
-			}
-			const pipelines = pipelinesPayload.pipelines || [];
-			const preferred = pipelinesPayload.preferred || "";
-			const pipelineItems = [{ id: "custom", name: "Custom" }, ...pipelines];
+			const { satItems, pipelineItems, preferred } = await loadAssistantOptions(this._hass);
 
 			// Build DOM
 			this.shadowRoot.innerHTML = `
@@ -284,42 +247,8 @@ export class MacsCardEditor extends HTMLElement {
 		async _sync() {
 			if (!this.shadowRoot) return;
 
-			// -----------------  Assist state auto mood ----------------- //
-			const assistStateAutoMood = !!this._config.assist_states_enabled;
-			const assistStateAutoMoodToggle = this.shadowRoot.getElementById("assist_states_enabled");
-			const satelliteSelect   = this.shadowRoot.getElementById("satellite_select");
-			const satelliteEntity    = this.shadowRoot.getElementById("satellite_entity");
-			if (assistStateAutoMoodToggle && assistStateAutoMoodToggle.checked !== assistStateAutoMood) assistStateAutoMoodToggle.checked = assistStateAutoMood;
-			if (satelliteSelect) satelliteSelect.disabled = !assistStateAutoMood;
-			if (satelliteEntity)  satelliteEntity.disabled  = !assistStateAutoMood;
-			// determine custom/known
-			const eid = (this._config.assist_satellite_entity ?? "").toString();
-			const knownSatelite = Array.isArray(this._satelliteItems) && this._satelliteItems.some(s => s.id === eid && s.id !== "custom");
-			const satIsCustom = !!this._config.assist_satellite_custom || !knownSatelite;
-			const nextSatSelect = satIsCustom ? "custom" : eid;
-			if (satelliteSelect && satelliteSelect.value !== nextSatSelect) satelliteSelect.value = nextSatSelect;
-			if (satelliteEntity && satelliteEntity.value !== eid && (!satIsCustom || !satelliteEntity.matches(":focus-within"))) satelliteEntity.value = eid;
-			if (satelliteEntity) satelliteEntity.disabled = !assistStateAutoMood || !satIsCustom;
-
-
-			// -----------------  Assist Dialogue (Pipeline) ----------------- //
-			const dialogueEnabled = !!this._config.assist_pipeline_enabled;
-			const dialogueEnabledToggle = this.shadowRoot.getElementById("assist_pipeline_enabled");
-			const pipelineSelect = this.shadowRoot.getElementById("pipeline_select");
-			const pipelineId  = this.shadowRoot.getElementById("pipeline_id");
-			// Toggle state
-			if (dialogueEnabledToggle && dialogueEnabledToggle.checked !== dialogueEnabled) dialogueEnabledToggle.checked = dialogueEnabled;
-			// Also disable inputs when hidden (optional but nice)
-			if (pipelineSelect) pipelineSelect.disabled = !dialogueEnabled;
-			if (pipelineId) pipelineId.disabled = !dialogueEnabled;
-			// Sync values (only write if changed)
-			const pid = (this._config.pipeline_id ?? "").toString();
-			const knownPipeline = Array.isArray(this._pipelineItems) && this._pipelineItems.some(p => p.id === pid && p.id !== "custom");
-			const pipelineIsCustom = !!this._config.pipeline_custom || !knownPipeline;
-			const nextPipelineSelect = pipelineIsCustom ? "custom" : pid;
-			if (pipelineSelect && pipelineSelect.value !== nextPipelineSelect) pipelineSelect.value = nextPipelineSelect;
-			if (pipelineId && pipelineId.value !== pid && !pipelineId.matches(":focus-within")) pipelineId.value = pid;
-			if (pipelineId) pipelineId.disabled = !dialogueEnabled || !pipelineIsCustom;
+			syncAssistStateControls(this.shadowRoot, this._config, this._satelliteItems);
+			syncPipelineControls(this.shadowRoot, this._config, this._pipelineItems);
 		}
 
 		
@@ -328,43 +257,15 @@ export class MacsCardEditor extends HTMLElement {
 		// wire up event listeners for user config changes
 		_wire() {
 			const onChange = (e) => {
-				// get combobox selected value
-				const comboValue = (el) =>
-					(e?.currentTarget === el && e?.detail && typeof e.detail.value !== "undefined")
-						? e.detail.value
-						: (el?.value ?? "");
-
-				// -----------------  Assist state auto mood ----------------- //
-				const assistStateAutoMood = !!this.shadowRoot.getElementById("assist_states_enabled")?.checked;
-				const satelliteSelect = this.shadowRoot.getElementById("satellite_select");
-				const satelliteEntity = this.shadowRoot.getElementById("satellite_entity");
-				const satelliteSelectValue = comboValue(satelliteSelect);
-				const satManualVal = satelliteEntity?.value || "";
-				const assistSatelliteCustom = satelliteSelectValue === "custom";
-				const assistSatelliteEntity = assistSatelliteCustom ? satManualVal : satelliteSelectValue;
-				if (satelliteEntity) satelliteEntity.disabled = !assistStateAutoMood || !assistSatelliteCustom;
-
-				// -----------------  Assist Dialogue (Pipeline) ----------------- //
-				const assist_pipeline_enabled = !!this.shadowRoot.getElementById("assist_pipeline_enabled")?.checked;
-				const pipelineSelect = this.shadowRoot.getElementById("pipeline_select");
-				const pipelineIdInput = this.shadowRoot.getElementById("pipeline_id");
-				const pipelineValue = comboValue(pipelineSelect);
-				const pipelineId = pipelineIdInput?.value || "";
-				const pipeline_custom = pipelineValue === "custom";
-				if (pipelineIdInput) pipelineIdInput.disabled = !assist_pipeline_enabled || !pipeline_custom;
-				// If custom selected, use manual field; otherwise use the selected pipeline id
-				const pipeline_id = pipeline_custom ? pipelineId : pipelineValue;
+				const assistConfig = readAssistStateInputs(this.shadowRoot, e, this._config);
+				const pipelineConfig = readPipelineInputs(this.shadowRoot, e, this._config);
 
 				// Commit new config
 				const next = {
 					...this._config,
 					type: "custom:macs-card",
-					assist_states_enabled: assistStateAutoMood,
-					assist_satellite_entity: assistSatelliteEntity,
-					assist_satellite_custom: assistSatelliteCustom,
-					assist_pipeline_enabled, 
-					pipeline_id, 
-					pipeline_custom
+					...assistConfig,
+					...pipelineConfig
 				};
 
 				this._config = { ...DEFAULTS, ...next };
