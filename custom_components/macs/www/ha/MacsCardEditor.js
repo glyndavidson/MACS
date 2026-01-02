@@ -348,8 +348,8 @@ export class MacsCardEditor extends HTMLElement {
 			if (precipitationUnitSelect) {
 				precipitationUnitSelect.items = [
 					{ id: "", name: "Auto" },
-					{ id: "mm", name: "Millimetres (mm)" },
 					{ id: "%", name: "Chance of rain (%)" },
+					{ id: "mm", name: "Millimetres (mm)" },
 					{ id: "in", name: "Inches (in)" },
 				];
 				precipitationUnitSelect.itemLabelPath = "name";

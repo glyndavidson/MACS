@@ -156,7 +156,8 @@ function collectSensors(hass, predicate) {
 
 const TEMP_UNITS = new Set(["°c", "c", "celsius", "°f", "f", "fahrenheit"]);
 const WIND_UNITS = new Set(["m/s", "mps", "km/h", "kph", "mph", "kn", "kt", "kt/h"]);
-const RAIN_UNITS = new Set(["mm", "mm/h", "in", "in/h", "inch", "inches", "%"]);
+const RAIN_UNITS = new Set(["mm", "mm/h", "in", "in/h", "inch", "inches"]);
+const PERCENT_UNITS = new Set(["%"]);
 
 function hasUnit(st, allowed) {
 	const u = (st?.attributes?.unit_of_measurement || "").toString().toLowerCase();
@@ -196,6 +197,7 @@ export async function loadWeatherOptions(hass) {
 			hasDeviceClass(st, "precipitation_intensity") ||
 			hasDeviceClass(st, "precipitation_probability") ||
 			hasUnit(st, RAIN_UNITS) ||
+			(hasUnit(st, PERCENT_UNITS) && matchesName(id, st, ["rain", "rainfall", "precip", "precipitation"])) ||
 			matchesName(id, st, ["rain", "rainfall", "precip", "precipitation"])
 	);
 
