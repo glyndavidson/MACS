@@ -3,11 +3,12 @@ from __future__ import annotations
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import DOMAIN, MOODS, WEATHERS, MACS_DEVICE
 
 # macs_mood dropdown select entity
-class MacsMoodSelect(SelectEntity):
+class MacsMoodSelect(SelectEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Mood"
     _attr_unique_id = "macs_mood"
@@ -21,12 +22,18 @@ class MacsMoodSelect(SelectEntity):
             self._attr_current_option = option
             self.async_write_ha_state()
 
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        last_state = await self.async_get_last_state()
+        if last_state and last_state.state in MOODS:
+            self._attr_current_option = last_state.state
+
     @property
     def device_info(self) -> DeviceInfo:
         return MACS_DEVICE
 
 # macs_weather dropdown select entity
-class MacsWeatherSelect(SelectEntity):
+class MacsWeatherSelect(SelectEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Weather"
     _attr_unique_id = "macs_weather"
@@ -40,12 +47,18 @@ class MacsWeatherSelect(SelectEntity):
             self._attr_current_option = option
             self.async_write_ha_state()
 
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        last_state = await self.async_get_last_state()
+        if last_state and last_state.state in WEATHERS:
+            self._attr_current_option = last_state.state
+
     @property
     def device_info(self) -> DeviceInfo:
         return MACS_DEVICE
 
 # macs_brightness number entity
-class MacsBrightnessNumber(NumberEntity):
+class MacsBrightnessNumber(NumberEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Brightness"
     _attr_unique_id = "macs_brightness"
@@ -62,6 +75,17 @@ class MacsBrightnessNumber(NumberEntity):
     async def async_set_native_value(self, value: float) -> None:
         self._attr_native_value = max(0, min(100, value))
         self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        last_state = await self.async_get_last_state()
+        if not last_state:
+            return
+        try:
+            value = float(last_state.state)
+        except (TypeError, ValueError):
+            return
+        self._attr_native_value = max(0, min(100, value))
 
     @property
     def device_info(self) -> DeviceInfo:
