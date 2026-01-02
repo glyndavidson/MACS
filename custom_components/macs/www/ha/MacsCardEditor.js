@@ -68,12 +68,18 @@ export class MacsCardEditor extends HTMLElement {
 			if (!this.shadowRoot) this.attachShadow({ mode: "open" });
 
 			// Get Assist Satellites. 
-			const satellitesPayload = this._hass ? await  this._loadSatellites() : { satellites: [] };
+			let satellitesPayload = { satellites: [] };
+			if (this._hass) {
+				try { satellitesPayload = await this._loadSatellites(); } catch (_) {}
+			}
 			const satellites = satellitesPayload.satellites || [];
 			const satItems = [{ id: "custom", name: "Custom" }, ...satellites.map(s => ({ id: s.id, name: s.name }))];
 
 			// Get Assistant Piplines. Set preferred as default option if user hasn't chosen one yet.
-			const pipelinesPayload = this._hass ? await this._loadPipelines() : { pipelines: [], preferred: "" };
+			let pipelinesPayload = { pipelines: [], preferred: "" };
+			if (this._hass) {
+				try { pipelinesPayload = await this._loadPipelines(); } catch (_) {}
+			}
 			const pipelines = pipelinesPayload.pipelines || [];
 			const preferred = pipelinesPayload.preferred || "";
 			const pipelineItems = [{ id: "custom", name: "Custom" }, ...pipelines];
