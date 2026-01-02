@@ -308,12 +308,14 @@ export function syncWeatherControls(root, config, items) {
 }
 
 function readSingleWeather(root, e, ids, config, enabledKey, entityKey, customKey, unitKey, minKey, maxKey) {
-	const enabled = !!root.getElementById(ids.enabled)?.checked;
+	const enabledEl = root.getElementById(ids.enabled);
 	const select = root.getElementById(ids.select);
 	const entityInput = root.getElementById(ids.entity);
 	const unit = root.getElementById(ids.unit);
 	const min = root.getElementById(ids.min);
 	const max = root.getElementById(ids.max);
+
+	const enabled = !!enabledEl?.checked;
 
 	const selectValue = comboValue(select, e);
 	const manualVal = entityInput?.value || "";
@@ -330,9 +332,9 @@ function readSingleWeather(root, e, ids, config, enabledKey, entityKey, customKe
 		[enabledKey]: enabled,
 		[entityKey]: entityVal,
 		[customKey]: isCustom,
-		[unitKey]: unit?.value ?? "",
-		[minKey]: min?.value ?? "",
-		[maxKey]: max?.value ?? "",
+		[unitKey]: (unit?.value ?? config?.[unitKey] ?? "").toString(),
+		[minKey]: (min?.value ?? config?.[minKey] ?? "").toString(),
+		[maxKey]: (max?.value ?? config?.[maxKey] ?? "").toString(),
 	};
 }
 

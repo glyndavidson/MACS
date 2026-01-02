@@ -19,6 +19,7 @@
 import {
   DEFAULTS,
 } from "./constants.js";
+import { createDebugger } from "./debugger.js";
 import {
 	loadAssistantOptions,
 	loadWeatherOptions,
@@ -30,12 +31,25 @@ import {
 	syncWeatherControls
 } from "./editorOptions.js";
 
+const debug = createDebugger("macsCardEditor", true);
+
 
 
 export class MacsCardEditor extends HTMLElement {
 	// get the defaults, and apply user's config
 	setConfig(config) {
 		this._config = { ...DEFAULTS, ...(config || {}) };
+		debug("setConfig", {
+			temperature_unit: this._config.temperature_unit,
+			temperature_min: this._config.temperature_min,
+			temperature_max: this._config.temperature_max,
+			wind_unit: this._config.wind_unit,
+			wind_min: this._config.wind_min,
+			wind_max: this._config.wind_max,
+			precipitation_unit: this._config.precipitation_unit,
+			precipitation_min: this._config.precipitation_min,
+			precipitation_max: this._config.precipitation_max
+		});
 		this._render();
 	}
 
@@ -318,46 +332,64 @@ export class MacsCardEditor extends HTMLElement {
 				rainSel.value = isCustom ? "custom" : rid;
 			}
 
-			// Weather: temperature sensor units
-			const temperatureUnitSelect = this.shadowRoot.getElementById("temperature_unit");
-			if (temperatureUnitSelect) {
-				temperatureUnitSelect.items = [
-					{ id: "", name: "Auto" },
-					{ id: "c", name: "Celsius (Â°C)" },
-					{ id: "f", name: "Fahrenheit (Â°F)" },
-				];
-				temperatureUnitSelect.itemLabelPath = "name";
-				temperatureUnitSelect.itemValuePath = "id";
-			}
+			            // Weather: temperature sensor units
+            const temperatureUnitSelect = this.shadowRoot.getElementById("temperature_unit");
+            if (temperatureUnitSelect) {
+                temperatureUnitSelect.items = [
+                    { id: "", name: "Auto" },
+                    { id: "c", name: "Celsius (°C)" },
+                    { id: "f", name: "Fahrenheit (°F)" },
+                ];
+                temperatureUnitSelect.itemLabelPath = "name";
+                temperatureUnitSelect.itemValuePath = "id";
+                temperatureUnitSelect.value = (this._config.temperature_unit ?? "").toString();
+            }
 
-			// Weather: wind units
-			const windUnitSelect = this.shadowRoot.getElementById("wind_unit");
-			if (windUnitSelect) {
-				windUnitSelect.items = [
-					{ id: "", name: "Auto" },
-					{ id: "mph", name: "Miles per hour (mph)" },
-					{ id: "km/h", name: "Kilometres per hour (km/h)" },
-					{ id: "m/s", name: "Metres per second (m/s)" },
-				];
-				windUnitSelect.itemLabelPath = "name";
-				windUnitSelect.itemValuePath = "id";
-			}
+            // Weather: wind units
+            const windUnitSelect = this.shadowRoot.getElementById("wind_unit");
+            if (windUnitSelect) {
+                windUnitSelect.items = [
+                    { id: "", name: "Auto" },
+                    { id: "mph", name: "Miles per hour (mph)" },
+                    { id: "km/h", name: "Kilometres per hour (km/h)" },
+                    { id: "m/s", name: "Metres per second (m/s)" },
+                ];
+                windUnitSelect.itemLabelPath = "name";
+                windUnitSelect.itemValuePath = "id";
+                windUnitSelect.value = (this._config.wind_unit ?? "").toString();
+            }
 
-			// Weather: precipitation units
-			const precipitationUnitSelect = this.shadowRoot.getElementById("precipitation_unit");
-			if (precipitationUnitSelect) {
-				precipitationUnitSelect.items = [
-					{ id: "", name: "Auto" },
-					{ id: "%", name: "Chance of rain (%)" },
-					{ id: "mm", name: "Millimetres (mm)" },
-					{ id: "in", name: "Inches (in)" },
-				];
-				precipitationUnitSelect.itemLabelPath = "name";
-				precipitationUnitSelect.itemValuePath = "id";
-			}
+            // Weather: precipitation units
+            const precipitationUnitSelect = this.shadowRoot.getElementById("precipitation_unit");
+            if (precipitationUnitSelect) {
+                precipitationUnitSelect.items = [
+                    { id: "", name: "Auto" },
+                    { id: "%", name: "Chance of rain (%)" },
+                    { id: "mm", name: "Millimetres (mm)" },
+                    { id: "in", name: "Inches (in)" },
+                ];
+                precipitationUnitSelect.itemLabelPath = "name";
+                precipitationUnitSelect.itemValuePath = "id";
+                precipitationUnitSelect.value = (this._config.precipitation_unit ?? "").toString();
+            }
 
+            // Weather min/max fields from config
+            const tempMin = this.shadowRoot.getElementById("temperature_min");
+            const tempMax = this.shadowRoot.getElementById("temperature_max");
+            if (tempMin) tempMin.value = (this._config.temperature_min ?? "").toString();
+            if (tempMax) tempMax.value = (this._config.temperature_max ?? "").toString();
 
-			// About/Support toggle
+            const windMin = this.shadowRoot.getElementById("wind_min");
+            const windMax = this.shadowRoot.getElementById("wind_max");
+            if (windMin) windMin.value = (this._config.wind_min ?? "").toString();
+            if (windMax) windMax.value = (this._config.wind_max ?? "").toString();
+
+            const precipMin = this.shadowRoot.getElementById("precipitation_min");
+            const precipMax = this.shadowRoot.getElementById("precipitation_max");
+            if (precipMin) precipMin.value = (this._config.precipitation_min ?? "").toString();
+            if (precipMax) precipMax.value = (this._config.precipitation_max ?? "").toString();
+
+            // About/Support toggle
 			const toggle = this.shadowRoot.querySelector(".about-toggle");
 			const arrow = this.shadowRoot.querySelector(".about-arrow");
 			const content = this.shadowRoot.querySelector(".about-content");
@@ -489,3 +521,6 @@ export class MacsCardEditor extends HTMLElement {
 		// 		}[c]));
 		// }
 	}
+
+
+
