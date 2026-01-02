@@ -19,23 +19,23 @@ set_mood:
             - surprised
             - thinking
 
-set_weather:
-  name: Set weather
-  description: Set Macs weather (updates select.macs_weather).
-  fields:
-    weather:
-      name: Weather
-      description: One of none, rain, wind, hot, cold
-      required: true
-      selector:
-        select:
-          mode: dropdown
-          options:
-            - none
-            - rain
-            - wind
-            - hot
-            - cold
+# set_weather:
+#   name: Set weather
+#   description: Set Macs weather (updates select.macs_weather).
+#   fields:
+#     weather:
+#       name: Weather
+#       description: One of none, rain, wind, hot, cold
+#       required: true
+#       selector:
+#         select:
+#           mode: dropdown
+#           options:
+#             - none
+#             - rain
+#             - wind
+#             - hot
+#             - cold
 
 set_brightness:
   name: Set brightness

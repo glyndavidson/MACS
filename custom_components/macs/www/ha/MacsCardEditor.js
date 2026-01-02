@@ -16,22 +16,12 @@
  */
 
 
-import {
-  DEFAULTS,
-} from "./constants.js";
+import { DEFAULTS } from "./constants.js";
 import { createDebugger } from "./debugger.js";
-import {
-	loadAssistantOptions,
-	loadWeatherOptions,
-	readAssistStateInputs,
-	readPipelineInputs,
-	readWeatherInputs,
-	syncAssistStateControls,
-	syncPipelineControls,
-	syncWeatherControls
-} from "./editorOptions.js";
+import { loadAssistantOptions, loadWeatherOptions, readAssistStateInputs, readPipelineInputs, readWeatherInputs, syncAssistStateControls, syncPipelineControls, syncWeatherControls } from "./editorOptions.js";
 
-const debug = createDebugger("macsCardEditor", true);
+const DEBUG_ENABLED = false;
+const debug = createDebugger("macsCardEditor", DEBUG_ENABLED);
 
 
 
@@ -402,7 +392,6 @@ export class MacsCardEditor extends HTMLElement {
 				});
 			}
 
-
 			// Wire once per render (safe because render rebuilds DOM)
 			this._wire();
 
@@ -419,26 +408,6 @@ export class MacsCardEditor extends HTMLElement {
 			}
 		}
 		
-		// _bindSelectOpenState() {
-		// 	const sel = this.shadowRoot?.getElementById("pipeline_select");
-		// 	if (!sel) return;
-		// 	this._selectEl = sel;
-		// 	this._menuOpen = false;
-		// 	const onOpened = () => { this._menuOpen = true; };
-		// 	const onClosed = () => { this._menuOpen = false; };
-		// 	sel.addEventListener("opened", onOpened);
-		// 	sel.addEventListener("closed", onClosed);
-		// 	sel.addEventListener("change", onClosed);
-		// }
-
-		// _closeSelectMenu() {
-		// 	const sel = this._selectEl || this.shadowRoot?.getElementById("pipeline_select");
-		// 	if (!sel) return;
-		// 	const menu = sel.menu || sel.shadowRoot?.querySelector("mwc-menu");
-		// 	if (menu) menu.open = false;
-		// 	if ("open" in sel) sel.open = false;
-		// 	this._menuOpen = false;
-		// }
 
 		// sync UI state from this._config
 		async _sync() {
@@ -452,9 +421,6 @@ export class MacsCardEditor extends HTMLElement {
 				precipitationItems: this._precipitationItems || []
 			});
 		}
-
-		
-
 
 		// wire up event listeners for user config changes
 		_wire() {
@@ -508,30 +474,7 @@ export class MacsCardEditor extends HTMLElement {
 				if (id.endsWith("_select") || id.endsWith("_unit")) el.addEventListener("value-changed", onChange);
 			});
 
-			// Change-only listeners (avoid input storm)
-			// ["assist_states_enabled","satellite_select","satellite_entity", "assist_pipeline_enabled", "pipeline_select", "pipeline_id"].forEach((id) => {
-			// 	const el = this.shadowRoot.getElementById(id);
-			// 	if (!el) return;
-			// 	el.addEventListener("change", onChange);
-			// 	if (id === "pipeline_select" || id === "satellite_select") {
-			// 		el.addEventListener("value-changed", onChange);
-			// 		el.addEventListener("input", onChange);
-			// 	}
-			// });
 		}
-
-		// escape helper (used when rendering pipeline names)
-		// _esc(s) {
-		// 	return (s ?? "")
-		// 		.toString()
-		// 		.replace(/[&<>"']/g, (c) => ({
-		// 			"&": "&amp;",
-		// 			"<": "&lt;",
-		// 			">": "&gt;",
-		// 			'"': "&quot;",
-		// 			"'": "&#39;",
-		// 		}[c]));
-		// }
 	}
 
 

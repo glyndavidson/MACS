@@ -17,27 +17,15 @@
  * and the M.A.C.S. frontend character.
  */
 
-import {
-  DEFAULTS,
-  MOOD_ENTITY_ID,
-  WEATHER_ENTITY_ID,
-  BRIGHTNESS_ENTITY_ID
-} from "./constants.js";
-
-import {
-	normMood,
-	normWeather,
-	normBrightness,
-	safeUrl,
-	getTargetOrigin,
-    assistStateToMood
-} from "./validators.js";
-
+import { DEFAULTS, MOOD_ENTITY_ID, WEATHER_ENTITY_ID, BRIGHTNESS_ENTITY_ID } from "./constants.js";
+import { normMood, normWeather, normBrightness, safeUrl, getTargetOrigin, assistStateToMood} from "./validators.js";
 import { SatelliteTracker } from "./assistSatellite.js";
 import { AssistPipelineTracker } from "./assistPipeline.js";
-
 import { createDebugger } from "./debugger.js";
-const debug = createDebugger("macsCard", false);
+
+
+const DEBUG_ENABLED = false;
+const debug = createDebugger("macsCard", DEBUG_ENABLED);
 
 
 export class MacsCard extends HTMLElement {
