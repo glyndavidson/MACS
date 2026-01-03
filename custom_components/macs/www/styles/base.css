@@ -133,8 +133,8 @@ body{
 #debug{
     position: fixed;
     top: 4px;
-    right: 8px;
+    left: 8px;
     font-size: 10px;
-    color: #fff;
+    color: #aaa;
     display:none;
 }

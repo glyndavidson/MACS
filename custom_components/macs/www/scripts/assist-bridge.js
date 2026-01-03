@@ -1,95 +1,100 @@
+import { createDebugger } from "../ha/debugger.js";
 
-(() => {
-  "use strict";
+const DEBUG_ENABLED = false;
+const debug = createDebugger("bridge", DEBUG_ENABLED);
 
-  /* ===========================
-     ASSIST DISPLAY — BRIDGE MODE
-     Receives:
-       - macs:config { pipeline_id }
-       - macs:turns  { turns: [...] }
-       - macs:mood   { mood }
-     =========================== */
 
-  const MAX_TURNS_FALLBACK = 2;
+/* ===========================
+    ASSIST DISPLAY — BRIDGE MODE
+    Receives:
+      - macs:config { pipeline_id }
+      - macs:turns  { turns: [...] }
+      - macs:mood   { mood }
+    =========================== */
 
-  let injectedPipelineId = "";
-  let turns = []; // newest first
+const MAX_TURNS_FALLBACK = 2;
 
-  const esc = (s) => (s ?? "").toString().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
+let injectedPipelineId = "";
+let turns = []; // newest first
 
-  const fmtTime = (iso) => {
-    try {
-      const d = new Date(iso);
-      if (Number.isNaN(d.getTime())) return "";
-      return d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
-    } catch { return ""; }
-  };
+const esc = (s) => (s ?? "").toString().replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;");
 
-  const renderChat = () => {
-    const el = document.getElementById("messages");
-    if (!el) return;
+const fmtTime = (iso) => {
+  try {
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return "";
+    return d.toLocaleTimeString([], { hour:"2-digit", minute:"2-digit" });
+  } catch { return ""; }
+};
 
-    el.innerHTML = `
-      <div class="assist-chat">
-        ${turns.slice().reverse().map(t => {
-          const userText = t.heard || "";
-          const sysText = t.error || t.reply || "";
-          const ts = t.ts ? fmtTime(t.ts) : "";
+const renderChat = () => {
+  const el = document.getElementById("messages");
+  if (!el) return;
 
-          return `
-            <div class="assist-turn">
-              <div class="bubble user">
-                ${ts ? `<div class="bubble-meta">${esc(ts)}</div>` : ""}
-                ${esc(userText)}
-              </div>
-              <div class="bubble system">
-                ${ts ? `<div class="bubble-meta">${esc(ts)}</div>` : ""}
-                ${esc(sysText)}
-              </div>
+  el.innerHTML = `
+    <div class="assist-chat">
+      ${turns.slice().reverse().map(t => {
+        const userText = t.heard || "";
+        const sysText = t.error || t.reply || "";
+        const ts = t.ts ? fmtTime(t.ts) : "";
+
+        return `
+          <div class="assist-turn">
+            <div class="bubble user">
+              ${ts ? `<div class="bubble-meta">${esc(ts)}</div>` : ""}
+              ${esc(userText)}
             </div>
-          `;
-        }).join("")}
-      </div>
-    `;
-  };
+            <div class="bubble system">
+              ${ts ? `<div class="bubble-meta">${esc(ts)}</div>` : ""}
+              ${esc(sysText)}
+            </div>
+          </div>
+        `;
+      }).join("")}
+    </div>
+  `;
+};
 
-  // Lock to same-origin parent.
-  const PARENT_ORIGIN = window.location.origin;
+// Lock to same-origin parent.
+const PARENT_ORIGIN = window.location.origin;
 
-  const requestConfigFromParent = () => {
-    try { window.parent.postMessage({ type: "macs:request_config" }, PARENT_ORIGIN); } catch {}
-  };
+const requestConfigFromParent = () => {
+  try { window.parent.postMessage({ type: "macs:request_config" }, PARENT_ORIGIN); } catch {}
+};
 
-  window.addEventListener("message", (e) => {
-    if (e.source !== window.parent) return;
-    if (e.origin !== PARENT_ORIGIN) return;
-    if (!e.data || typeof e.data !== "object") return;
+window.addEventListener("message", (e) => {
+  if (e.source !== window.parent) return;
+  if (e.origin !== PARENT_ORIGIN) return;
+  if (!e.data || typeof e.data !== "object") return;
 
-    if (e.data.type === "macs:config") {
-      injectedPipelineId = (e.data.pipeline_id || "").toString().trim();
-      return;
-    }
+  debug("message", e.data);
 
-    if (e.data.type === "macs:turns") {
-      const incoming = Array.isArray(e.data.turns) ? e.data.turns : [];
-      // Keep newest-first, cap to something sane (card already caps, but belt & braces)
-      turns = incoming.slice(0, 30);
-      renderChat();
-      return;
-    }
-  });
+  if (e.data.type === "macs:config") {
+    injectedPipelineId = (e.data.pipeline_id || "").toString().trim();
+    debug("config", { pipeline_id: injectedPipelineId });
+    return;
+  }
 
-  // Initial UI
-  turns = [{
-    runId: "boot",
-    heard: "",
-    reply: "",
-    error: "Ready...",
-    ts: new Date().toISOString()
-  }];
-  renderChat();
+  if (e.data.type === "macs:turns") {
+    const incoming = Array.isArray(e.data.turns) ? e.data.turns : [];
+    debug("turns", { count: incoming.length, turns: incoming });
+    // Keep newest-first, cap to something sane (card already caps, but belt & braces)
+    turns = incoming.slice(0, 30);
+    renderChat();
+    return;
+  }
+});
 
-  requestConfigFromParent();
-})();
+// Initial UI
+turns = [{
+  runId: "boot",
+  heard: "",
+  reply: "",
+  error: "Ready...",
+  ts: new Date().toISOString()
+}];
+renderChat();
 
-document.getElementById('debug').innerText = 'origin=' + location.origin + ' ref=' + document.referrer;
+requestConfigFromParent();
+
+debug("Macs Bridge Loaded...");

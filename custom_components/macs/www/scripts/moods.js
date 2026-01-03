@@ -1,6 +1,9 @@
-const moods = ['idle','bored','listening','thinking','surprised','confused','sleeping','happy'];
-const weathers = ['none','rain','wind','hot','cold'];
+import { createDebugger } from "../ha/debugger.js";
 
+const DEBUG_ENABLED = true;
+const debug = createDebugger("Moods", DEBUG_ENABLED);
+
+const moods = ['idle','bored','listening','thinking','surprised','confused','sleeping','happy'];
 
 // applies a css class to the body so that we can style based on mood/weather/brightness
 function applyBodyClass(prefix, value, allowed, fallback){
@@ -22,11 +25,6 @@ function applyBodyClass(prefix, value, allowed, fallback){
 // set Macs mood. Must be one of const moods
 function setMood(m){ 
     applyBodyClass('mood', m, moods, 'idle'); 
-}
-
-// set weather effect. Must be one of const weathers
-function setWeather(weather){ 
-    applyBodyClass('weather', weather, weathers, 'none'); 
 }
 
 // set brightness level (0-100)
@@ -55,7 +53,6 @@ function setBrightness(userBrightness){
 
 const qs = new URLSearchParams(location.search);
 setMood(qs.get('mood') || 'idle');
-setWeather(qs.get('weather') || 'none');
 setBrightness(qs.get('brightness') ?? '100');
 
 window.addEventListener('message', (e) => {
@@ -67,8 +64,16 @@ window.addEventListener('message', (e) => {
         setMood(e.data.mood || 'idle');
         return;
     }
-    if (e.data.type === 'macs:weather') {
-        setWeather(e.data.weather || 'none');
+    if (e.data.type === 'macs:temperature') {
+        debug("Setting temperature to: " + (e.data.temperature ?? '0'));
+        return;
+    }
+    if (e.data.type === 'macs:windspeed') {
+        debug("Setting windspeed to: " + (e.data.windspeed ?? '0'));
+        return;
+    }
+    if (e.data.type === 'macs:rainfall') {
+        debug("Setting rainfall to: " + (e.data.rainfall ?? '0'));
         return;
     }
     if (e.data.type === 'macs:brightness') {
@@ -76,3 +81,6 @@ window.addEventListener('message', (e) => {
         return;
     }
 });
+
+
+debug("Macs Moods Loaded");

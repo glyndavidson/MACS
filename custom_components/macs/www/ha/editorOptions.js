@@ -357,8 +357,7 @@ function syncSingleWeather(
 	enabledKey,
 	unitKey,
 	minKey,
-	maxKey,
-	intervalKey
+	maxKey
 ) {
 	// Push config into a single weather section.
 	if (!root) {
@@ -370,7 +369,6 @@ function syncSingleWeather(
 	var select = root.getElementById(ids.select);
 	var entity = root.getElementById(ids.entity);
 	var unit = root.getElementById(ids.unit);
-	var interval = root.getElementById(ids.interval);
 	var min = root.getElementById(ids.min);
 	var max = root.getElementById(ids.max);
 
@@ -381,7 +379,6 @@ function syncSingleWeather(
 	if (select) select.disabled = !enabled;
 	if (entity) entity.disabled = !enabled;
 	if (unit) unit.disabled = !enabled;
-	if (interval) interval.disabled = !enabled;
 	if (min) min.disabled = !enabled;
 	if (max) max.disabled = !enabled;
 
@@ -413,13 +410,9 @@ function syncSingleWeather(
     if (min && min.value !== cfgMin) {
         min.value = cfgMin === null || typeof cfgMin === "undefined" ? "" : String(cfgMin);
     }
-    var cfgMax = config && config[maxKey];
-    if (max && max.value !== cfgMax) {
-        max.value = cfgMax === null || typeof cfgMax === "undefined" ? "" : String(cfgMax);
-    }
-	var cfgInterval = config && config[intervalKey];
-	if (interval && interval.value !== cfgInterval) {
-		interval.value = cfgInterval === null || typeof cfgInterval === "undefined" ? "" : String(cfgInterval);
+	var cfgMax = config && config[maxKey];
+	if (max && max.value !== cfgMax) {
+		max.value = cfgMax === null || typeof cfgMax === "undefined" ? "" : String(cfgMax);
 	}
 }
 
@@ -434,7 +427,6 @@ export function syncWeatherControls(root, config, items) {
 			select: "temperature_select",
 			entity: "temperature_entity",
 			unit: "temperature_unit",
-			interval: "temperature_update_interval",
 			min: "temperature_min",
 			max: "temperature_max",
 		},
@@ -443,8 +435,7 @@ export function syncWeatherControls(root, config, items) {
 		"temperature_sensor_enabled",
 		"temperature_unit",
 		"temperature_min",
-		"temperature_max",
-		"temperature_update_interval"
+		"temperature_max"
 	);
 
 	syncSingleWeather(
@@ -456,7 +447,6 @@ export function syncWeatherControls(root, config, items) {
 			select: "wind_select",
 			entity: "wind_entity",
 			unit: "wind_unit",
-			interval: "wind_update_interval",
 			min: "wind_min",
 			max: "wind_max",
 		},
@@ -465,8 +455,7 @@ export function syncWeatherControls(root, config, items) {
 		"wind_sensor_enabled",
 		"wind_unit",
 		"wind_min",
-		"wind_max",
-		"wind_update_interval"
+		"wind_max"
 	);
 
 	syncSingleWeather(
@@ -478,7 +467,6 @@ export function syncWeatherControls(root, config, items) {
 			select: "precipitation_select",
 			entity: "precipitation_entity",
 			unit: "precipitation_unit",
-			interval: "precipitation_update_interval",
 			min: "precipitation_min",
 			max: "precipitation_max",
 		},
@@ -487,8 +475,7 @@ export function syncWeatherControls(root, config, items) {
 		"precipitation_sensor_enabled",
 		"precipitation_unit",
 		"precipitation_min",
-		"precipitation_max",
-		"precipitation_update_interval"
+		"precipitation_max"
 	);
 }
 
@@ -502,15 +489,13 @@ function readSingleWeather(
 	customKey,
 	unitKey,
 	minKey,
-	maxKey,
-	intervalKey
+	maxKey
 ) {
 	// Read a single weather section from the DOM.
 	var enabledEl = root.getElementById(ids.enabled);
 	var select = root.getElementById(ids.select);
 	var entityInput = root.getElementById(ids.entity);
 	var unit = root.getElementById(ids.unit);
-	var interval = root.getElementById(ids.interval);
 	var min = root.getElementById(ids.min);
 	var max = root.getElementById(ids.max);
 
@@ -523,7 +508,6 @@ function readSingleWeather(
 	if (entityInput) entityInput.disabled = !enabled || !isCustom;
 	if (select) select.disabled = !enabled;
 	if (unit) unit.disabled = !enabled;
-	if (interval) interval.disabled = !enabled;
 	if (min) min.disabled = !enabled;
 	if (max) max.disabled = !enabled;
 
@@ -544,19 +528,13 @@ function readSingleWeather(
     if (rawMax === "" || rawMax === null || typeof rawMax === "undefined") {
         rawMax = config && config[maxKey];
     }
-	var rawInterval = interval ? interval.value : undefined;
-	if (rawInterval === "" || rawInterval === null || typeof rawInterval === "undefined") {
-		rawInterval = config && config[intervalKey];
-	}
-
 	return {
 		[enabledKey]: enabled,
 		[entityKey]: entityVal,
 		[customKey]: isCustom,
-		[unitKey]: String(comboValue(unit, e) || (config && config[unitKey]) || ""),
+		[unitKey]: String(unit ? comboValue(unit, e) : ((config && config[unitKey]) || "")),
         [minKey]: parseNumber(rawMin),
         [maxKey]: parseNumber(rawMax),
-		[intervalKey]: parseNumber(rawInterval),
     };
 }
 
@@ -570,21 +548,18 @@ export function readWeatherInputs(root, e, config) {
 			temperature_unit: String((config && config.temperature_unit) || ""),
 			temperature_min: String((config && config.temperature_min) || ""),
 			temperature_max: String((config && config.temperature_max) || ""),
-			temperature_update_interval: String((config && config.temperature_update_interval) || ""),
 			wind_sensor_enabled: !!(config && config.wind_sensor_enabled),
 			wind_sensor_entity: String((config && config.wind_sensor_entity) || ""),
 			wind_sensor_custom: !!(config && config.wind_sensor_custom),
 			wind_unit: String((config && config.wind_unit) || ""),
 			wind_min: String((config && config.wind_min) || ""),
 			wind_max: String((config && config.wind_max) || ""),
-			wind_update_interval: String((config && config.wind_update_interval) || ""),
 			precipitation_sensor_enabled: !!(config && config.precipitation_sensor_enabled),
 			precipitation_sensor_entity: String((config && config.precipitation_sensor_entity) || ""),
 			precipitation_sensor_custom: !!(config && config.precipitation_sensor_custom),
 			precipitation_unit: String((config && config.precipitation_unit) || ""),
 			precipitation_min: String((config && config.precipitation_min) || ""),
 			precipitation_max: String((config && config.precipitation_max) || ""),
-			precipitation_update_interval: String((config && config.precipitation_update_interval) || ""),
 		};
 	}
 
@@ -597,7 +572,6 @@ export function readWeatherInputs(root, e, config) {
 				select: "temperature_select",
 				entity: "temperature_entity",
 				unit: "temperature_unit",
-				interval: "temperature_update_interval",
 				min: "temperature_min",
 				max: "temperature_max",
 			},
@@ -607,8 +581,7 @@ export function readWeatherInputs(root, e, config) {
 			"temperature_sensor_custom",
 			"temperature_unit",
 			"temperature_min",
-			"temperature_max",
-			"temperature_update_interval"
+			"temperature_max"
 		),
 		...readSingleWeather(
 			root,
@@ -618,7 +591,6 @@ export function readWeatherInputs(root, e, config) {
 				select: "wind_select",
 				entity: "wind_entity",
 				unit: "wind_unit",
-				interval: "wind_update_interval",
 				min: "wind_min",
 				max: "wind_max",
 			},
@@ -628,8 +600,7 @@ export function readWeatherInputs(root, e, config) {
 			"wind_sensor_custom",
 			"wind_unit",
 			"wind_min",
-			"wind_max",
-			"wind_update_interval"
+			"wind_max"
 		),
 		...readSingleWeather(
 			root,
@@ -639,7 +610,6 @@ export function readWeatherInputs(root, e, config) {
 				select: "precipitation_select",
 				entity: "precipitation_entity",
 				unit: "precipitation_unit",
-				interval: "precipitation_update_interval",
 				min: "precipitation_min",
 				max: "precipitation_max",
 			},
@@ -649,9 +619,9 @@ export function readWeatherInputs(root, e, config) {
 			"precipitation_sensor_custom",
 			"precipitation_unit",
 			"precipitation_min",
-			"precipitation_max",
-			"precipitation_update_interval"
+			"precipitation_max"
 		),
 	};
 }
+
 

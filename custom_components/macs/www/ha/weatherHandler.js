@@ -1,68 +1,21 @@
-import { normalizeTemperature, normalizeWind, normalizeRain } from "./validators.js";
-import {
-    DEFAULT_WEATHER_POLL_MINUTES,
-    TEMPERATURE_ENTITY_ID,
-    WIND_ENTITY_ID,
-    RAINFALL_ENTITY_ID,
-} from "./constants.js";
+import { TEMPERATURE_ENTITY_ID, WIND_ENTITY_ID, RAINFALL_ENTITY_ID } from "./constants.js";
+import { toNumber, normalizeTemperatureValue, normalizeWindValue, normalizeRainValue, normalizeWeatherUnit } from "./validators.js";
 import { createDebugger } from "./debugger.js";
 
 const DEBUG_ENABLED = false;
 const debug = createDebugger("weatherHandler", DEBUG_ENABLED);
 
-function toNumber(value) {
-    const n = Number(value);
-    return Number.isFinite(n) ? n : null;
-}
-
-function normalizeTempUnitValue(value) {
-    const u = (value || "").toString().trim().toLowerCase();
-    if (!u) return "";
-    if (u.indexOf("f") !== -1) return "f";
-    if (u.indexOf("c") !== -1) return "c";
-    return "";
-}
-
-function normalizeWindUnitValue(value) {
-    const u = (value || "").toString().trim().toLowerCase();
-    if (!u) return "";
-    if (u === "kph" || u === "km/h") return "kph";
-    if (u === "mps" || u === "m/s") return "mps";
-    if (u === "knots" || u === "kn" || u === "kt" || u === "kt/h") return "knots";
-    if (u === "mph") return "mph";
-    return "";
-}
-
-function normalizeRainUnitValue(value) {
-    const u = (value || "").toString().trim().toLowerCase();
-    if (!u) return "";
-    if (u === "%" || u.indexOf("percent") !== -1) return "%";
-    if (u === "in" || u === "inch" || u === "inches") return "in";
-    if (u === "mm") return "mm";
-    return "";
-}
-
-function normalizeUnit(kind, value) {
-    if (kind === "temp") return normalizeTempUnitValue(value);
-    if (kind === "wind") return normalizeWindUnitValue(value);
-    if (kind === "rain") return normalizeRainUnitValue(value);
-    return "";
-}
-
 export class WeatherHandler {
     constructor() {
         this._config = null;
         this._hass = null;
-        this._cache = {
-            temperature: null,
-            wind: null,
-            precipitation: null,
-        };
-        this._lastUpdate = {
-            temperature: 0,
-            wind: 0,
-            precipitation: 0,
-        };
+        this._temperature = null;
+        this._windspeed = null;
+        this._rainfall = null;
+        this._weather = { temperature: null, wind: null, precipitation: null };
+        this._lastTemperature = undefined;
+        this._lastWindspeed = undefined;
+        this._lastRainfall = undefined;
     }
 
     setConfig(config) {
@@ -71,6 +24,21 @@ export class WeatherHandler {
 
     setHass(hass) {
         this._hass = hass || null;
+    }
+
+    update() {
+        if (!this._hass) return null;
+
+        const temperature = this._normalizeTemperature();
+        const wind = this._normalizeWind();
+        const precipitation = this._normalizeRain();
+
+        this._weather = { temperature, wind, precipitation };
+        this._temperature = Number.isFinite(temperature?.normalized) ? temperature.normalized : null;
+        this._windspeed = Number.isFinite(wind?.normalized) ? wind.normalized : null;
+        this._rainfall = Number.isFinite(precipitation?.normalized) ? precipitation.normalized : null;
+
+        return this.getPayload();
     }
 
     _readSensor(entityId) {
@@ -99,41 +67,11 @@ export class WeatherHandler {
         };
     }
 
-    _getUpdateMode(kind) {
-        const intervalMs = this._getUpdateIntervalMs(kind);
-        return intervalMs <= 0 ? "instant" : "polling";
-    }
-
-    _getUpdateIntervalMs(kind) {
-        const key = `${kind}_update_interval`;
-        const minutes = toNumber(this._config?.[key]);
-        if (Number.isFinite(minutes) && minutes <= 0) return 0;
-        const effective = Number.isFinite(minutes) && minutes > 0 ? minutes : DEFAULT_WEATHER_POLL_MINUTES;
-        return effective * 60 * 1000;
-    }
-
-    _shouldUpdate(kind, source, now) {
-        if (!this._cache[kind]) return true;
-        if (source === "config") return true;
-
-        const mode = this._getUpdateMode(kind);
-        if (mode === "instant") {
-            return source === "hass";
-        }
-
-        const intervalMs = this._getUpdateIntervalMs(kind);
-        const last = this._lastUpdate[kind] || 0;
-        if (source === "poll" || source === "hass") {
-            return now - last >= intervalMs;
-        }
-        return false;
-    }
-
     _resolveUnit(sensorUnit, configUnit, kind) {
-        const cfg = normalizeUnit(kind, configUnit);
+        const cfg = normalizeWeatherUnit(kind, configUnit);
         if (cfg) return cfg;
 
-        const su = normalizeUnit(kind, sensorUnit);
+        const su = normalizeWeatherUnit(kind, sensorUnit);
         if (su) return su;
 
         if (kind === "temp") {
@@ -148,25 +86,16 @@ export class WeatherHandler {
         return "";
     }
 
-    _normalizeTemperature(source, now) {
+    _normalizeTemperature() {
         if (!this._config?.temperature_sensor_enabled) {
-            const manual = this._readManualValue(TEMPERATURE_ENTITY_ID);
-            this._cache.temperature = manual;
-            this._lastUpdate.temperature = now;
-            return manual;
+            return this._readManualValue(TEMPERATURE_ENTITY_ID);
         }
         const entityId = (this._config.temperature_sensor_entity || "").toString().trim();
         if (!entityId) {
-            this._cache.temperature = null;
             return null;
-        }
-        if (!this._shouldUpdate("temperature", source, now)) {
-            return this._cache.temperature;
         }
         const reading = this._readSensor(entityId);
         if (!reading || reading.value === null) {
-            this._cache.temperature = null;
-            this._lastUpdate.temperature = now;
             return null;
         }
         debug("temperature sensor", JSON.stringify({
@@ -176,7 +105,7 @@ export class WeatherHandler {
         }));
 
         const unit = this._resolveUnit(reading.unit, this._config.temperature_unit, "temp");
-        const normalized = normalizeTemperature(
+        const normalized = normalizeTemperatureValue(
             reading.value,
             unit,
             this._config.temperature_min,
@@ -189,37 +118,25 @@ export class WeatherHandler {
             max: this._config.temperature_max,
             normalized,
         }));
-        const next = {
+        return {
             value: reading.value,
             unit,
             min: this._config.temperature_min,
             max: this._config.temperature_max,
             normalized,
         };
-        this._cache.temperature = next;
-        this._lastUpdate.temperature = now;
-        return next;
     }
 
-    _normalizeWind(source, now) {
+    _normalizeWind() {
         if (!this._config?.wind_sensor_enabled) {
-            const manual = this._readManualValue(WIND_ENTITY_ID);
-            this._cache.wind = manual;
-            this._lastUpdate.wind = now;
-            return manual;
+            return this._readManualValue(WIND_ENTITY_ID);
         }
         const entityId = (this._config.wind_sensor_entity || "").toString().trim();
         if (!entityId) {
-            this._cache.wind = null;
             return null;
-        }
-        if (!this._shouldUpdate("wind", source, now)) {
-            return this._cache.wind;
         }
         const reading = this._readSensor(entityId);
         if (!reading || reading.value === null) {
-            this._cache.wind = null;
-            this._lastUpdate.wind = now;
             return null;
         }
         debug("wind sensor", JSON.stringify({
@@ -229,7 +146,7 @@ export class WeatherHandler {
         }));
 
         const unit = this._resolveUnit(reading.unit, this._config.wind_unit, "wind");
-        const normalized = normalizeWind(
+        const normalized = normalizeWindValue(
             reading.value,
             unit,
             this._config.wind_min,
@@ -242,37 +159,25 @@ export class WeatherHandler {
             max: this._config.wind_max,
             normalized,
         }));
-        const next = {
+        return {
             value: reading.value,
             unit,
             min: this._config.wind_min,
             max: this._config.wind_max,
             normalized,
         };
-        this._cache.wind = next;
-        this._lastUpdate.wind = now;
-        return next;
     }
 
-    _normalizeRain(source, now) {
+    _normalizeRain() {
         if (!this._config?.precipitation_sensor_enabled) {
-            const manual = this._readManualValue(RAINFALL_ENTITY_ID);
-            this._cache.precipitation = manual;
-            this._lastUpdate.precipitation = now;
-            return manual;
+            return this._readManualValue(RAINFALL_ENTITY_ID);
         }
         const entityId = (this._config.precipitation_sensor_entity || "").toString().trim();
         if (!entityId) {
-            this._cache.precipitation = null;
             return null;
-        }
-        if (!this._shouldUpdate("precipitation", source, now)) {
-            return this._cache.precipitation;
         }
         const reading = this._readSensor(entityId);
         if (!reading || reading.value === null) {
-            this._cache.precipitation = null;
-            this._lastUpdate.precipitation = now;
             return null;
         }
         debug("precipitation sensor", JSON.stringify({
@@ -282,7 +187,7 @@ export class WeatherHandler {
         }));
 
         const unit = this._resolveUnit(reading.unit, this._config.precipitation_unit, "rain");
-        const normalized = normalizeRain(
+        const normalized = normalizeRainValue(
             reading.value,
             unit,
             this._config.precipitation_min,
@@ -295,37 +200,69 @@ export class WeatherHandler {
             max: this._config.precipitation_max,
             normalized,
         }));
-        const next = {
+        return {
             value: reading.value,
             unit,
             min: this._config.precipitation_min,
             max: this._config.precipitation_max,
             normalized,
         };
-        this._cache.precipitation = next;
-        this._lastUpdate.precipitation = now;
-        return next;
     }
 
-    getWeather(options) {
-        const source = options && options.source ? options.source : "hass";
-        const now = options && Number.isFinite(options.now) ? options.now : Date.now();
-        debug("getWeather", source);
+    getWeather() {
+        debug("getWeather");
+        return this._weather;
+    }
+
+    getPayload() {
         return {
-            temperature: this._normalizeTemperature(source, now),
-            wind: this._normalizeWind(source, now),
-            precipitation: this._normalizeRain(source, now),
+            temperature: this._temperature,
+            windspeed: this._windspeed,
+            rainfall: this._rainfall,
         };
+    }
+
+    getTemperature() {
+        return this._temperature;
+    }
+
+    getTemperatureHasChanged() {
+        const changed = this._temperature !== this._lastTemperature;
+        if (changed) this._lastTemperature = this._temperature;
+        return changed;
+    }
+
+    getWindSpeed() {
+        return this._windspeed;
+    }
+
+    getWindSpeedHasChanged() {
+        const changed = this._windspeed !== this._lastWindspeed;
+        if (changed) this._lastWindspeed = this._windspeed;
+        return changed;
+    }
+
+    getRainfall() {
+        return this._rainfall;
+    }
+
+    getRainfallHasChanged() {
+        const changed = this._rainfall !== this._lastRainfall;
+        if (changed) this._lastRainfall = this._rainfall;
+        return changed;
     }
 
     dispose() {
         this._hass = null;
         this._config = null;
-        this._cache.temperature = null;
-        this._cache.wind = null;
-        this._cache.precipitation = null;
-        this._lastUpdate.temperature = 0;
-        this._lastUpdate.wind = 0;
-        this._lastUpdate.precipitation = 0;
+        this._temperature = null;
+        this._windspeed = null;
+        this._rainfall = null;
+        this._weather = { temperature: null, wind: null, precipitation: null };
+        this._lastTemperature = undefined;
+        this._lastWindspeed = undefined;
+        this._lastRainfall = undefined;
     }
+
+
 }

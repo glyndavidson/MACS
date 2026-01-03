@@ -65,30 +65,66 @@ export function normBrightness(v) {
 // ###################################################################################################################//
 
 // Weather Unit Conversters
-function celsiusToFahrenheit(celsius) {
+export function celsiusToFahrenheit(celsius) {
     return celsius * 1.8 + 32;
 }
-function convertMphToKph(mph){
+export function convertMphToKph(mph){
     return mph * 1.609344;
 }
-function convertMphToMetersPerSecond(mph){
+export function convertMphToMetersPerSecond(mph){
     return mph * 0.44704;
 }
-function convertMphToKnots(mph){
+export function convertMphToKnots(mph){
     return mph * 0.8689762419;
 }
-function convertMmToInches(mm){ 
+export function convertMmToInches(mm){ 
     return mm * 0.0393700787;
 }
 
-function toNumber(value) {
+export function toNumberOrNull(value) {
     if (value === null || value === undefined) return null;
     if (typeof value === "string" && value.trim() === "") return null;
+    return toNumber(value);
+}
+
+export function toNumber(value) {
     const n = Number(value);
     return Number.isFinite(n) ? n : null;
 }
 
-function normalizeRange(value, minValue, maxValue) {
+export function normalizeTempUnit(value) {
+    const u = (value || "").toString().trim().toLowerCase();
+    if (!u) return "";
+    if (u.indexOf("f") !== -1) return "f";
+    return "c";
+}
+
+export function normalizeWindUnit(value) {
+    const u = (value || "").toString().trim().toLowerCase();
+    if (!u) return "";
+    if (u === "kph" || u === "km/h") return "kph";
+    if (u === "mps" || u === "m/s") return "mps";
+    if (u === "knots" || u === "kn" || u === "kt" || u === "kt/h") return "knots";
+    return "mph";
+}
+
+export function normalizeRainUnit(value) {
+    const u = (value || "").toString().trim().toLowerCase();
+    if (!u) return "";
+    if (u === "%" || u.indexOf("percent") !== -1) return "%";
+    if (u === "in" || u === "inch" || u === "inches") return "in";
+    return "mm";
+}
+
+export function normalizeWeatherUnit(kind, value) {
+    if (kind === "temp") return normalizeTempUnit(value);
+    if (kind === "wind") return normalizeWindUnit(value);
+    if (kind === "rain") return normalizeRainUnit(value);
+    return "";
+}
+
+
+export function normalizeRange(value, minValue, maxValue) {
     if (!Number.isFinite(value) || !Number.isFinite(minValue) || !Number.isFinite(maxValue)) return null;
     if (minValue === maxValue) return 0;
     const min = Math.min(minValue, maxValue);
@@ -97,30 +133,8 @@ function normalizeRange(value, minValue, maxValue) {
     return ((clamped - min) / (max - min)) * 100;
 }
 
-function normalizeTempUnit(unit) {
-    const u = (unit || "").toString().trim().toLowerCase();
-    if (!u) return "c";
-    if (u.indexOf("f") !== -1) return "f";
-    if (u.indexOf("c") !== -1) return "c";
-    return "c";
-}
 
-function normalizeWindUnit(unit) {
-    const u = (unit || "").toString().trim().toLowerCase();
-    if (u === "kph" || u === "km/h") return "kph";
-    if (u === "mps" || u === "m/s") return "mps";
-    if (u === "knots" || u === "kn" || u === "kt" || u === "kt/h") return "knots";
-    return "mph";
-}
-
-function normalizeRainUnit(unit) {
-    const u = (unit || "").toString().trim().toLowerCase();
-    if (u === "in" || u === "inch" || u === "inches") return "in";
-    if (u === "%") return "%";
-    return "mm";
-}
-
-function getDefaultTempRange(unit) {
+export function getDefaultTempRange(unit) {
     if (unit === "f") {
         return {
             min: celsiusToFahrenheit(DEFAULT_MIN_TEMP_C),
@@ -130,7 +144,7 @@ function getDefaultTempRange(unit) {
     return { min: DEFAULT_MIN_TEMP_C, max: DEFAULT_MAX_TEMP_C };
 }
 
-function getDefaultWindRange(unit) {
+export function getDefaultWindRange(unit) {
     if (unit === "kph" || unit === "km/h") {
         return {
             min: convertMphToKph(DEFAULT_MIN_WIND_MPH),
@@ -152,7 +166,7 @@ function getDefaultWindRange(unit) {
     return { min: DEFAULT_MIN_WIND_MPH, max: DEFAULT_MAX_WIND_MPH };
 }
 
-function getDefaultRainRange(unit) {
+export function getDefaultRainRange(unit) {
     if (unit === "in") {
         return {
             min: convertMmToInches(DEFAULT_MIN_RAIN_MM),
@@ -165,33 +179,33 @@ function getDefaultRainRange(unit) {
     return { min: DEFAULT_MIN_RAIN_MM, max: DEFAULT_MAX_RAIN_MM };
 }
 
-export function normalizeTemperature(value, unit, minValue, maxValue) {
+export function normalizeTemperatureValue(value, unit, minValue, maxValue) {
     const normalizedUnit = normalizeTempUnit(unit);
     const defaults = getDefaultTempRange(normalizedUnit);
-    const min = toNumber(minValue);
-    const max = toNumber(maxValue);
+    const min = toNumberOrNull(minValue);
+    const max = toNumberOrNull(maxValue);
     const effectiveMin = Number.isFinite(min) ? min : defaults.min;
     const effectiveMax = Number.isFinite(max) ? max : defaults.max;
     const v = toNumber(value);
     return normalizeRange(v, effectiveMin, effectiveMax);
 }
 
-export function normalizeWind(value, unit, minValue, maxValue) {
+export function normalizeWindValue(value, unit, minValue, maxValue) {
     const normalizedUnit = normalizeWindUnit(unit);
     const defaults = getDefaultWindRange(normalizedUnit);
-    const min = toNumber(minValue);
-    const max = toNumber(maxValue);
+    const min = toNumberOrNull(minValue);
+    const max = toNumberOrNull(maxValue);
     const effectiveMin = Number.isFinite(min) ? min : defaults.min;
     const effectiveMax = Number.isFinite(max) ? max : defaults.max;
     const v = toNumber(value);
     return normalizeRange(v, effectiveMin, effectiveMax);
 }
 
-export function normalizeRain(value, unit, minValue, maxValue) {
+export function normalizeRainValue(value, unit, minValue, maxValue) {
     const normalizedUnit = normalizeRainUnit(unit);
     const defaults = getDefaultRainRange(normalizedUnit);
-    const min = toNumber(minValue);
-    const max = toNumber(maxValue);
+    const min = toNumberOrNull(minValue);
+    const max = toNumberOrNull(maxValue);
     const effectiveMin = Number.isFinite(min) ? min : defaults.min;
     const effectiveMax = Number.isFinite(max) ? max : defaults.max;
     const v = toNumber(value);

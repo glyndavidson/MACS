@@ -26,24 +26,21 @@ export const DEFAULTS = {
     temperature_sensor_enabled: false,
     temperature_sensor_entity: "",
     temperature_sensor_custom: false,
-    temperature_unit: "c",
+    temperature_unit: "",
     temperature_min: "",
     temperature_max: "",
-    temperature_update_interval: 30,
     wind_sensor_enabled: false,
     wind_sensor_entity: "",
     wind_sensor_custom: false,
-    wind_unit: "mph",
+    wind_unit: "",
     wind_min: "",
     wind_max: "",
-    wind_update_interval: 30,
     precipitation_sensor_enabled: false,
     precipitation_sensor_entity: "",
     precipitation_sensor_custom: false,
-    precipitation_unit: "%",
+    precipitation_unit: "",
     precipitation_min: "",
     precipitation_max: "",
-    precipitation_update_interval: 30,
 };
 
 export const DEFAULT_MAX_TEMP_C = 30;
@@ -52,7 +49,6 @@ export const DEFAULT_MAX_WIND_MPH = 50;
 export const DEFAULT_MIN_WIND_MPH = 10;
 export const DEFAULT_MAX_RAIN_MM = 15;
 export const DEFAULT_MIN_RAIN_MM = 0; 
-export const DEFAULT_WEATHER_POLL_MINUTES = 30;
 
 
 // HA entity IDs this card listens to
