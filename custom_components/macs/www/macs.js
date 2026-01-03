@@ -28,6 +28,8 @@
  * - change happy trigger from idle to responding. Actually, idle OR responding, whichever comes first.
  * - update readme screenshot
  * - create bored / sleep sequence
+ * - add snow weather attribute
+ * - remove url and other params from card yaml config
  */
 
 

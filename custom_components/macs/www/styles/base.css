@@ -27,6 +27,7 @@ body{
 	aspect-ratio: 1 / 1;
 	transform: translateZ(0);
 	animation: idleFloat 9s ease-in-out infinite;
+	z-index: 2;
 }
 
 .brow{

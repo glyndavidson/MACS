@@ -5,12 +5,12 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
 	<link rel="icon" type="image/x-icon" href="images/favicon.png">
 	<title>M.A.C.S.</title>
-	<link rel="stylesheet" href="styles/themes/default.css?v=0.2.0">
-	<link rel="stylesheet" href="styles/base.css?v=0.2.1">
-	<link rel="stylesheet" href="styles/moods.css?v=0.2.0">
-	<link rel="stylesheet" href="styles/weather.css?v=0.2.6">
-	<script type="module" src="scripts/moods.js?v=0.3.6" defer></script>
-	<script type="module" src="scripts/assist-bridge.js?v=0.3.2" defer></script>
+	<link rel="stylesheet" href="styles/themes/default.css?v=0.4.0">
+	<link rel="stylesheet" href="styles/base.css?v=0.4.0">
+	<link rel="stylesheet" href="styles/moods.css?v=0.4.0">
+	<link rel="stylesheet" href="styles/weather.css?v=0.4.0.1">
+	<script type="module" src="scripts/moods.js?v=0.4.0.4" defer></script>
+	<script type="module" src="scripts/assist-bridge.js?v=0.4.0" defer></script>
 </head>
 
 <body class="mood-idle weather-none">
@@ -189,35 +189,29 @@
 
 
 
-			<!-- FX layers -->
-			<svg class="fx fx-rain" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-				<ellipse class="drop" cx="200" cy="100" rx="5" ry="24"/>
-				<ellipse class="drop d2" cx="360" cy="40" rx="5" ry="24"/>
-				<ellipse class="drop d3" cx="520" cy="140" rx="5" ry="24"/>
-				<ellipse class="drop d2" cx="680" cy="60" rx="5" ry="24"/>
-				<ellipse class="drop d3" cx="820" cy="120" rx="5" ry="24"/>
-				<ellipse class="drop" cx="260" cy="220" rx="5" ry="24"/>
-				<ellipse class="drop d2" cx="460" cy="260" rx="5" ry="24"/>
-				<ellipse class="drop d3" cx="740" cy="240" rx="5" ry="24"/>
-			</svg>
-
-			<svg class="fx fx-wind" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-				<line class="streak" x1="60" y1="260" x2="260" y2="220"/>
-				<line class="streak s2" x1="120" y1="420" x2="360" y2="380"/>
-				<line class="streak" x1="80" y1="620" x2="340" y2="580"/>
-				<line class="streak s2" x1="220" y1="760" x2="520" y2="720"/>
-			</svg>
-
-			<svg class="fx fx-hot" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-				<ellipse class="sweat" cx="340" cy="260" rx="14" ry="22"/>
-				<ellipse class="sweat" cx="660" cy="280" rx="12" ry="20" style="animation-delay:1.1s"/>
-			</svg>
-
-			<svg class="fx fx-cold" viewBox="0 0 1000 1000" preserveAspectRatio="none">
-				<ellipse class="breath" cx="300" cy="370" rx="60" ry="30"/>
-			</svg>
-
 		</div> <!-- char -->
+
+		<!-- FX layers -->
+		<svg class="fx fx-rain" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+			<g id="rain-drops"></g>
+		</svg>
+
+		<svg class="fx fx-wind" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+			<line class="streak" x1="60" y1="260" x2="260" y2="220"/>
+			<line class="streak s2" x1="120" y1="420" x2="360" y2="380"/>
+			<line class="streak" x1="80" y1="620" x2="340" y2="580"/>
+			<line class="streak s2" x1="220" y1="760" x2="520" y2="720"/>
+		</svg>
+
+		<svg class="fx fx-hot" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+			<ellipse class="sweat" cx="340" cy="260" rx="14" ry="22"/>
+			<ellipse class="sweat" cx="660" cy="280" rx="12" ry="20" style="animation-delay:1.1s"/>
+		</svg>
+
+		<svg class="fx fx-cold" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+			<ellipse class="breath" cx="300" cy="370" rx="60" ry="30"/>
+		</svg>
+
 	</div> <!-- stage -->
 
 	<div id="messages">Error - Unable to connect</div>
