@@ -5,7 +5,7 @@
 /* Base animations */
 @keyframes idleFloat{
 	0%,100%{ transform: translate(0,0); }
-	50%{ transform: translate(0, 1.2vmin); }
+	50%{ transform: translate(0, var(--idle-float-amp, 1.2vmin)); }
 }
 
 .blink{

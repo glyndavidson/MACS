@@ -36,5 +36,5 @@ ATTR_WINDSPEED = "windspeed"
 SERVICE_SET_RAINFALL = "set_rainfall"
 ATTR_RAINFALL = "rainfall"
 
-SERVICE_SET_RAINFALL = "set_snowfall"
-ATTR_RAINFALL = "snowfall"
+SERVICE_SET_SNOWFALL = "set_snowfall"
+ATTR_SNOWFALL = "snowfall"

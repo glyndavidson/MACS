@@ -169,7 +169,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def handle_set_rainfall(call: ServiceCall) -> None:
         await _set_number_entity(call, ATTR_RAINFALL, "macs_rainfall", "rainfall")
 
-    async def handle_set_rainfall(call: ServiceCall) -> None:
+    async def handle_set_snowfall(call: ServiceCall) -> None:
         await _set_number_entity(call, ATTR_SNOWFALL, "macs_snowfall", "snowfall")
 
     if not hass.services.has_service(DOMAIN, SERVICE_SET_MOOD):

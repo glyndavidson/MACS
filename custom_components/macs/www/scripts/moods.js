@@ -27,6 +27,17 @@ const RAIN_TILT_VARIATION = 1;
 const RAIN_PATH_PADDING = 60;
 const RAIN_WIND_SPEED_MULTIPLIER = 1.7;
 
+const WIND_TILT_MAX = 25;
+const WIND_TILT_EXPONENT = 2.2;
+
+const IDLE_FLOAT_BASE_VMIN = 1.2;
+const IDLE_FLOAT_MAX_VMIN = 20;
+const IDLE_FLOAT_EXPONENT = 2.2;
+const IDLE_FLOAT_BASE_SECONDS = 9;
+const IDLE_FLOAT_MIN_SECONDS = 1;
+const IDLE_FLOAT_SPEED_EXPONENT = 1.5;
+const IDLE_FLOAT_JITTER_RATIO = 0.25;
+
 
 
 let rainDropCount = -1;
@@ -34,6 +45,9 @@ let rainIntensity = -1;
 let rainViewWidth = 1000;
 let rainViewHeight = 1000;
 let windIntensity = 0;
+let idleFloatBase = IDLE_FLOAT_BASE_VMIN;
+let idleFloatDuration = IDLE_FLOAT_BASE_SECONDS;
+let idleFloatJitterTimer = null;
 
 const clampPercent = (value, fallback = 0) => {
 	const num = Number(value);
@@ -51,6 +65,16 @@ const shuffle = (items) => {
 		[items[i], items[j]] = [items[j], items[i]];
 	}
 	return items;
+};
+
+const applyIdleFloatJitter = () => {
+	const jitter = (Math.random() * 2) - 1;
+	const amp = Math.max(0.1, idleFloatBase * (1 + (jitter * IDLE_FLOAT_JITTER_RATIO)));
+	document.documentElement.style.setProperty('--idle-float-amp', `${amp.toFixed(2)}vmin`);
+	if (idleFloatJitterTimer) {
+		clearTimeout(idleFloatJitterTimer);
+	}
+	idleFloatJitterTimer = setTimeout(applyIdleFloatJitter, idleFloatDuration * 1000);
 };
 
 const getLineRectIntersections = (point, dir, rect) => {
@@ -224,6 +248,12 @@ function setWindSpeed(value){
 	const intensity = toIntensity(value);
 	document.documentElement.style.setProperty('--windspeed-intensity', intensity.toString());
 	windIntensity = intensity;
+	const tilt = Math.pow(intensity, WIND_TILT_EXPONENT) * -WIND_TILT_MAX;
+	document.documentElement.style.setProperty('--wind-tilt', `${tilt.toFixed(1)}deg`);
+	idleFloatBase = IDLE_FLOAT_BASE_VMIN + ((IDLE_FLOAT_MAX_VMIN - IDLE_FLOAT_BASE_VMIN) * Math.pow(intensity, IDLE_FLOAT_EXPONENT));
+	idleFloatDuration = IDLE_FLOAT_BASE_SECONDS - ((IDLE_FLOAT_BASE_SECONDS - IDLE_FLOAT_MIN_SECONDS) * Math.pow(intensity, IDLE_FLOAT_SPEED_EXPONENT));
+	document.documentElement.style.setProperty('--idle-float-duration', `${idleFloatDuration.toFixed(2)}s`);
+	applyIdleFloatJitter();
 	updateRainDrops(rainIntensity < 0 ? 0 : rainIntensity, true);
 }
 
