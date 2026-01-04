@@ -81,8 +81,8 @@ const instructions = `
 						<div>number.macs_windspeed</div>
 						<div>macs.set_windspeed</div>
 
-						<div>number.macs_rainfall</div>
-						<div>macs.set_rainfall</div>
+						<div>number.macs_precipitation</div>
+						<div>macs.set_precipitation</div>
 					</div>
 				</div>
 			</div>

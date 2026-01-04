@@ -33,8 +33,8 @@ ATTR_TEMPERATURE = "temperature"
 SERVICE_SET_WINDSPEED = "set_windspeed"
 ATTR_WINDSPEED = "windspeed"
 
-SERVICE_SET_RAINFALL = "set_rainfall"
-ATTR_RAINFALL = "rainfall"
+SERVICE_SET_PRECIPITATION = "set_precipitation"
+ATTR_PRECIPITATION = "precipitation"
 
 SERVICE_SET_BATTERY_CHARGE = "set_battery_charge"
 ATTR_BATTERY_CHARGE = "battery_charge"

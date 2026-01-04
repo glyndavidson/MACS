@@ -1,4 +1,4 @@
-﻿import { TEMPERATURE_ENTITY_ID, WIND_ENTITY_ID, RAINFALL_ENTITY_ID, BATTERY_CHARGE_ENTITY_ID } from "./constants.js";
+﻿import { TEMPERATURE_ENTITY_ID, WIND_ENTITY_ID, PRECIPITATION_ENTITY_ID, BATTERY_CHARGE_ENTITY_ID } from "./constants.js";
 import { toNumber, normalizeTemperatureValue, normalizeWindValue, normalizeRainValue, normalizeBatteryValue, normalizeWeatherUnit, normalizeBatteryUnit } from "./validators.js";
 import { createDebugger } from "./debugger.js";
 
@@ -65,13 +65,13 @@ export class WeatherHandler {
         this._hass = null;
         this._temperature = null;
         this._windspeed = null;
-        this._rainfall = null;
+        this._precipitation = null;
         this._battery = null;
         this._conditions = emptyConditions();
         this._weather = { temperature: null, wind: null, precipitation: null, battery: null, conditions: null };
         this._lastTemperature = undefined;
         this._lastWindspeed = undefined;
-        this._lastRainfall = undefined;
+        this._lastPrecipitation = undefined;
         this._lastBattery = undefined;
         this._lastConditionsSignature = undefined;
     }
@@ -89,14 +89,14 @@ export class WeatherHandler {
 
         const temperature = this._normalizeTemperature();
         const wind = this._normalizeWind();
-        const precipitation = this._normalizeRain();
+        const precipitation = this._normalizePrecipitation();
         const battery = this._normalizeBattery();
         const conditions = this._normalizeConditions();
 
         this._weather = { temperature, wind, precipitation, battery, conditions };
         this._temperature = Number.isFinite(temperature?.normalized) ? temperature.normalized : null;
         this._windspeed = Number.isFinite(wind?.normalized) ? wind.normalized : null;
-        this._rainfall = Number.isFinite(precipitation?.normalized) ? precipitation.normalized : null;
+        this._precipitation = Number.isFinite(precipitation?.normalized) ? precipitation.normalized : null;
         this._battery = Number.isFinite(battery?.normalized) ? battery.normalized : null;
         this._conditions = conditions || emptyConditions();
 
@@ -257,9 +257,9 @@ export class WeatherHandler {
         };
     }
 
-    _normalizeRain() {
+    _normalizePrecipitation() {
         if (!this._config?.precipitation_sensor_enabled) {
-            return this._readManualValue(RAINFALL_ENTITY_ID);
+            return this._readManualValue(PRECIPITATION_ENTITY_ID);
         }
         const entityId = (this._config.precipitation_sensor_entity || "").toString().trim();
         if (!entityId) {
@@ -450,7 +450,7 @@ export class WeatherHandler {
         return {
             temperature: this._temperature,
             windspeed: this._windspeed,
-            rainfall: this._rainfall,
+            precipitation: this._precipitation,
             battery: this._battery,
             conditions: this._conditions,
         };
@@ -476,13 +476,13 @@ export class WeatherHandler {
         return changed;
     }
 
-    getRainfall() {
-        return this._rainfall;
+    getPrecipitation() {
+        return this._precipitation;
     }
 
-    getRainfallHasChanged() {
-        const changed = this._rainfall !== this._lastRainfall;
-        if (changed) this._lastRainfall = this._rainfall;
+    getPrecipitationHasChanged() {
+        const changed = this._precipitation !== this._lastPrecipitation;
+        if (changed) this._lastPrecipitation = this._precipitation;
         return changed;
     }
 
@@ -512,13 +512,13 @@ export class WeatherHandler {
         this._config = null;
         this._temperature = null;
         this._windspeed = null;
-        this._rainfall = null;
+        this._precipitation = null;
         this._battery = null;
         this._conditions = emptyConditions();
         this._weather = { temperature: null, wind: null, precipitation: null, battery: null, conditions: null };
         this._lastTemperature = undefined;
         this._lastWindspeed = undefined;
-        this._lastRainfall = undefined;
+        this._lastPrecipitation = undefined;
         this._lastBattery = undefined;
         this._lastConditionsSignature = undefined;
     }

@@ -92,6 +92,7 @@ let rainViewWidth = 1000;
 let rainViewHeight = 1000;
 let windIntensity = 0;
 let snowIntensity = -1;
+let basePrecipIntensity = 0;
 let idleFloatBase = IDLE_FLOAT_BASE_VMIN;
 let idleFloatDuration = IDLE_FLOAT_BASE_SECONDS;
 let idleFloatJitterTimer = null;
@@ -123,6 +124,22 @@ const applyIdleFloatJitter = () => {
 		clearTimeout(idleFloatJitterTimer);
 	}
 	idleFloatJitterTimer = setTimeout(applyIdleFloatJitter, idleFloatDuration * 1000);
+};
+
+const getConditionFlag = (key) => {
+	return !!(weatherConditions && weatherConditions[key]);
+};
+
+const applyPrecipitation = () => {
+	const rainy = getConditionFlag("rainy") || getConditionFlag("pouring");
+	const snowy = getConditionFlag("snowy");
+	rainIntensity = rainy ? basePrecipIntensity : 0;
+	snowIntensity = snowy ? basePrecipIntensity : 0;
+	document.documentElement.style.setProperty('--precipitation-intensity', rainIntensity.toString());
+	document.documentElement.style.setProperty('--snowfall-intensity', snowIntensity.toString());
+	updateRainDrops(rainIntensity);
+	updateSnowFlakes(snowIntensity);
+	updateLeaves();
 };
 
 // applies a css class to the body so that we can style based on mood
@@ -378,20 +395,13 @@ function setWindSpeed(value){
 	updateLeaves(true);
 }
 
-function setRainfall(value){
-	const intensity = toIntensity(value);
-	rainIntensity = intensity;
-	document.documentElement.style.setProperty('--rainfall-intensity', intensity.toString());
-	updateRainDrops(intensity);
-	updateLeaves();
+function setPrecipitation(value){
+	basePrecipIntensity = toIntensity(value);
+	applyPrecipitation();
 }
 
 function setSnowfall(value){
-	const intensity = toIntensity(value);
-	snowIntensity = intensity;
-	document.documentElement.style.setProperty('--snowfall-intensity', intensity.toString());
-	updateSnowFlakes(intensity);
-	updateLeaves();
+	setPrecipitation(value);
 }
 
 function setWeatherConditions(conditions){
@@ -405,6 +415,7 @@ function setWeatherConditions(conditions){
 		if (weatherConditions[key]) body.classList.add(`weather-${key}`);
 	});
 	debug("Setting weather conditions to: " + JSON.stringify(weatherConditions));
+	applyPrecipitation();
 }
 
 function setBattery(value){
@@ -441,20 +452,17 @@ setMood(qs.get('mood') || 'idle');
 setRainViewBoxFromSvg();
 setTemperature(qs.get('temperature') ?? '0');
 setWindSpeed(qs.get('windspeed') ?? '0');
+const precipitationParam = qs.get('precipitation');
 const rainfallParam = qs.get('rainfall');
 const snowfallParam = qs.get('snowfall');
-const snowing = isTruthy(qs.get('snowing'));
-if (snowing) {
-	if (snowfallParam !== null) {
-		setSnowfall(snowfallParam);
-		setRainfall(rainfallParam ?? '0');
-	} else {
-		setSnowfall(rainfallParam ?? '0');
-		setRainfall('0');
-	}
+if (precipitationParam !== null) {
+	setPrecipitation(precipitationParam);
+} else if (rainfallParam !== null) {
+	setPrecipitation(rainfallParam);
+} else if (snowfallParam !== null) {
+	setPrecipitation(snowfallParam);
 } else {
-setRainfall(rainfallParam ?? '0');
-setSnowfall(snowfallParam ?? '0');
+	setPrecipitation('0');
 }
 setBattery(qs.get('battery') ?? '0');
 setBrightness(qs.get('brightness') ?? '100');
@@ -485,9 +493,14 @@ window.addEventListener('message', (e) => {
         debug("Setting windspeed to: " + (e.data.windspeed ?? '0'));
         return;
     }
+    if (e.data.type === 'macs:precipitation') {
+        setPrecipitation(e.data.precipitation ?? '0');
+        debug("Setting precipitation to: " + (e.data.precipitation ?? '0'));
+        return;
+    }
     if (e.data.type === 'macs:rainfall') {
-        setRainfall(e.data.rainfall ?? '0');
-        debug("Setting rainfall to: " + (e.data.rainfall ?? '0'));
+        setPrecipitation(e.data.rainfall ?? '0');
+        debug("Setting precipitation to: " + (e.data.rainfall ?? '0'));
         return;
     }
     if (e.data.type === 'macs:weather_conditions') {
@@ -510,4 +523,4 @@ window.addEventListener('message', (e) => {
 });
 
 
-debug("Macs Moods Loaded");
+debug("Macs Moods Loaded v0.7");

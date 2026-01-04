@@ -1,4 +1,4 @@
-.fx{
+﻿.fx{
 	position: fixed;
 	inset: 0;
 	width: 100vw;
@@ -9,17 +9,17 @@
 }
 
 :root{
-	--rainfall-intensity: 0;
+	--precipitation-intensity: 0;
 	--snowfall-intensity: 0;
 	--leaf-intensity: 0;
 	--windspeed-intensity: 0;
 	--temperature-intensity: 0;
 }
 
-.fx-rain{ opacity: calc(0.9 * var(--rainfall-intensity)); }
+.fx-rain{ opacity: calc(0.9 * var(--precipitation-intensity)); }
 .fx-snow{ opacity: calc(0.9 * var(--snowfall-intensity)); }
 .fx-leaves{ opacity: 1; overflow: hidden; }
-body.weather-rain{ --rainfall-intensity: var(--weather-intensity, 1); }
+body.weather-rain{ --precipitation-intensity: var(--weather-intensity, 1); }
 body.weather-wind .fx-wind{ opacity: calc(0.9 * var(--weather-intensity)); }
 body.weather-hot  .fx-hot{  opacity: calc(0.9 * var(--weather-intensity)); }
 body.weather-cold .fx-cold{ opacity: calc(0.9 * var(--weather-intensity)); }

@@ -23,8 +23,8 @@ from .const import (
     ATTR_TEMPERATURE,
     SERVICE_SET_WINDSPEED,
     ATTR_WINDSPEED,
-    SERVICE_SET_RAINFALL,
-    ATTR_RAINFALL,
+    SERVICE_SET_PRECIPITATION,
+    ATTR_PRECIPITATION,
     SERVICE_SET_BATTERY_CHARGE,
     ATTR_BATTERY_CHARGE,
     SERVICE_SET_WEATHER_CONDITIONS_SNOWY,
@@ -136,7 +136,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     migrate("macs_battery_charge", "number.macs_battery_charge")
     migrate("macs_temperature", "number.macs_temperature")
     migrate("macs_windspeed", "number.macs_windspeed")
-    migrate("macs_rainfall", "number.macs_rainfall")
+    migrate("macs_precipitation", "number.macs_precipitation")
     migrate("macs_weather_conditions_snowy", "switch.macs_weather_conditions_snowy")
     migrate("macs_weather_conditions_cloudy", "switch.macs_weather_conditions_cloudy")
     migrate("macs_weather_conditions_rainy", "switch.macs_weather_conditions_rainy")
@@ -204,8 +204,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def handle_set_windspeed(call: ServiceCall) -> None:
         await _set_number_entity(call, ATTR_WINDSPEED, "macs_windspeed", "windspeed")
 
-    async def handle_set_rainfall(call: ServiceCall) -> None:
-        await _set_number_entity(call, ATTR_RAINFALL, "macs_rainfall", "rainfall")
+    async def handle_set_precipitation(call: ServiceCall) -> None:
+        await _set_number_entity(call, ATTR_PRECIPITATION, "macs_precipitation", "precipitation")
 
     async def handle_set_battery_charge(call: ServiceCall) -> None:
         await _set_number_entity(call, ATTR_BATTERY_CHARGE, "macs_battery_charge", "battery charge")
@@ -384,12 +384,12 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             schema=vol.Schema({vol.Required(ATTR_WINDSPEED): vol.Coerce(float)}),
         )
 
-    if not hass.services.has_service(DOMAIN, SERVICE_SET_RAINFALL):
+    if not hass.services.has_service(DOMAIN, SERVICE_SET_PRECIPITATION):
         hass.services.async_register(
             DOMAIN,
-            SERVICE_SET_RAINFALL,
-            handle_set_rainfall,
-            schema=vol.Schema({vol.Required(ATTR_RAINFALL): vol.Coerce(float)}),
+            SERVICE_SET_PRECIPITATION,
+            handle_set_precipitation,
+            schema=vol.Schema({vol.Required(ATTR_PRECIPITATION): vol.Coerce(float)}),
         )
 
     if not hass.services.has_service(DOMAIN, SERVICE_SET_BATTERY_CHARGE):
@@ -517,7 +517,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.services.async_remove(DOMAIN, SERVICE_SET_BRIGHTNESS)
         hass.services.async_remove(DOMAIN, SERVICE_SET_TEMPERATURE)
         hass.services.async_remove(DOMAIN, SERVICE_SET_WINDSPEED)
-        hass.services.async_remove(DOMAIN, SERVICE_SET_RAINFALL)
+        hass.services.async_remove(DOMAIN, SERVICE_SET_PRECIPITATION)
         hass.services.async_remove(DOMAIN, SERVICE_SET_BATTERY_CHARGE)
         hass.services.async_remove(DOMAIN, SERVICE_SET_WEATHER_CONDITIONS_SNOWY)
         hass.services.async_remove(DOMAIN, SERVICE_SET_WEATHER_CONDITIONS_CLOUDY)

@@ -199,9 +199,9 @@ export class MacsCard extends HTMLElement {
             this._postToIframe({ type: "macs:windspeed", windspeed });
         }
     }
-    _sendRainfallToIframe(rainfall) {
-        if (this._weatherHandler.getRainfallHasChanged?.()) {
-            this._postToIframe({ type: "macs:rainfall", rainfall });
+    _sendPrecipitationToIframe(precipitation) {
+        if (this._weatherHandler.getPrecipitationHasChanged?.()) {
+            this._postToIframe({ type: "macs:precipitation", precipitation });
         }
     }
     _sendWeatherConditionsToIframe(conditions) {
@@ -246,7 +246,7 @@ export class MacsCard extends HTMLElement {
         if (!this._weatherHandler) return;
         this._sendTemperatureToIframe(this._weatherHandler.getTemperature?.());
         this._sendWindSpeedToIframe(this._weatherHandler.getWindSpeed?.());       
-        this._sendRainfallToIframe(this._weatherHandler.getRainfall?.());
+        this._sendPrecipitationToIframe(this._weatherHandler.getPrecipitation?.());
         this._sendWeatherConditionsToIframe(this._weatherHandler.getWeatherConditions?.());
         this._sendBatteryToIframe(this._weatherHandler.getBattery?.());
     }
@@ -326,8 +326,8 @@ export class MacsCard extends HTMLElement {
             if (weatherValues && Number.isFinite(weatherValues.windspeed)) {
                 base.searchParams.set("windspeed", weatherValues.windspeed.toString());
             }
-            if (weatherValues && Number.isFinite(weatherValues.rainfall)) {
-                base.searchParams.set("rainfall", weatherValues.rainfall.toString());
+            if (weatherValues && Number.isFinite(weatherValues.precipitation)) {
+                base.searchParams.set("precipitation", weatherValues.precipitation.toString());
             }
             if (weatherValues && Number.isFinite(weatherValues.battery)) {
                 base.searchParams.set("battery", weatherValues.battery.toString());

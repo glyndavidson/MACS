@@ -8,7 +8,7 @@ from .entities import (
     MacsBatteryChargeNumber,
     MacsTemperatureNumber,
     MacsWindSpeedNumber,
-    MacsRainfallNumber,
+    MacsPrecipitationNumber,
 )
 
 
@@ -23,6 +23,6 @@ async def async_setup_entry(
             MacsBatteryChargeNumber(),
             MacsTemperatureNumber(),
             MacsWindSpeedNumber(),
-            MacsRainfallNumber(),
+            MacsPrecipitationNumber(),
         ]
     )

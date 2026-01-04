@@ -64,7 +64,7 @@ export const MOOD_ENTITY_ID = "select.macs_mood";
 export const BRIGHTNESS_ENTITY_ID = "number.macs_brightness";
 export const TEMPERATURE_ENTITY_ID = "number.macs_temperature";
 export const WIND_ENTITY_ID = "number.macs_windspeed";
-export const RAINFALL_ENTITY_ID = "number.macs_rainfall";
+export const PRECIPITATION_ENTITY_ID = "number.macs_precipitation";
 export const BATTERY_CHARGE_ENTITY_ID = "number.macs_battery_charge";
 export const CONVERSATION_ENTITY_ID = "conversation.home_assistant";
 

@@ -171,11 +171,11 @@ class MacsWindSpeedNumber(NumberEntity, RestoreEntity):
         return MACS_DEVICE
 
 
-class MacsRainfallNumber(NumberEntity, RestoreEntity):
+class MacsPrecipitationNumber(NumberEntity, RestoreEntity):
     _attr_has_entity_name = True
-    _attr_name = "Rainfall"
-    _attr_unique_id = "macs_rainfall"
-    _attr_suggested_object_id = "macs_rainfall"
+    _attr_name = "Precipitation"
+    _attr_unique_id = "macs_precipitation"
+    _attr_suggested_object_id = "macs_precipitation"
     _attr_icon = "mdi:weather-rainy"
 
     _attr_native_min_value = 0

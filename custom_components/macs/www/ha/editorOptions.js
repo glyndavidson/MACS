@@ -435,8 +435,8 @@ export async function loadWeatherOptions(hass) {
 			hasDeviceClass(st, "precipitation_intensity") ||
 			hasDeviceClass(st, "precipitation_probability") ||
 			hasUnit(st, RAIN_UNITS) ||
-			(hasUnit(st, PERCENT_UNITS) && matchesName(id, st, ["rain", "rainfall", "precip", "precipitation"])) ||
-			matchesName(id, st, ["rain", "rainfall", "precip", "precipitation"])
+			(hasUnit(st, PERCENT_UNITS) && matchesName(id, st, ["rain", "precip", "precipitation"])) ||
+			matchesName(id, st, ["rain", "precip", "precipitation"])
 		);
 	});
 
