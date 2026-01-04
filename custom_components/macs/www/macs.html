@@ -5,12 +5,37 @@
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
 	<link rel="icon" type="image/x-icon" href="images/favicon.png">
 	<title>M.A.C.S.</title>
-	<link rel="stylesheet" href="styles/themes/default.css">
-	<link rel="stylesheet" href="styles/base.css">
-	<link rel="stylesheet" href="styles/moods.css">
-	<link rel="stylesheet" href="styles/weather.css">
-	<script type="module" src="scripts/moods.js" defer></script>
-	<script type="module" src="scripts/assist-bridge.js" defer></script>
+	<script>
+		(function () {
+			const params = new URLSearchParams(window.location.search || "");
+			const version = params.get("v");
+			const withVersion = (path) => {
+				if (!version) return path;
+				const sep = path.indexOf("?") === -1 ? "?" : "&";
+				return `${path}${sep}v=${encodeURIComponent(version)}`;
+			};
+			const addStyle = (href) => {
+				const link = document.createElement("link");
+				link.rel = "stylesheet";
+				link.href = withVersion(href);
+				document.head.appendChild(link);
+			};
+			const addScript = (src) => {
+				const script = document.createElement("script");
+				script.type = "module";
+				script.src = withVersion(src);
+				script.defer = true;
+				document.head.appendChild(script);
+			};
+
+			addStyle("styles/themes/default.css");
+			addStyle("styles/base.css");
+			addStyle("styles/moods.css");
+			addStyle("styles/weather.css");
+			addScript("scripts/moods.js");
+			addScript("scripts/assist-bridge.js");
+		})();
+	</script>
 </head>
 
 <body class="mood-idle weather-none">

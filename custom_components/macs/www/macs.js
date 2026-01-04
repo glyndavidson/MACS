@@ -23,16 +23,20 @@
  * - change happy trigger from idle to responding. Actually, idle OR responding, whichever comes first.
  * - update readme screenshot
  * - create bored / sleep sequence
- * kios mode, tap to wake, hold to show/hide toolbars
- * doesnt update when switch dashboard
  * prevent preview kiosk mode
  * wake word restore brightness
+ * make screentimeout input 100% width
  */
 
 
 
 import {MacsCard} from "./ha/MacsCard.js";
 import {MacsCardEditor} from "./ha/MacsCardEditor.js";
+
+const macsVersion = new URL(import.meta.url).searchParams.get("v");
+if (macsVersion) {
+    window.__MACS_VERSION__ = macsVersion;
+}
 
 if (!customElements.get("macs-card")) customElements.define("macs-card", MacsCard);
 window.customCards = window.customCards || [];

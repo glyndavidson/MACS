@@ -413,7 +413,7 @@ export class MacsCardEditor extends HTMLElement {
 			minMax: true,
 			customInput: `
 				<div class="row">
-					<ha-textfield id="auto_brightness_timeout_minutes" label="Screen timeout (minutes)" placeholder="5" type="number" inputmode="decimal"></ha-textfield>
+					<ha-textfield id="auto_brightness_timeout_minutes" class="fullwidth" label="Screen timeout (minutes)" placeholder="5" type="number" inputmode="decimal"></ha-textfield>
 				</div>
 			`,
 			extraIds: ["auto_brightness_timeout_minutes"]

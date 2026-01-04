@@ -8,6 +8,7 @@ html,body{
 body{ 
 	touch-action:manipulation; 
 	opacity: var(--brightness-level);
+	transition: opacity var(--brightness-transition, 0s) linear;
 }
 
 .stage{

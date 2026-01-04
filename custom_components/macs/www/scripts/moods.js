@@ -86,6 +86,7 @@ const IDLE_FLOAT_MIN_SECONDS = 1;
 const IDLE_FLOAT_SPEED_EXPONENT = 1.5;
 const IDLE_FLOAT_JITTER_RATIO = 0.25;
 const KIOSK_HOLD_MS = 800;
+const BRIGHTNESS_FADE_SECONDS = 10;
 
 
 
@@ -104,12 +105,18 @@ let autoBrightnessTimeoutMs = 0;
 let autoBrightnessMin = 0;
 let autoBrightnessMax = 100;
 let autoBrightnessTimer = null;
+let autoBrightnessFadeTimer = null;
 let autoBrightnessIdle = false;
+let autoBrightnessAsleep = false;
 let baseBrightness = 100;
 let autoBrightnessNextSleepAt = null;
 let autoBrightnessDebugTimer = null;
 let autoBrightnessConfigApplied = false;
 let kioskHoldTimer = null;
+let isEditor = false;
+let brightnessFrame = null;
+let lastBrightnessTarget = null;
+let lastBrightnessTransition = null;
 
 let rainParticles = null;
 let snowParticles = null;
@@ -128,6 +135,14 @@ const clampRange = (value, min, max) => Math.min(max, Math.max(min, value));
 const toNumber = (value, fallback) => {
 	const num = Number(value);
 	return Number.isFinite(num) ? num : fallback;
+};
+
+const setBrightnessTransition = (seconds) => {
+	const duration = Number.isFinite(seconds) ? seconds : 0;
+	document.documentElement.style.setProperty('--brightness-transition', `${duration}s`);
+	if (document.body) {
+		document.body.style.transition = `opacity ${duration}s linear`;
+	}
 };
 const isTruthy = (value) => {
 	if (value === null || value === undefined) return false;
@@ -472,6 +487,13 @@ const setBrightnessValue = (value) => {
 
 const applyBrightness = () => {
 	if (!autoBrightnessEnabled) {
+		if (brightnessFrame) {
+			cancelAnimationFrame(brightnessFrame);
+			brightnessFrame = null;
+		}
+		lastBrightnessTarget = baseBrightness;
+		lastBrightnessTransition = 0;
+		setBrightnessTransition(0);
 		setBrightnessValue(baseBrightness);
 		return;
 	}
@@ -481,7 +503,31 @@ const applyBrightness = () => {
 	const safeMax = Math.max(minValue, maxValue);
 	const activeBrightness = clampRange(baseBrightness, minValue, safeMax);
 	const target = autoBrightnessIdle ? minValue : activeBrightness;
+	const fadeSeconds = autoBrightnessIdle
+		? Math.min(BRIGHTNESS_FADE_SECONDS, autoBrightnessTimeoutMs / 1000)
+		: 0;
 
+	if (fadeSeconds !== lastBrightnessTransition) {
+		setBrightnessTransition(fadeSeconds);
+		lastBrightnessTransition = fadeSeconds;
+	}
+
+	if (target === lastBrightnessTarget) return;
+	lastBrightnessTarget = target;
+
+	if (fadeSeconds > 0) {
+		if (brightnessFrame) cancelAnimationFrame(brightnessFrame);
+		brightnessFrame = requestAnimationFrame(() => {
+			brightnessFrame = null;
+			setBrightnessValue(target);
+		});
+		return;
+	}
+
+	if (brightnessFrame) {
+		cancelAnimationFrame(brightnessFrame);
+		brightnessFrame = null;
+	}
 	setBrightnessValue(target);
 };
 
@@ -497,7 +543,7 @@ const updateAutoBrightnessDebug = () => {
 
 	let text = "Sleep in: disabled";
 	if (autoBrightnessEnabled) {
-		if (autoBrightnessIdle) {
+		if (autoBrightnessAsleep) {
 			text = "Sleep in: 0s (sleeping)";
 		} else if (autoBrightnessNextSleepAt) {
 			const remainingMs = autoBrightnessNextSleepAt - Date.now();
@@ -521,32 +567,55 @@ const scheduleAutoBrightness = () => {
 		clearTimeout(autoBrightnessTimer);
 		autoBrightnessTimer = null;
 	}
+	if (autoBrightnessFadeTimer) {
+		clearTimeout(autoBrightnessFadeTimer);
+		autoBrightnessFadeTimer = null;
+	}
 
 	if (!autoBrightnessEnabled) return;
 
 	if (!Number.isFinite(autoBrightnessTimeoutMs) || autoBrightnessTimeoutMs <= 0) {
 		autoBrightnessIdle = false;
+		autoBrightnessAsleep = false;
 		autoBrightnessNextSleepAt = null;
 		applyBrightness();
 		updateAutoBrightnessDebug();
 		return;
 	}
 
+	const fadeMs = Math.min(BRIGHTNESS_FADE_SECONDS * 1000, autoBrightnessTimeoutMs);
+	const fadeDelay = Math.max(0, autoBrightnessTimeoutMs - fadeMs);
+	if (fadeDelay <= 0) {
+		autoBrightnessIdle = true;
+		autoBrightnessAsleep = false;
+		applyBrightness();
+		updateAutoBrightnessDebug();
+	} else {
+		autoBrightnessFadeTimer = setTimeout(() => {
+			autoBrightnessFadeTimer = null;
+			autoBrightnessIdle = true;
+			autoBrightnessAsleep = false;
+			applyBrightness();
+			updateAutoBrightnessDebug();
+		}, fadeDelay);
+	}
+
 	autoBrightnessNextSleepAt = Date.now() + autoBrightnessTimeoutMs;
 	autoBrightnessTimer = setTimeout(() => {
-		autoBrightnessIdle = true;
+		autoBrightnessAsleep = true;
 		autoBrightnessNextSleepAt = null;
-		applyBrightness();
 		updateAutoBrightnessDebug();
 	}, autoBrightnessTimeoutMs);
 	updateAutoBrightnessDebug();
 };
 
 const registerAutoBrightnessActivity = () => {
+	if (isEditor) return;
 	if (!autoBrightnessEnabled) return;
 
 	if (autoBrightnessIdle) {
 		autoBrightnessIdle = false;
+		autoBrightnessAsleep = false;
 		applyBrightness();
 	}
 
@@ -561,6 +630,7 @@ const sendKioskToggle = () => {
 };
 
 const startKioskHold = () => {
+	if (isEditor) return;
 	if (!autoBrightnessEnabled) return;
 	debug("Kiosk hold: start");
 	if (kioskHoldTimer) clearTimeout(kioskHoldTimer);
@@ -579,6 +649,7 @@ const endKioskHold = () => {
 };
 
 const initKioskHoldListeners = () => {
+	if (isEditor) return;
 	const target = document.body;
 	if (!target) return;
 	if ("PointerEvent" in window) {
@@ -597,6 +668,12 @@ const initKioskHoldListeners = () => {
 };
 
 function setAutoBrightnessConfig(config){
+	if (isEditor) {
+		autoBrightnessEnabled = false;
+		autoBrightnessIdle = false;
+		updateAutoBrightnessDebug();
+		return;
+	}
 	const nextEnabled = !!(config && config.auto_brightness_enabled);
 	const timeoutFallback = autoBrightnessTimeoutMs ? (autoBrightnessTimeoutMs / 60000) : 0;
 	const timeoutMinutes = toNumber(config?.auto_brightness_timeout_minutes, timeoutFallback);
@@ -618,6 +695,7 @@ function setAutoBrightnessConfig(config){
 	autoBrightnessMin = nextMin;
 	autoBrightnessMax = nextMax;
 	autoBrightnessIdle = false;
+	autoBrightnessAsleep = false;
 	ensureAutoBrightnessDebugTimer();
 	scheduleAutoBrightness();
 	applyBrightness();
@@ -636,6 +714,7 @@ function setBrightness(userBrightness){
 
 
 const qs = new URLSearchParams(location.search);
+isEditor = qs.get('edit') === '1' || qs.get('edit') === 'true';
 setMood(qs.get('mood') || 'idle');
 setRainViewBoxFromSvg();
 setTemperature(qs.get('temperature') ?? '0');

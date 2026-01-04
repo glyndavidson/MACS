@@ -17,7 +17,7 @@
  * and the M.A.C.S. frontend character.
  */
 
-import { DEFAULTS, MOOD_ENTITY_ID, BRIGHTNESS_ENTITY_ID } from "./constants.js";
+import { VERSION, DEFAULTS, MOOD_ENTITY_ID, BRIGHTNESS_ENTITY_ID } from "./constants.js";
 import { normMood, normBrightness, safeUrl, getTargetOrigin, assistStateToMood} from "./validators.js";
 import { SatelliteTracker } from "./assistSatellite.js";
 import { AssistPipelineTracker } from "./assistPipeline.js";
@@ -119,6 +119,7 @@ export class MacsCard extends HTMLElement {
             this._lastMood = undefined;
             this._lastSrc = undefined;
             this._kioskHidden = false;
+            this._isPreview = false;
 
             // Keep home assistant state
             this._hass = null;
@@ -175,6 +176,7 @@ export class MacsCard extends HTMLElement {
     }
 
     connectedCallback() {
+        this._updatePreviewState();
         // If HA disconnected and reconnected the same instance, rebuild trackers
         if (this._config && !this._pipelineTracker) {
             debug("Recreating AssistPipelineTracker (reconnect)");
@@ -228,10 +230,11 @@ export class MacsCard extends HTMLElement {
 
 
     _sendConfigToIframe() {
+        this._updatePreviewState();
         const enabled = !!this._config.assist_pipeline_enabled;
         const assist_pipeline_entity = enabled ? (this._config.assist_pipeline_entity || "").toString().trim() : "";
-        const autoBrightnessEnabled = !!this._config.auto_brightness_enabled;
-        const autoBrightnessTimeout = this._config.auto_brightness_timeout_minutes;
+        const autoBrightnessEnabled = this._isPreview ? false : !!this._config.auto_brightness_enabled;
+        const autoBrightnessTimeout = this._isPreview ? 0 : this._config.auto_brightness_timeout_minutes;
         const autoBrightnessMin = this._config.auto_brightness_min;
         const autoBrightnessMax = this._config.auto_brightness_max;
         this._postToIframe({
@@ -294,6 +297,10 @@ export class MacsCard extends HTMLElement {
         if (!e.data || typeof e.data !== "object") return;
 
         if (e.data.type === "macs:toggle_kiosk") {
+            if (this._isPreview) {
+                debug("kiosk-toggle", { ignored: true, reason: "preview" });
+                return;
+            }
             this._toggleKioskUi();
             return;
         }
@@ -368,10 +375,15 @@ export class MacsCard extends HTMLElement {
     }
 
     _toggleKioskUi() {
+        if (this._isPreview) return;
         this._kioskHidden = !this._kioskHidden;
         debug("kiosk-toggle", { hidden: this._kioskHidden });
         this._applyKioskStyles(this._kioskHidden);
         this._applyKioskCardStyle(this._kioskHidden);
+    }
+
+    _updatePreviewState() {
+        this._isPreview = !!this.closest(".element-preview");
     }
 
     _sendWeatherIfChanged() {
@@ -390,6 +402,7 @@ export class MacsCard extends HTMLElement {
         if (!this._config || !this._iframe) return;
 
         this._hass = hass;
+        this._updatePreviewState();
 
         // Always keep hass fresh (safe + cheap)
         this._pipelineTracker?.setHass?.(hass);
@@ -440,6 +453,16 @@ export class MacsCard extends HTMLElement {
         }
 
         const base = safeUrl(this._config.url);
+        if (this._isPreview) {
+            base.searchParams.set("edit", "1");
+        } else {
+            base.searchParams.delete("edit");
+        }
+        if (VERSION) {
+            base.searchParams.set("v", VERSION);
+        } else {
+            base.searchParams.delete("v");
+        }
         const sendAll = () => {
             this._sendConfigToIframe();
             this._sendMoodToIframe(mood);

@@ -3,6 +3,7 @@
  */
 
 export const DEBUGGING = true;
+export const VERSION = (window.__MACS_VERSION__ || "Unknown").toString().trim();
 
 // get URL for macs.html
 const selfUrl = new URL(import.meta.url);
