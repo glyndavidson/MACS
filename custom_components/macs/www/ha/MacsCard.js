@@ -352,6 +352,7 @@ export class MacsCard extends HTMLElement {
 
             const src = base.toString();
             this._iframe.onload = () => {
+                this._weatherHandler?.resetChangeTracking?.();
                 sendAll();
                 // First fetch after iframe is alive
                 this._pipelineTracker?.triggerFetchNewest?.();

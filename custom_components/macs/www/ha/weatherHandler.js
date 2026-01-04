@@ -507,6 +507,14 @@ export class WeatherHandler {
         return changed;
     }
 
+    resetChangeTracking() {
+        this._lastTemperature = undefined;
+        this._lastWindspeed = undefined;
+        this._lastPrecipitation = undefined;
+        this._lastBattery = undefined;
+        this._lastConditionsSignature = undefined;
+    }
+
     dispose() {
         this._hass = null;
         this._config = null;
