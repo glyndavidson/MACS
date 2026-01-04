@@ -770,6 +770,10 @@ window.addEventListener('message', (e) => {
 
     if (e.data.type === 'macs:mood') {
         setMood(e.data.mood || 'idle');
+        if (e.data.reset_sleep) {
+            debug("Wakeword: reset sleep timer");
+            registerAutoBrightnessActivity();
+        }
         return;
     }
     if (e.data.type === 'macs:temperature') {

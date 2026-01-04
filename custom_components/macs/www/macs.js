@@ -23,9 +23,8 @@
  * - change happy trigger from idle to responding. Actually, idle OR responding, whichever comes first.
  * - update readme screenshot
  * - create bored / sleep sequence
- * prevent preview kiosk mode
  * wake word restore brightness
- * make screentimeout input 100% width
+
  */
 
 

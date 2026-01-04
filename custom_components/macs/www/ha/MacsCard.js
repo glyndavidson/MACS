@@ -120,6 +120,7 @@ export class MacsCard extends HTMLElement {
             this._lastSrc = undefined;
             this._kioskHidden = false;
             this._isPreview = false;
+            this._lastAssistSatelliteState = null;
 
             // Keep home assistant state
             this._hass = null;
@@ -247,8 +248,10 @@ export class MacsCard extends HTMLElement {
         });
     }
 
-    _sendMoodToIframe(mood) {
-        this._postToIframe({ type: "macs:mood", mood });
+    _sendMoodToIframe(mood, options = {}) {
+        const payload = { type: "macs:mood", mood };
+        if (options.resetSleep) payload.reset_sleep = true;
+        this._postToIframe(payload);
     }
     _sendTemperatureToIframe(temperature) {
         if (this._weatherHandler.getTemperatureHasChanged?.()) {
@@ -426,6 +429,8 @@ export class MacsCard extends HTMLElement {
         // Optional: auto mood from selected satellite state
         let assistMood = null;
         let satState = ""; 
+        let wakewordTriggered = false;
+        const prevSatState = this._lastAssistSatelliteState;
 
         if (this._config?.assist_satellite_enabled) {
             const satId = (this._config.assist_satellite_entity || "").toString().trim();
@@ -437,6 +442,10 @@ export class MacsCard extends HTMLElement {
                 debug(tracker);
                 if (this._config?.assist_satellite_enabled && satState && tracker) tracker.update(satState);
             }
+            wakewordTriggered = prevSatState === "idle" && satState === "listening";
+            this._lastAssistSatelliteState = satState || null;
+        } else {
+            this._lastAssistSatelliteState = null;
         }
 
         // const now = Date.now();
@@ -513,7 +522,10 @@ export class MacsCard extends HTMLElement {
         }
         else {
             // Subsequent updates: only send what changed
-            if (mood !== this._lastMood) {
+            if (wakewordTriggered) {
+                this._lastMood = mood;
+                this._sendMoodToIframe(mood, { resetSleep: true });
+            } else if (mood !== this._lastMood) {
                 this._lastMood = mood;
                 this._sendMoodToIframe(mood);
             }

@@ -9,6 +9,9 @@
 		(function () {
 			const params = new URLSearchParams(window.location.search || "");
 			const version = params.get("v");
+			if (version) {
+				window.__MACS_VERSION__ = version;
+			}
 			const withVersion = (path) => {
 				if (!version) return path;
 				const sep = path.indexOf("?") === -1 ? "?" : "&";

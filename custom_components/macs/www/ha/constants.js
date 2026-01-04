@@ -3,7 +3,24 @@
  */
 
 export const DEBUGGING = true;
-export const VERSION = (window.__MACS_VERSION__ || "Unknown").toString().trim();
+const resolveVersion = () => {
+    const existing = (window.__MACS_VERSION__ || "").toString().trim();
+    if (existing) return existing;
+    try {
+        const scripts = Array.from(document.scripts || []);
+        for (const script of scripts) {
+            const src = script && script.getAttribute ? script.getAttribute("src") : "";
+            if (!src || src.indexOf("macs.js") === -1) continue;
+            const v = new URL(src, window.location.origin).searchParams.get("v");
+            if (v) {
+                window.__MACS_VERSION__ = v;
+                return v.toString().trim();
+            }
+        }
+    } catch (_) {}
+    return "Unknown";
+};
+export const VERSION = resolveVersion();
 
 // get URL for macs.html
 const selfUrl = new URL(import.meta.url);
