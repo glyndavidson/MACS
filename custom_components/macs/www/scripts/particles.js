@@ -96,11 +96,12 @@ class ParticleSystem {
 		anim.onfinish = () => this.startAnimation(particle, nextSlot);
 	}
 
-	update(intensity, forceUpdate = false) {
+	update(intensity, forceUpdate = false, countNormalized = null) {
 		if (!this.container) return;
 		const raw = Number(intensity);
 		const normalized = Number.isFinite(raw) ? clamp01(raw) : 0;
-		const targetCount = Math.ceil(normalized * this.maxCount);
+		const countValue = Number.isFinite(countNormalized) ? clamp01(countNormalized) : normalized;
+		const targetCount = Math.ceil(countValue * this.maxCount);
 
 		this.normalized = normalized;
 		this.targetCount = targetCount;
@@ -161,6 +162,7 @@ export class Particle {
 		this.delay = config.delay ?? {};
 		this.thresholds = config.thresholds ?? null;
 		this.setIntensityVar = config.setIntensityVar ?? null;
+		this.countExponent = config.countExponent ?? 1;
 		this.viewWidth = config.viewWidth ?? 1000;
 		this.viewHeight = config.viewHeight ?? 1000;
 		this.windIntensity = 0;
@@ -183,7 +185,10 @@ export class Particle {
 	}
 
 	update(intensity, forceUpdate = false) {
-		this.system.update(intensity, forceUpdate);
+		const raw = Number(intensity);
+		const normalized = Number.isFinite(raw) ? clamp01(raw) : 0;
+		const countNormalized = Math.pow(normalized, this.countExponent);
+		this.system.update(normalized, forceUpdate, countNormalized);
 	}
 
 	updateFromEnvironment({ windIntensity = 0, rainIntensity = 0, snowIntensity = 0, forceUpdate = false } = {}) {

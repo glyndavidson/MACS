@@ -16,6 +16,7 @@ const RAIN_SIZE_SPEED_RANGE = 0.8;
 const RAIN_OPACITY_MIN = 0.2;
 const RAIN_OPACITY_MAX = 0.8;
 const RAIN_OPACITY_VARIATION = 8;
+const RAIN_COUNT_EXPONENT = 1.5; // > 1 = fewer drops at low precipitation, ramping up later. < 1 = more drops at low precipitation
 const RAIN_SPEED_JITTER_MIN = -0.2;
 const RAIN_SPEED_JITTER_MAX = 0.2;
 const RAIN_WIND_TILT_MAX = 89;
@@ -179,6 +180,7 @@ const initParticles = () => {
 		rainParticles = new Particle("rain", {
 			container: document.getElementById("rain-drops"),
 			maxCount: RAIN_MAX_DROPS,
+			countExponent: RAIN_COUNT_EXPONENT,
 			element: {
 				namespace: SVG_NS,
 				tag: "ellipse",
