@@ -16,8 +16,8 @@
 	--temperature-intensity: 0;
 }
 
-.fx-rain{ opacity: calc(0.9 * var(--precipitation-intensity)); }
-.fx-snow{ opacity: calc(0.9 * var(--snowfall-intensity)); }
+.fx-rain{ opacity: 1; }
+.fx-snow{ opacity: 1; }
 .fx-leaves{ opacity: 1; overflow: hidden; }
 body.weather-rain{ --precipitation-intensity: var(--weather-intensity, 1); }
 body.weather-wind .fx-wind{ opacity: calc(0.9 * var(--weather-intensity)); }
