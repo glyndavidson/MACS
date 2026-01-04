@@ -103,6 +103,23 @@ function comboValue(el, e) {
 	return el && typeof el.value !== "undefined" ? el.value : "";
 }
 
+function readToggleValue(el, e, fallback) {
+	if (el) {
+		if (e && e.currentTarget === el) {
+			if (e.detail && typeof e.detail.value !== "undefined") {
+				return !!e.detail.value;
+			}
+			if (e.detail && typeof e.detail.checked !== "undefined") {
+				return !!e.detail.checked;
+			}
+		}
+		if (typeof el.checked !== "undefined") {
+			return !!el.checked;
+		}
+	}
+	return !!fallback;
+}
+
 export function syncAssistStateControls(root, config, satelliteItems) {
 	// Sync assist state controls from the saved config into the DOM.
 	if (!root) {
@@ -283,7 +300,8 @@ export function readAssistStateInputs(root, e, config) {
 		};
 	}
 
-	var assistStateAutoMood = !!root.getElementById("assist_satellite_enabled")?.checked;
+	var toggle = root.getElementById("assist_satellite_enabled");
+	var assistStateAutoMood = readToggleValue(toggle, e, config && config.assist_satellite_enabled);
 	var satelliteSelect = root.getElementById("assist_satellite_select");
 	var satelliteEntity = root.getElementById("assist_satellite_entity");
 	var satelliteSelectValue = comboValue(satelliteSelect, e);
@@ -312,7 +330,8 @@ export function readPipelineInputs(root, e, config) {
 		};
 	}
 
-	var assist_pipeline_enabled = !!root.getElementById("assist_pipeline_enabled")?.checked;
+	var pipelineToggle = root.getElementById("assist_pipeline_enabled");
+	var assist_pipeline_enabled = readToggleValue(pipelineToggle, e, config && config.assist_pipeline_enabled);
 	var pipelineSelect = root.getElementById("assist_pipeline_select");
 	var pipelineIdInput = root.getElementById("assist_pipeline_entity");
 	var pipelineValue = comboValue(pipelineSelect, e);
@@ -343,7 +362,8 @@ export function readAutoBrightnessInputs(root, e, config) {
 		};
 	}
 
-	var enabled = !!root.getElementById("auto_brightness_enabled")?.checked;
+	var toggle = root.getElementById("auto_brightness_enabled");
+	var enabled = readToggleValue(toggle, e, config && config.auto_brightness_enabled);
 	var timeout = root.getElementById("auto_brightness_timeout_minutes");
 	var minBrightness = root.getElementById("auto_brightness_min");
 	var maxBrightness = root.getElementById("auto_brightness_max");
@@ -392,7 +412,8 @@ export function readConditionInputs(root, e, config) {
 		};
 	}
 
-	var conditionsEnabled = !!root.getElementById("weather_conditions_enabled")?.checked;
+	var toggle = root.getElementById("weather_conditions_enabled");
+	var conditionsEnabled = readToggleValue(toggle, e, config && config.weather_conditions_enabled);
 	var conditionsSelect = root.getElementById("weather_conditions_select");
 	var conditionsEntity = root.getElementById("weather_conditions_entity");
 	var selectValue = comboValue(conditionsSelect, e);
@@ -726,7 +747,7 @@ function readSingleWeather(
 	var min = root.getElementById(ids.min);
 	var max = root.getElementById(ids.max);
 
-	var enabled = !!(enabledEl && enabledEl.checked);
+	var enabled = readToggleValue(enabledEl, e, config && config[enabledKey]);
 	var selectValue = comboValue(select, e);
 	var manualVal = (entityInput && entityInput.value) || "";
 	var isCustom = selectValue === "custom";

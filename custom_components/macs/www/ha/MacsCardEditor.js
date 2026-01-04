@@ -21,7 +21,7 @@ import { DEFAULTS } from "./constants.js";
 import { createDebugger } from "./debugger.js";
 import { loadAssistantOptions, loadWeatherOptions, readAssistStateInputs, readAutoBrightnessInputs, readPipelineInputs, readWeatherInputs, syncAssistStateControls, syncConditionControls, syncAutoBrightnessControls, syncPipelineControls, syncWeatherControls } from "./editorOptions.js";
 
-const DEBUG_ENABLED = false;
+const DEBUG_ENABLED = true;
 const debug = createDebugger("macsCardEditor", DEBUG_ENABLED);
 
 
@@ -124,7 +124,7 @@ function createHtmlGroup({ id, name, label, hint = null, placeholder, units = fa
 		<!-- ${name} -->
 			<div class="group" id="${id}">
 				<div class="row">
-					<label for id="${id}_enabled">${label}</label>
+					<label for="${id}_enabled">${label}</label>
 					<ha-switch id="${id}_enabled"></ha-switch>
 					${hint !== null ? `
 						<div class="hint">${hint}</div>
@@ -269,8 +269,17 @@ function wireInput(root, id, onChange, options = {}) {
 			? options.valueChanged
 			: id.endsWith("_select") || id.endsWith("_unit");
 
+	const listenCheckedChanged =
+		typeof options.checkedChanged !== "undefined"
+			? options.checkedChanged
+			: id.endsWith("_enabled");
+
 	if (listenValueChanged) {
 		el.addEventListener("value-changed", onChange);
+	}
+
+	if (listenCheckedChanged) {
+		el.addEventListener("checked-changed", onChange);
 	}
 }
 
