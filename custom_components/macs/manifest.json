@@ -8,5 +8,5 @@
   "iot_class": "local_push",
   "issue_tracker": "https://github.com/glyndavidson/MACS/issues",
   "loggers": ["custom_components.macs"],
-  "version": "0.4.2"
+  "version": "0.4.3"
 }
