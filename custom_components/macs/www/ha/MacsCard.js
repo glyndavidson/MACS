@@ -121,6 +121,7 @@ export class MacsCard extends HTMLElement {
             this._kioskHidden = false;
             this._isPreview = false;
             this._lastAssistSatelliteState = null;
+            this._lastTurnsSignature = null;
 
             // Keep home assistant state
             this._hass = null;
@@ -285,6 +286,9 @@ export class MacsCard extends HTMLElement {
     _sendTurnsToIframe() {
         // Turns are kept newest-first in the card, but sent as-is
         const turns = this._pipelineTracker?.getTurns?.() || [];
+        const signature = JSON.stringify(turns);
+        if (signature === this._lastTurnsSignature) return;
+        this._lastTurnsSignature = signature;
         this._postToIframe({ type: "macs:turns", turns });
     }
 

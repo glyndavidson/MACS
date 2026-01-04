@@ -141,6 +141,10 @@ export function normalizeRange(value, minValue, maxValue) {
     return ((clamped - min) / (max - min)) * 100;
 }
 
+export function roundToTwoDecimals(value) {
+    if (!Number.isFinite(value)) return value;
+    return Math.round(value * 100) / 100;
+}
 
 export function getDefaultTempRange(unit) {
     if (unit === "f") {
@@ -202,7 +206,7 @@ export function normalizeTemperatureValue(value, unit, minValue, maxValue) {
     const effectiveMin = Number.isFinite(min) ? min : defaults.min;
     const effectiveMax = Number.isFinite(max) ? max : defaults.max;
     const v = toNumber(value);
-    return normalizeRange(v, effectiveMin, effectiveMax);
+    return roundToTwoDecimals(normalizeRange(v, effectiveMin, effectiveMax));
 }
 
 export function normalizeWindValue(value, unit, minValue, maxValue) {
@@ -213,7 +217,7 @@ export function normalizeWindValue(value, unit, minValue, maxValue) {
     const effectiveMin = Number.isFinite(min) ? min : defaults.min;
     const effectiveMax = Number.isFinite(max) ? max : defaults.max;
     const v = toNumber(value);
-    return normalizeRange(v, effectiveMin, effectiveMax);
+    return roundToTwoDecimals(normalizeRange(v, effectiveMin, effectiveMax));
 }
 
 export function normalizeRainValue(value, unit, minValue, maxValue) {
@@ -224,7 +228,7 @@ export function normalizeRainValue(value, unit, minValue, maxValue) {
     const effectiveMin = Number.isFinite(min) ? min : defaults.min;
     const effectiveMax = Number.isFinite(max) ? max : defaults.max;
     const v = toNumber(value);
-    return normalizeRange(v, effectiveMin, effectiveMax);
+    return roundToTwoDecimals(normalizeRange(v, effectiveMin, effectiveMax));
 }
 
 export function normalizeBatteryValue(value, unit, minValue, maxValue) {

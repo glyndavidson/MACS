@@ -87,6 +87,8 @@ const IDLE_FLOAT_SPEED_EXPONENT = 1.5;
 const IDLE_FLOAT_JITTER_RATIO = 0.25;
 const KIOSK_HOLD_MS = 800;
 const BRIGHTNESS_FADE_SECONDS = 10;
+const MOOD_IDLE_TO_BORED_MS = 30000;
+const MOOD_BORED_TO_SLEEP_MS = 30000;
 
 
 
@@ -100,6 +102,7 @@ let idleFloatBase = IDLE_FLOAT_BASE_VMIN;
 let idleFloatDuration = IDLE_FLOAT_BASE_SECONDS;
 let idleFloatJitterTimer = null;
 let weatherConditions = {};
+let baseMood = "idle";
 let autoBrightnessEnabled = false;
 let autoBrightnessTimeoutMs = 0;
 let autoBrightnessMin = 0;
@@ -117,6 +120,8 @@ let isEditor = false;
 let brightnessFrame = null;
 let lastBrightnessTarget = null;
 let lastBrightnessTransition = null;
+let moodIdleTimer = null;
+let moodBoredTimer = null;
 
 let rainParticles = null;
 let snowParticles = null;
@@ -206,6 +211,50 @@ function applyBodyClass(prefix, value, allowed, fallback){
 function setMood(m){ 
     applyBodyClass('mood', m, moods, 'idle'); 
 }
+
+const clearMoodTimers = () => {
+	if (moodIdleTimer) {
+		clearTimeout(moodIdleTimer);
+		moodIdleTimer = null;
+	}
+	if (moodBoredTimer) {
+		clearTimeout(moodBoredTimer);
+		moodBoredTimer = null;
+	}
+};
+
+const scheduleMoodIdleSequence = () => {
+	clearMoodTimers();
+	if (isEditor) return;
+	moodIdleTimer = setTimeout(() => {
+		if (baseMood !== "idle") return;
+		setMood("bored");
+		moodBoredTimer = setTimeout(() => {
+			if (baseMood !== "idle") return;
+			setMood("sleeping");
+		}, MOOD_BORED_TO_SLEEP_MS);
+	}, MOOD_IDLE_TO_BORED_MS);
+};
+
+const setBaseMood = (nextMood) => {
+	const value = (nextMood ?? "idle").toString().trim().toLowerCase();
+	baseMood = moods.includes(value) ? value : "idle";
+	if (baseMood !== "idle") {
+		clearMoodTimers();
+		setMood(baseMood);
+		return;
+	}
+	setMood("idle");
+	scheduleMoodIdleSequence();
+};
+
+const resetMoodSequence = () => {
+	clearMoodTimers();
+	if (baseMood === "idle") {
+		setMood("idle");
+		scheduleMoodIdleSequence();
+	}
+};
 
 const initParticles = () => {
 	if (!rainParticles) {
@@ -715,7 +764,7 @@ function setBrightness(userBrightness){
 
 const qs = new URLSearchParams(location.search);
 isEditor = qs.get('edit') === '1' || qs.get('edit') === 'true';
-setMood(qs.get('mood') || 'idle');
+setBaseMood(qs.get('mood') || 'idle');
 setRainViewBoxFromSvg();
 setTemperature(qs.get('temperature') ?? '0');
 setWindSpeed(qs.get('windspeed') ?? '0');
@@ -769,10 +818,11 @@ window.addEventListener('message', (e) => {
 	}
 
     if (e.data.type === 'macs:mood') {
-        setMood(e.data.mood || 'idle');
+        setBaseMood(e.data.mood || 'idle');
         if (e.data.reset_sleep) {
             debug("Wakeword: reset sleep timer");
             registerAutoBrightnessActivity();
+            resetMoodSequence();
         }
         return;
     }
@@ -798,6 +848,12 @@ window.addEventListener('message', (e) => {
     }
     if (e.data.type === 'macs:weather_conditions') {
         setWeatherConditions(e.data.conditions);
+        return;
+    }
+    if (e.data.type === 'macs:turns') {
+        debug("Pipeline: reset sleep timer");
+        registerAutoBrightnessActivity();
+        resetMoodSequence();
         return;
     }
     if (e.data.type === 'macs:battery') {
