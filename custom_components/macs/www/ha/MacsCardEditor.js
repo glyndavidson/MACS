@@ -428,13 +428,18 @@ export class MacsCardEditor extends HTMLElement {
 		// If user hasn't set a pipeline yet, pick HA's preferred
 		const currentPid = (this._config.assist_pipeline_entity ?? "").toString().trim();
 		if (!currentPid && preferred && !this._config.assist_pipeline_custom) {
+			const assistConfig = readAssistStateInputs(this.shadowRoot, null, this._config);
+			const pipelineConfig = readPipelineInputs(this.shadowRoot, null, this._config);
+			const weatherConfig = readWeatherInputs(this.shadowRoot, null, this._config);
 			const next = {
 				type: "custom:macs-card",
-				...this._config,
+				...assistConfig,
+				...pipelineConfig,
+				...weatherConfig,
 				assist_pipeline_entity: preferred,
-				assist_pipeline_custom: false
+				assist_pipeline_custom: false,
 			};
-			this._config = next;
+			this._config = { ...DEFAULTS, ...next };
 			this.dispatchEvent(new CustomEvent("config-changed", { detail: { config: next }, bubbles: true, composed: true }));
 		}
 	}
@@ -478,7 +483,6 @@ export class MacsCardEditor extends HTMLElement {
 
 			// Commit new config
 			const next = {
-				...this._config,
 				type: "custom:macs-card",
 				...assistConfig,
 				...pipelineConfig,

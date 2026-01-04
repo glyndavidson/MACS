@@ -56,7 +56,13 @@ export class MacsCard extends HTMLElement {
         //const mode = "postMessage";
 
         // merge defaults with user config. Todo, remove mode?
-        this._config = { ...DEFAULTS, ...config}; //, mode };
+        this._config = {
+            ...DEFAULTS,
+            ...config,
+            url: DEFAULTS.url,
+            max_turns: DEFAULTS.max_turns,
+            preview_image: DEFAULTS.preview_image
+        }; //, mode };
         debug("CARD CONFIG: " + JSON.stringify(this._config));
 
         // Only run the first time setConfig is called

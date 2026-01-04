@@ -523,4 +523,4 @@ window.addEventListener('message', (e) => {
 });
 
 
-debug("Macs Moods Loaded v0.7");
+debug("Macs Moods Loaded v0.8");
