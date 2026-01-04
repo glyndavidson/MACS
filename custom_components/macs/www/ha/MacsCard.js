@@ -140,12 +140,17 @@ export class MacsCard extends HTMLElement {
             // Listen for messages from HA to the iframe
             this._onMessage = this._onMessage.bind(this);
             window.addEventListener("message", this._onMessage);
+            this._messageListenerActive = true;
         }
         else {
+            if (!this._weatherHandler) {
+                this._weatherHandler = new WeatherHandler();
+            }
             if (this._weatherHandler) this._weatherHandler.setConfig(this._config);
             if (this._hass && this._weatherHandler) {
                 this._weatherHandler.setHass(this._hass);
                 this._weatherHandler.update?.();
+                this._weatherHandler.resetChangeTracking?.();
                 this._sendWeatherIfChanged();
             }
         }
@@ -154,7 +159,8 @@ export class MacsCard extends HTMLElement {
     // make sure we remove event listeners when unloaded
     disconnectedCallback() {
         debug("got disconnected");
-        try { window.removeEventListener("message", this._onMessage); } catch (_) {} 
+        try { window.removeEventListener("message", this._onMessage); } catch (_) {}
+        this._messageListenerActive = false;
 
        try { this._pipelineTracker?.dispose?.(); } catch (_) {}
        this._pipelineTracker  = null;
@@ -187,6 +193,22 @@ export class MacsCard extends HTMLElement {
             this._assistSatelliteOutcome = new SatelliteTracker({});
         }
 
+        if (this._config && !this._weatherHandler) {
+            debug("Recreating WeatherHandler (reconnect)");
+            this._weatherHandler = new WeatherHandler();
+            this._weatherHandler.setConfig(this._config);
+            if (this._hass) {
+                this._weatherHandler.setHass(this._hass);
+                this._weatherHandler.update?.();
+                this._weatherHandler.resetChangeTracking?.();
+                this._sendWeatherIfChanged();
+            }
+        }
+
+        if (this._onMessage && !this._messageListenerActive) {
+            window.addEventListener("message", this._onMessage);
+            this._messageListenerActive = true;
+        }
     }
 
 
