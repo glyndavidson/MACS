@@ -147,8 +147,9 @@ body{
     position: fixed;
     top: 0px;
     left: 0px;
-	padding:10px 6px;
+	box-sizing: border-box;
     font-size: 10px;
+	line-height: 12px;
     color: #aaa;
     display:none;
 	overflow-y: auto;
@@ -156,14 +157,37 @@ body{
     -webkit-user-select: text;
     -moz-user-select: text;
     -ms-user-select: text;
-    z-index:1000;
-	max-height:100%;
+	z-index:1000;
+	height:100%;
 	direction: rtl; /* move scrollbar to left */
 	scrollbar-width: thin;
 	scrollbar-color: #555 #1e1e1e;
+	--debug-line-height: 12px;
+	overflow-x: inherit;
 }
 /* prevent debug content rtl */
-#debug .debug-title, #debug .debug-version, #debug .debug-log, #debug .debug-sleep-timer {direction: ltr;text-align: left;}
+#debug .debug-title, #debug .debug-version, #debug .debug-log, #debug .debug-sleep-timer, #debug .debug-autoscroll {direction: ltr;text-align: left;}
+#debug .debug-title, #debug .debug-version, #debug .debug-sleep-timer, #debug .debug-autoscroll {
+	position: sticky;
+	left: 0;
+	right: 0;
+	background: #000;
+	z-index: 2;
+	padding-left:6px;
+}
+#debug .debug-title { top: 0; padding-top:10px;}
+#debug .debug-version { top: var(--debug-line-height); }
+#debug .debug-sleep-timer { top: calc(var(--debug-line-height) * 2); }
+#debug .debug-autoscroll { top: calc(var(--debug-line-height) * 3); }
+#debug .debug-autoscroll{
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	width: 100%;
+	padding-bottom: 10px;
+	border-bottom:1px solid #555;
+}
+#debug .debug-autoscroll input{ margin: 0 6px 0 0; }
 
 #debug::-webkit-scrollbar{
 	width: 8px;

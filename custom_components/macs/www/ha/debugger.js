@@ -51,6 +51,46 @@ export function createDebugger(namespace, enabled = true) {
         return log;
     };
 
+    const ensureAutoScroll = (el) => {
+        if (!el) return null;
+        let wrap = el.querySelector(".debug-autoscroll");
+        if (!wrap) {
+            wrap = document.createElement("label");
+            wrap.className = "debug-autoscroll";
+
+            const input = document.createElement("input");
+            input.type = "checkbox";
+            input.id = "debug-autoscroll-toggle";
+            input.checked = true;
+
+            const text = document.createElement("span");
+            text.textContent = "Auto-scroll";
+
+            wrap.appendChild(input);
+            wrap.appendChild(text);
+        }
+        return wrap;
+    };
+
+    const ensureAutoScrollPlacement = (el, logEl) => {
+        if (!el) return;
+        const autoScroll = ensureAutoScroll(el);
+        if (!autoScroll) return;
+        if (!autoScroll.parentNode) {
+            el.appendChild(autoScroll);
+        }
+        const sleep = el.querySelector(".debug-sleep-timer");
+        if (sleep) {
+            if (sleep.nextSibling !== autoScroll) {
+                el.insertBefore(autoScroll, sleep.nextSibling);
+            }
+            return;
+        }
+        if (logEl && autoScroll.nextSibling !== logEl) {
+            el.insertBefore(autoScroll, logEl);
+        }
+    };
+
     const ensureHeader = (el) => {
         if (!el) return;
         if (!el.querySelector(".debug-title")) {
@@ -72,7 +112,8 @@ export function createDebugger(namespace, enabled = true) {
                 el.prepend(version);
             }
         }
-        ensureLogContainer(el);
+        const log = ensureLogContainer(el);
+        ensureAutoScrollPlacement(el, log);
     };
 
     const showDebug = () => {
@@ -98,14 +139,36 @@ export function createDebugger(namespace, enabled = true) {
         }
     };
 
+    const looksLikeJson = (value) => {
+        if (typeof value !== "string") return false;
+        const trimmed = value.trim();
+        if (!trimmed) return false;
+        const starts = trimmed[0];
+        const ends = trimmed[trimmed.length - 1];
+        if (starts === "{" && ends === "}") return true;
+        if (starts === "[" && ends === "]") return true;
+        return false;
+    };
+
     const toUiString = (value) => {
         if (value === null || typeof value === "undefined") return "";
-        if (typeof value === "string") return value;
+        if (typeof value === "string") {
+            if (looksLikeJson(value)) {
+                try { return JSON.stringify(JSON.parse(value), null, 2); } catch (_) {}
+            }
+            return value;
+        }
         if (typeof value === "number" || typeof value === "boolean") return String(value);
         try { return JSON.stringify(value, null, 2); } catch (_) {}
         try { return JSON.stringify(value); } catch (_) {}
         try { return String(value); } catch (_) {}
         return "";
+    };
+
+    const isAutoScrollEnabled = () => {
+        const toggle = document.getElementById("debug-autoscroll-toggle");
+        if (!toggle) return true;
+        return toggle.checked;
     };
 
     const log = (...args) => {
@@ -123,7 +186,8 @@ export function createDebugger(namespace, enabled = true) {
         }));
         const hasObjectArg = entries.some((entry, index) => {
             if (index === 0) return false;
-            return entry.arg && typeof entry.arg === "object";
+            if (entry.arg && typeof entry.arg === "object") return true;
+            return looksLikeJson(entry.arg);
         });
         const msg = (hasObjectArg
             ? entries.map((entry) => entry.text).join("\n")
@@ -136,6 +200,9 @@ export function createDebugger(namespace, enabled = true) {
                 line.style.whiteSpace = "pre-wrap";
             }
             log.appendChild(line);
+            if (isAutoScrollEnabled() && el) {
+                el.scrollTop = el.scrollHeight;
+            }
         }
         console.log(`[*MACS:${ns}]`, ...args);
     };

@@ -108,6 +108,7 @@ export class MacsCard extends HTMLElement {
             this._lastAssistSatelliteState = null;
             this._lastTurnsSignature = null;
             this._lastAnimationsEnabled = null;
+            this._lastConfigSignature = null;
 
             // Keep home assistant state
             this._hass = null;
@@ -146,6 +147,7 @@ export class MacsCard extends HTMLElement {
                 this._weatherHandler.resetChangeTracking?.();
                 this._sendWeatherIfChanged();
             }
+            this._lastConfigSignature = null;
         }
     }
 
@@ -223,7 +225,7 @@ export class MacsCard extends HTMLElement {
 
 
 
-    _sendConfigToIframe() {
+    _sendConfigToIframe(force = false) {
         this._updatePreviewState();
         const enabled = !!this._config.assist_pipeline_enabled;
         const assistSatelliteEnabled = !!this._config.assist_satellite_enabled;
@@ -237,7 +239,7 @@ export class MacsCard extends HTMLElement {
             ? window.__MACS_DEBUG__
             : "None";
         // Preview mode forces kiosk/auto-brightness off so the editor stays usable.
-        this._postToIframe({
+        const payload = {
             type: "macs:config",
             assist_satellite_enabled: assistSatelliteEnabled,
             assist_pipeline_entity,
@@ -247,7 +249,11 @@ export class MacsCard extends HTMLElement {
             auto_brightness_max: autoBrightnessMax,
             auto_brightness_pause_animations: autoBrightnessPauseAnimations,
             debug_mode: debugMode
-        });
+        };
+        const signature = JSON.stringify(payload);
+        if (!force && signature === this._lastConfigSignature) return;
+        this._lastConfigSignature = signature;
+        this._postToIframe(payload);
     }
 
     _sendMoodToIframe(mood, options = {}) {
@@ -329,7 +335,7 @@ export class MacsCard extends HTMLElement {
 
         // Iframe requests initial config and current turns
         if (e.data.type === "macs:request_config") {
-            this._sendConfigToIframe();
+            this._sendConfigToIframe(true);
             this._sendTurnsToIframe();
         }
     }

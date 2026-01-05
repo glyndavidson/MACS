@@ -41,7 +41,7 @@
 .mood-bored .browL{ transform: translateX(50px) rotate(-10deg); }
 .mood-bored .browR{ transform: translateX(-50px) rotate(10deg); }
 .mood-bored #mouth-bored{ display:block; fill:none; }
-.mood-bored .iris{ transform: translate(5px, 20px); }
+.mood-bored .iris{ transform: translate(-15px, -15px); }
 
 /* HAPPY */
 .mood-happy #mouth-happy{ display:block; stroke:none; }
