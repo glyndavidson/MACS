@@ -325,7 +325,7 @@ export class MacsCardEditor extends HTMLElement {
 		let htmlOutput;
 
 		const { satItems, pipelineItems, preferred } = await loadAssistantOptions(this._hass);
-		const { temperatureItems, windItems, precipitationItems, batteryItems, conditionItems } = await loadWeatherOptions(this._hass);
+		const { temperatureItems, windItems, precipitationItems, batteryItems, batteryStateItems, conditionItems } = await loadWeatherOptions(this._hass);
 
 		// Build DOM...
 		const inputGroups = [];
@@ -431,6 +431,18 @@ export class MacsCardEditor extends HTMLElement {
 		});
 
 		createInputGroup(inputGroups, {
+			id: "battery_state_sensor",
+			name: "Battery State",
+			label: "Use Charging Sensor?",
+			hint: null,
+			tooltip: "When enabled, the selected sensor is used to detect charging state.",
+			placeholder: "sensor.ipad_battery_state",
+			selectItems: batteryStateItems,
+			selectValue: this._config.battery_state_sensor_entity ?? "",
+			selectOptions: { allowCustom: true, customFlag: !!this._config.battery_state_sensor_custom }
+		});
+
+		createInputGroup(inputGroups, {
 			id: "auto_brightness",
 			name: "Kiosk Mode",
 			label: "Enable Kiosk Mode?",
@@ -471,6 +483,7 @@ export class MacsCardEditor extends HTMLElement {
 		this._windItems = windItems;
 		this._precipitationItems = precipitationItems;
 		this._batteryItems = batteryItems;
+		this._batteryStateItems = batteryStateItems;
 		this._conditionItems = conditionItems;
 
 		inputGroups.forEach((group) => setupInputGroup(this.shadowRoot, this._config, group));
@@ -549,7 +562,8 @@ export class MacsCardEditor extends HTMLElement {
 			this._temperatureItems || [],
 			this._windItems || [],
 			this._precipitationItems || [],
-			this._batteryItems || []
+			this._batteryItems || [],
+			this._batteryStateItems || []
 		);
 		syncConditionControls(this.shadowRoot, this._config, this._conditionItems || []);
 		syncAutoBrightnessControls(this.shadowRoot, this._config);

@@ -58,6 +58,43 @@ function applyDerivedConditions(flags) {
     }
 }
 
+function normalizeChargingState(value) {
+    if (value === null || typeof value === "undefined") return null;
+    if (typeof value === "boolean") return value;
+    if (typeof value === "number") return value !== 0;
+    const text = value.toString().trim().toLowerCase();
+    if (!text || text === "unknown" || text === "unavailable") return null;
+
+    if (
+        text.includes("discharging") ||
+        text.includes("not charging") ||
+        text.includes("unplugged") ||
+        text === "off" ||
+        text === "false" ||
+        text === "no" ||
+        text === "0"
+    ) {
+        return false;
+    }
+
+    if (
+        text.includes("charging") ||
+        text.includes("plugged") ||
+        text.includes("plug") ||
+        text.includes("power") ||
+        text.includes("ac") ||
+        text === "on" ||
+        text === "true" ||
+        text === "yes" ||
+        text === "1" ||
+        text === "full"
+    ) {
+        return true;
+    }
+
+    return null;
+}
+
 export class WeatherHandler {
     constructor() {
         this._config = null;
@@ -66,12 +103,14 @@ export class WeatherHandler {
         this._windspeed = null;
         this._precipitation = null;
         this._battery = null;
+        this._batteryState = null;
         this._conditions = emptyConditions();
-        this._weather = { temperature: null, wind: null, precipitation: null, battery: null, conditions: null };
+        this._weather = { temperature: null, wind: null, precipitation: null, battery: null, battery_state: null, conditions: null };
         this._lastTemperature = undefined;
         this._lastWindspeed = undefined;
         this._lastPrecipitation = undefined;
         this._lastBattery = undefined;
+        this._lastBatteryState = undefined;
         this._lastConditionsSignature = undefined;
     }
 
@@ -90,13 +129,15 @@ export class WeatherHandler {
         const wind = this._normalizeWind();
         const precipitation = this._normalizePrecipitation();
         const battery = this._normalizeBattery();
+        const batteryState = this._normalizeBatteryState();
         const conditions = this._normalizeConditions();
 
-        this._weather = { temperature, wind, precipitation, battery, conditions };
+        this._weather = { temperature, wind, precipitation, battery, battery_state: batteryState, conditions };
         this._temperature = Number.isFinite(temperature?.normalized) ? temperature.normalized : null;
         this._windspeed = Number.isFinite(wind?.normalized) ? wind.normalized : null;
         this._precipitation = Number.isFinite(precipitation?.normalized) ? precipitation.normalized : null;
         this._battery = Number.isFinite(battery?.normalized) ? battery.normalized : null;
+        this._batteryState = typeof batteryState?.normalized === "boolean" ? batteryState.normalized : null;
         this._conditions = conditions || emptyConditions();
 
         return this.getPayload();
@@ -338,6 +379,59 @@ export class WeatherHandler {
         };
     }
 
+    _normalizeBatteryState() {
+        if (!this._config?.battery_state_sensor_enabled) {
+            return null;
+        }
+        const entityId = (this._config.battery_state_sensor_entity || "").toString().trim();
+        if (!entityId) {
+            return null;
+        }
+        if (!this._hass?.states) {
+            return null;
+        }
+        const st = this._hass.states?.[entityId];
+        if (!st) {
+            return null;
+        }
+
+        const attrs = st.attributes || {};
+        const candidates = [
+            attrs.charging,
+            attrs.is_charging,
+            attrs.charge_state,
+            attrs.battery_charging,
+            attrs.plugged,
+            attrs.on,
+            attrs.powered,
+            attrs.ac_power,
+        ];
+
+        let normalized = null;
+        for (let i = 0; i < candidates.length; i++) {
+            normalized = normalizeChargingState(candidates[i]);
+            if (normalized !== null) break;
+        }
+        if (normalized === null) {
+            normalized = normalizeChargingState(st.state);
+        }
+
+        debug("battery state sensor", JSON.stringify({
+            entityId,
+            value: st.state,
+            normalized,
+        }));
+
+        if (normalized === null) {
+            return null;
+        }
+
+        return {
+            value: st.state,
+            normalized,
+        };
+    }
+
     _normalizeConditions() {
         if (this._config?.weather_conditions_enabled) {
             const entityId = (this._config.weather_conditions || "").toString().trim();
@@ -451,6 +545,7 @@ export class WeatherHandler {
             windspeed: this._windspeed,
             precipitation: this._precipitation,
             battery: this._battery,
+            battery_state: this._batteryState,
             conditions: this._conditions,
         };
     }
@@ -506,11 +601,22 @@ export class WeatherHandler {
         return changed;
     }
 
+    getBatteryState() {
+        return this._batteryState;
+    }
+
+    getBatteryStateHasChanged() {
+        const changed = this._batteryState !== this._lastBatteryState;
+        if (changed) this._lastBatteryState = this._batteryState;
+        return changed;
+    }
+
     resetChangeTracking() {
         this._lastTemperature = undefined;
         this._lastWindspeed = undefined;
         this._lastPrecipitation = undefined;
         this._lastBattery = undefined;
+        this._lastBatteryState = undefined;
         this._lastConditionsSignature = undefined;
     }
 
@@ -521,12 +627,14 @@ export class WeatherHandler {
         this._windspeed = null;
         this._precipitation = null;
         this._battery = null;
+        this._batteryState = null;
         this._conditions = emptyConditions();
-        this._weather = { temperature: null, wind: null, precipitation: null, battery: null, conditions: null };
+        this._weather = { temperature: null, wind: null, precipitation: null, battery: null, battery_state: null, conditions: null };
         this._lastTemperature = undefined;
         this._lastWindspeed = undefined;
         this._lastPrecipitation = undefined;
         this._lastBattery = undefined;
+        this._lastBatteryState = undefined;
         this._lastConditionsSignature = undefined;
     }
 

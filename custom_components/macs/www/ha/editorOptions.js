@@ -474,6 +474,35 @@ function collectSensors(hass, predicate) {
 	return out;
 }
 
+function collectBinarySensors(hass, predicate) {
+	// Build a sorted list of binary sensors matching the predicate.
+	if (!hass || !hass.states) {
+		return [];
+	}
+
+	var out = [];
+	var entries = Object.entries(hass.states);
+	var i = 0;
+
+	for (i = 0; i < entries.length; i++) {
+		var id = entries[i][0];
+		var st = entries[i][1];
+		if (id.indexOf("binary_sensor.") !== 0) {
+			continue;
+		}
+		if (predicate(id, st)) {
+			var name = (st && st.attributes && st.attributes.friendly_name) || id;
+			out.push({ id: id, name: String(name) });
+		}
+	}
+
+	out.sort(function (a, b) {
+		return a.name.localeCompare(b.name);
+	});
+
+	return out;
+}
+
 function collectWeatherEntities(hass) {
 	// Build a sorted list of weather entities for condition selection.
 	if (!hass || !hass.states) {
@@ -568,6 +597,48 @@ export async function loadWeatherOptions(hass) {
 		);
 	});
 
+	// Gather likely battery state/charging sensors.
+	var batteryStates = collectSensors(hass, function (id, st) {
+		return (
+			hasDeviceClass(st, "battery") ||
+			hasDeviceClass(st, "battery_charging") ||
+			hasDeviceClass(st, "power") ||
+			hasDeviceClass(st, "plug") ||
+			matchesName(id, st, [
+			"battery_state",
+			"battery state",
+			"is_charging",
+			"charging",
+			"charge",
+			"charge_state",
+			"charger",
+			"plugged",
+			"ac power",
+			"power",
+		])
+		);
+	});
+	batteryStates = batteryStates.concat(collectBinarySensors(hass, function (id, st) {
+		return (
+			hasDeviceClass(st, "battery") ||
+			hasDeviceClass(st, "battery_charging") ||
+			hasDeviceClass(st, "power") ||
+			hasDeviceClass(st, "plug") ||
+			matchesName(id, st, [
+			"battery_state",
+			"battery state",
+			"is_charging",
+			"charging",
+			"charge",
+			"charge_state",
+			"charger",
+			"plugged",
+			"ac power",
+			"power",
+		])
+		);
+	}));
+
 	// Gather weather entities for condition strings.
 	var conditions = collectWeatherEntities(hass);
 
@@ -575,6 +646,7 @@ export async function loadWeatherOptions(hass) {
 	var windItems = [{ id: "custom", name: "Custom" }].concat(winds);
 	var precipitationItems = [{ id: "custom", name: "Custom" }].concat(rains);
 	var batteryItems = [{ id: "custom", name: "Custom" }].concat(batteries);
+	var batteryStateItems = [{ id: "custom", name: "Custom" }].concat(batteryStates);
 	var conditionItems = [{ id: "custom", name: "Custom" }].concat(conditions);
 
 	return {
@@ -582,6 +654,7 @@ export async function loadWeatherOptions(hass) {
 		windItems: windItems,
 		precipitationItems: precipitationItems,
 		batteryItems: batteryItems,
+		batteryStateItems: batteryStateItems,
 		conditionItems: conditionItems,
 	};
 }
@@ -607,9 +680,9 @@ function syncSingleWeather(
 	var enabledToggle = root.getElementById(ids.enabled);
 	var select = root.getElementById(ids.select);
 	var entity = root.getElementById(ids.entity);
-	var unit = root.getElementById(ids.unit);
-	var min = root.getElementById(ids.min);
-	var max = root.getElementById(ids.max);
+	var unit = unitKey ? root.getElementById(ids.unit) : null;
+	var min = minKey ? root.getElementById(ids.min) : null;
+	var max = maxKey ? root.getElementById(ids.max) : null;
 
 	if (enabledToggle && enabledToggle.checked !== enabled) {
 		enabledToggle.checked = enabled;
@@ -640,22 +713,28 @@ function syncSingleWeather(
 		entity.disabled = !enabled || !isCustom;
 	}
 
-	var unitVal = String((config && config[unitKey]) || "");
-	if (unit && unit.value !== unitVal) {
-		unit.value = unitVal;
+	if (unitKey) {
+		var unitVal = String((config && config[unitKey]) || "");
+		if (unit && unit.value !== unitVal) {
+			unit.value = unitVal;
+		}
 	}
 
-    var cfgMin = config && config[minKey];
-    if (min && min.value !== cfgMin) {
-        min.value = cfgMin === null || typeof cfgMin === "undefined" ? "" : String(cfgMin);
-    }
-	var cfgMax = config && config[maxKey];
-	if (max && max.value !== cfgMax) {
-		max.value = cfgMax === null || typeof cfgMax === "undefined" ? "" : String(cfgMax);
+	if (minKey) {
+		var cfgMin = config && config[minKey];
+		if (min && min.value !== cfgMin) {
+			min.value = cfgMin === null || typeof cfgMin === "undefined" ? "" : String(cfgMin);
+		}
+	}
+	if (maxKey) {
+		var cfgMax = config && config[maxKey];
+		if (max && max.value !== cfgMax) {
+			max.value = cfgMax === null || typeof cfgMax === "undefined" ? "" : String(cfgMax);
+		}
 	}
 }
 
-export function syncWeatherControls(root, config, temperatureItems, windItems, precipitationItems, batteryItems) {
+export function syncWeatherControls(root, config, temperatureItems, windItems, precipitationItems, batteryItems, batteryStateItems) {
 	// Sync all sensor sections.
 	syncSingleWeather(
 		root,
@@ -736,6 +815,20 @@ export function syncWeatherControls(root, config, temperatureItems, windItems, p
 		"battery_charge_sensor_min",
 		"battery_charge_sensor_max"
 	);
+
+	syncSingleWeather(
+		root,
+		config,
+		batteryStateItems,
+		{
+			enabled: "battery_state_sensor_enabled",
+			select: "battery_state_sensor_select",
+			entity: "battery_state_sensor_entity",
+		},
+		"battery_state_sensor_custom",
+		"battery_state_sensor_entity",
+		"battery_state_sensor_enabled"
+	);
 }
 
 function readSingleWeather(
@@ -754,9 +847,9 @@ function readSingleWeather(
 	var enabledEl = root.getElementById(ids.enabled);
 	var select = root.getElementById(ids.select);
 	var entityInput = root.getElementById(ids.entity);
-	var unit = root.getElementById(ids.unit);
-	var min = root.getElementById(ids.min);
-	var max = root.getElementById(ids.max);
+	var unit = unitKey ? root.getElementById(ids.unit) : null;
+	var min = minKey ? root.getElementById(ids.min) : null;
+	var max = maxKey ? root.getElementById(ids.max) : null;
 
 	var enabled = readToggleValue(enabledEl, e, config && config[enabledKey]);
 	var selectValue = comboValue(select, e);
@@ -787,14 +880,21 @@ function readSingleWeather(
     if (rawMax === "" || rawMax === null || typeof rawMax === "undefined") {
         rawMax = config && config[maxKey];
     }
-	return {
+	var payload = {
 		[enabledKey]: enabled,
 		[entityKey]: entityVal,
 		[customKey]: isCustom,
-		[unitKey]: String(unit ? comboValue(unit, e) : ((config && config[unitKey]) || "")),
-        [minKey]: parseNumber(rawMin),
-        [maxKey]: parseNumber(rawMax),
     };
+	if (unitKey) {
+		payload[unitKey] = String(unit ? comboValue(unit, e) : ((config && config[unitKey]) || ""));
+	}
+	if (minKey) {
+		payload[minKey] = parseNumber(rawMin);
+	}
+	if (maxKey) {
+		payload[maxKey] = parseNumber(rawMax);
+	}
+	return payload;
 }
 
 export function readWeatherInputs(root, e, config) {
@@ -825,6 +925,9 @@ export function readWeatherInputs(root, e, config) {
 			battery_charge_sensor_unit: String((config && config.battery_charge_sensor_unit) || ""),
 			battery_charge_sensor_min: String((config && config.battery_charge_sensor_min) || ""),
 			battery_charge_sensor_max: String((config && config.battery_charge_sensor_max) || ""),
+			battery_state_sensor_enabled: !!(config && config.battery_state_sensor_enabled),
+			battery_state_sensor_entity: String((config && config.battery_state_sensor_entity) || ""),
+			battery_state_sensor_custom: !!(config && config.battery_state_sensor_custom),
 			weather_conditions_enabled: !!(config && config.weather_conditions_enabled),
 			weather_conditions: String((config && config.weather_conditions) || ""),
 		};
@@ -906,6 +1009,19 @@ export function readWeatherInputs(root, e, config) {
 			"battery_charge_sensor_unit",
 			"battery_charge_sensor_min",
 			"battery_charge_sensor_max"
+		),
+		...readSingleWeather(
+			root,
+			e,
+			{
+				enabled: "battery_state_sensor_enabled",
+				select: "battery_state_sensor_select",
+				entity: "battery_state_sensor_entity",
+			},
+			config,
+			"battery_state_sensor_enabled",
+			"battery_state_sensor_entity",
+			"battery_state_sensor_custom"
 		),
 		...readConditionInputs(root, e, config),
 	};
