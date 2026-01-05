@@ -5,7 +5,6 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .entities import (
     MacsAnimationsEnabledSwitch,
-    MacsDebugSwitch,
     MacsWeatherConditionsClearNightSwitch,
     MacsWeatherConditionsCloudySwitch,
     MacsWeatherConditionsExceptionalSwitch,
@@ -30,7 +29,6 @@ async def async_setup_entry(
     async_add_entities(
         [
             MacsAnimationsEnabledSwitch(),
-            MacsDebugSwitch(),
             MacsWeatherConditionsSnowySwitch(),
             MacsWeatherConditionsCloudySwitch(),
             MacsWeatherConditionsRainySwitch(),

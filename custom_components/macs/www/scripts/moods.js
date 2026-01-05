@@ -1,8 +1,7 @@
 ﻿import { createDebugger } from "../ha/debugger.js";
 import { Particle, SVG_NS } from "./particles.js";
 
-const DEBUG_ENABLED = true;
-const debug = createDebugger("Moods", DEBUG_ENABLED);
+const debug = createDebugger("moods.js");
 
 const moods = ['idle','bored','sad','listening','thinking','surprised','confused','sleeping','happy'];
 
@@ -94,6 +93,7 @@ const EYE_LOOK_MAX_X = 20;
 const EYE_LOOK_MAX_Y = 12;
 const STAGE_LOOK_MAX_X = 8;
 const STAGE_LOOK_MAX_Y = 6;
+const LOW_BATTERY_CUTOFF = 20;
 
 
 
@@ -108,6 +108,7 @@ let idleFloatDuration = IDLE_FLOAT_BASE_SECONDS;
 let idleFloatJitterTimer = null;
 let weatherConditions = {};
 let baseMood = "idle";
+let idleSequenceEnabled = false;
 let autoBrightnessEnabled = false;
 let autoBrightnessTimeoutMs = 0;
 let autoBrightnessMin = 0;
@@ -132,6 +133,8 @@ let cursorLookTimer = null;
 let cursorLookActive = false;
 let animationsPaused = false;
 let animationsToggleEnabled = true;
+let lastBatteryPercent = null;
+let batteryBaseColors = null;
 
 let rainParticles = null;
 let snowParticles = null;
@@ -174,11 +177,126 @@ const parseConditionsParam = (value) => {
 	return conditions;
 };
 
-const setDebugOverride = (enabled) => {
-	if (typeof enabled === "undefined") return;
+const setDebugOverride = (mode) => {
+	if (typeof mode === "undefined") return;
 	if (typeof window !== "undefined") {
-		window.__MACS_DEBUG__ = !!enabled;
+		window.__MACS_DEBUG__ = mode;
 	}
+	if (typeof debug?.show === "function") {
+		debug.show();
+	}
+};
+
+const LOW_BATTERY_ZERO_VARS = [
+	"--iris-outer-glow",
+	"--iris-inner-glow",
+	"--mouth-glow",
+	"--brow-glow"
+];
+
+const LOW_BATTERY_BLACK_VARS = [
+	"--sclera-gradient-fill",
+	"--sclera-gradient-shadow",
+	"--sclera-gradient-highlight"
+];
+
+const LOW_BATTERY_FADE_VARS = [
+	"--sclera-outer-glow",
+	"--sclera-inner-glow",
+	"--pupil-inner-glow",
+	"--pupil-outer-glow",
+	"--pupil-fill",
+	"--mouth-fill",
+	"--brow-fill"
+];
+
+const parseColor = (value) => {
+	const v = (value || "").toString().trim();
+	if (!v) return null;
+	if (v.startsWith("#")) {
+		const hex = v.slice(1);
+		if (hex.length === 3) {
+			const r = parseInt(hex[0] + hex[0], 16);
+			const g = parseInt(hex[1] + hex[1], 16);
+			const b = parseInt(hex[2] + hex[2], 16);
+			return { r, g, b, a: 1 };
+		}
+		if (hex.length === 6) {
+			const r = parseInt(hex.slice(0, 2), 16);
+			const g = parseInt(hex.slice(2, 4), 16);
+			const b = parseInt(hex.slice(4, 6), 16);
+			return { r, g, b, a: 1 };
+		}
+	}
+	const rgbMatch = v.match(/^rgba?\(([^)]+)\)$/i);
+	if (rgbMatch) {
+		const parts = rgbMatch[1].split(",").map((p) => p.trim());
+		const r = Number(parts[0]);
+		const g = Number(parts[1]);
+		const b = Number(parts[2]);
+		const a = parts.length > 3 ? Number(parts[3]) : 1;
+		if ([r, g, b, a].every((n) => Number.isFinite(n))) {
+			return { r, g, b, a };
+		}
+	}
+	return null;
+};
+
+const toRgba = (value, alpha) => {
+	const parsed = parseColor(value);
+	if (!parsed) {
+		return alpha >= 1 ? value : "rgba(0, 0, 0, 0)";
+	}
+	const a = Math.max(0, Math.min(1, alpha));
+	return `rgba(${Math.round(parsed.r)}, ${Math.round(parsed.g)}, ${Math.round(parsed.b)}, ${a})`;
+};
+
+const ensureBatteryColors = () => {
+	const root = document.documentElement;
+	if (!root) return;
+	const styles = getComputedStyle(root);
+	if (!batteryBaseColors) {
+		batteryBaseColors = {};
+	}
+	[...LOW_BATTERY_ZERO_VARS, ...LOW_BATTERY_BLACK_VARS, ...LOW_BATTERY_FADE_VARS].forEach((key) => {
+		if (typeof batteryBaseColors[key] === "undefined") {
+			batteryBaseColors[key] = styles.getPropertyValue(key).trim();
+		}
+	});
+};
+
+const restoreBatteryColors = () => {
+	if (!batteryBaseColors) return;
+	const root = document.documentElement;
+	if (!root) return;
+	Object.keys(batteryBaseColors).forEach((key) => {
+		root.style.setProperty(key, batteryBaseColors[key]);
+	});
+};
+
+const applyBatteryDimming = (percent) => {
+	ensureBatteryColors();
+	if (!batteryBaseColors) return;
+	const root = document.documentElement;
+	if (!root) return;
+	if (!Number.isFinite(percent)) {
+		restoreBatteryColors();
+		return;
+	}
+	if (percent > LOW_BATTERY_CUTOFF) {
+		restoreBatteryColors();
+		return;
+	}
+	LOW_BATTERY_ZERO_VARS.forEach((key) => {
+		root.style.setProperty(key, toRgba(batteryBaseColors[key], 0));
+	});
+	LOW_BATTERY_BLACK_VARS.forEach((key) => {
+		root.style.setProperty(key, "rgba(0, 0, 0, 1)");
+	});
+	const fade = Math.max(0, Math.min(1, percent / LOW_BATTERY_CUTOFF));
+	LOW_BATTERY_FADE_VARS.forEach((key) => {
+		root.style.setProperty(key, toRgba(batteryBaseColors[key], fade));
+	});
 };
 
 const applyIdleFloatJitter = () => {
@@ -328,9 +446,25 @@ const clearMoodTimers = () => {
 	}
 };
 
+const setIdleSequenceEnabled = (enabled) => {
+	const next = !!enabled;
+	if (idleSequenceEnabled === next) return;
+	idleSequenceEnabled = next;
+	if (!idleSequenceEnabled) {
+		clearMoodTimers();
+		if (baseMood === "idle") {
+			setMood("idle");
+		}
+		return;
+	}
+	if (baseMood === "idle") {
+		scheduleMoodIdleSequence();
+	}
+};
+
 const scheduleMoodIdleSequence = () => {
 	clearMoodTimers();
-	if (isEditor) return;
+	if (isEditor || !idleSequenceEnabled) return;
 	moodIdleTimer = setTimeout(() => {
 		if (baseMood !== "idle") return;
 		setMood("bored");
@@ -350,14 +484,18 @@ const setBaseMood = (nextMood) => {
 		return;
 	}
 	setMood("idle");
-	scheduleMoodIdleSequence();
+	if (idleSequenceEnabled) {
+		scheduleMoodIdleSequence();
+	}
 };
 
 const resetMoodSequence = () => {
 	clearMoodTimers();
 	if (baseMood === "idle") {
 		setMood("idle");
-		scheduleMoodIdleSequence();
+		if (idleSequenceEnabled) {
+			scheduleMoodIdleSequence();
+		}
 	}
 };
 
@@ -620,8 +758,11 @@ function setWeatherConditions(conditions){
 }
 
 function setBattery(value){
-	const intensity = toIntensity(value);
+	const percent = clampPercent(value, 0);
+	const intensity = percent / 100;
+	lastBatteryPercent = percent;
 	document.documentElement.style.setProperty('--battery-intensity', intensity.toString());
+	applyBatteryDimming(percent);
 }
 
 const setBrightnessValue = (value) => {
@@ -695,7 +836,12 @@ const updateAutoBrightnessDebug = () => {
 	if (!statusEl) {
 		statusEl = document.createElement("div");
 		statusEl.className = "debug-sleep-timer";
-		debugDiv.appendChild(statusEl);
+		const logContainer = debugDiv.querySelector(".debug-log");
+		if (logContainer) {
+			debugDiv.insertBefore(statusEl, logContainer);
+		} else {
+			debugDiv.appendChild(statusEl);
+		}
 	}
 
 	let text = "Sleep in: disabled";
@@ -941,11 +1087,14 @@ window.addEventListener('message', (e) => {
     if (!e.data || typeof e.data !== 'object') return;
 
 	if (e.data.type === 'macs:config') {
+		if (typeof e.data.assist_satellite_enabled !== "undefined") {
+			setIdleSequenceEnabled(!!e.data.assist_satellite_enabled);
+		}
 		if (typeof e.data.auto_brightness_enabled !== "undefined") {
 			setAutoBrightnessConfig(e.data);
 		}
-		if (typeof e.data.debug_enabled !== "undefined") {
-			setDebugOverride(e.data.debug_enabled);
+		if (typeof e.data.debug_mode !== "undefined") {
+			setDebugOverride(e.data.debug_mode);
 		}
 		return;
 	}

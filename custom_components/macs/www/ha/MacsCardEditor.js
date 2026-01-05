@@ -21,8 +21,7 @@ import { DEFAULTS } from "./constants.js";
 import { createDebugger } from "./debugger.js";
 import { loadAssistantOptions, loadWeatherOptions, readAssistStateInputs, readAutoBrightnessInputs, readPipelineInputs, readWeatherInputs, syncAssistStateControls, syncConditionControls, syncAutoBrightnessControls, syncPipelineControls, syncWeatherControls } from "./editorOptions.js";
 
-const DEBUG_ENABLED = true;
-const debug = createDebugger("macsCardEditor", DEBUG_ENABLED);
+const debug = createDebugger("MacsCardEditor.js");
 
 
 const cssUrl = (() => {

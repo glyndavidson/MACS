@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from functools import partial
 from pathlib import Path
 
 import voluptuous as vol
@@ -66,11 +67,13 @@ RESOURCE_BASE_URL = "/macs/macs.js"
 RESOURCE_TYPE = "module"
 
 
-def _integration_version() -> str:
+async def _integration_version(hass: HomeAssistant) -> str:
     """Read integration version from manifest.json (best-effort)."""
     try:
         manifest_path = Path(__file__).parent / "manifest.json"
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        read_manifest = partial(manifest_path.read_text, encoding="utf-8")
+        manifest_text = await hass.async_add_executor_job(read_manifest)
+        manifest = json.loads(manifest_text)
         return str(manifest.get("version", "0"))
     except Exception:
         return "0"
@@ -87,7 +90,7 @@ async def _ensure_lovelace_resource(hass: HomeAssistant) -> None:
     if not resources:
         return
 
-    version = _integration_version()
+    version = await _integration_version(hass)
     desired_url = f"{RESOURCE_BASE_URL}?v={version}"
 
     existing = None
@@ -145,6 +148,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     migrate("macs_temperature", "number.macs_temperature")
     migrate("macs_windspeed", "number.macs_windspeed")
     migrate("macs_precipitation", "number.macs_precipitation")
+    # Replace legacy debug switch with config select.
+    legacy_debug = next(
+        (e for e in reg.entities.values() if e.platform == DOMAIN and e.unique_id == "macs_debug" and e.domain == "switch"),
+        None,
+    )
+    if legacy_debug:
+        reg.async_remove(legacy_debug.entity_id)
+    migrate("macs_debug", "select.macs_debug")
     migrate("macs_weather_conditions_snowy", "switch.macs_weather_conditions_snowy")
     migrate("macs_weather_conditions_cloudy", "switch.macs_weather_conditions_cloudy")
     migrate("macs_weather_conditions_rainy", "switch.macs_weather_conditions_rainy")

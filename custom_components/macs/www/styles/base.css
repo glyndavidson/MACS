@@ -150,6 +150,7 @@ body{
     font-size: 10px;
     color: #aaa;
     display:none;
+	overflow-y: auto;
 	user-select: text;
     -webkit-user-select: text;
     -moz-user-select: text;

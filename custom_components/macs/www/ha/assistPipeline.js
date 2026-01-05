@@ -1,8 +1,7 @@
 import { DEFAULTS, CONVERSATION_ENTITY_ID } from "./constants.js";
 import { createDebugger } from "./debugger.js";
 
-const DEBUG_ENABLED = false;
-const debug = createDebugger("assistPipeline", DEBUG_ENABLED);
+const debug = createDebugger("assistPipeline.js");
 
 
 export class AssistPipelineTracker {

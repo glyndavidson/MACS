@@ -1,7 +1,6 @@
 import { createDebugger } from "../ha/debugger.js";
 
-const DEBUG_ENABLED = false;
-const debug = createDebugger("bridge", DEBUG_ENABLED);
+const debug = createDebugger("assist-bridge.js");
 
 
 /* ===========================

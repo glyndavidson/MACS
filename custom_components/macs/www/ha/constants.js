@@ -89,7 +89,7 @@ export const WIND_ENTITY_ID = "number.macs_windspeed";
 export const PRECIPITATION_ENTITY_ID = "number.macs_precipitation";
 export const BATTERY_CHARGE_ENTITY_ID = "number.macs_battery_charge";
 export const ANIMATIONS_ENTITY_ID = "switch.macs_animations_enabled";
-export const DEBUG_ENTITY_ID = "switch.macs_debug";
+export const DEBUG_ENTITY_ID = "select.macs_debug";
 export const CONVERSATION_ENTITY_ID = "conversation.home_assistant";
 
 

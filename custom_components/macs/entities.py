@@ -234,29 +234,39 @@ class MacsAnimationsEnabledSwitch(SwitchEntity, RestoreEntity):
         return MACS_DEVICE
 
 
-class MacsDebugSwitch(SwitchEntity, RestoreEntity):
+DEBUG_OPTIONS = (
+    "None",
+    "All",
+    "MacsCard.js",
+    "MacsCardEditor.js",
+    "assistPipeline.js",
+    "assistSatellite.js",
+    "weatherHandler.js",
+    "moods.js",
+    "assist-bridge.js",
+)
+
+
+class MacsDebugSelect(SelectEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Debug"
     _attr_unique_id = "macs_debug"
     _attr_suggested_object_id = "macs_debug"
     _attr_icon = "mdi:bug"
-    _attr_is_on = False
+    _attr_options = DEBUG_OPTIONS
+    _attr_current_option = "None"
     _attr_entity_category = EntityCategory.CONFIG
 
-    async def async_turn_on(self, **kwargs) -> None:
-        self._attr_is_on = True
-        self.async_write_ha_state()
-
-    async def async_turn_off(self, **kwargs) -> None:
-        self._attr_is_on = False
-        self.async_write_ha_state()
+    async def async_select_option(self, option: str) -> None:
+        if option in DEBUG_OPTIONS:
+            self._attr_current_option = option
+            self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
         last_state = await self.async_get_last_state()
-        if not last_state:
-            return
-        self._attr_is_on = (last_state.state == "on")
+        if last_state and last_state.state in DEBUG_OPTIONS:
+            self._attr_current_option = last_state.state
 
     @property
     def device_info(self) -> DeviceInfo:

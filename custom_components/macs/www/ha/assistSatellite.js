@@ -6,7 +6,7 @@
 import {DEFAULTS} from "./constants.js";
 
 import { createDebugger } from "./debugger.js";
-const debug = createDebugger("assistSatellite", false);
+const debug = createDebugger("assistSatellite.js");
 
 export class SatelliteTracker{
     //Todo - Allow user config timeout

@@ -3,7 +3,7 @@ from __future__ import annotations
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-from .entities import MacsMoodSelect #, MacsWeatherSelect
+from .entities import MacsDebugSelect, MacsMoodSelect #, MacsWeatherSelect
 
 
 async def async_setup_entry(
@@ -13,4 +13,5 @@ async def async_setup_entry(
 ) -> None:
     async_add_entities([
         MacsMoodSelect(),
+        MacsDebugSelect(),
     ])

@@ -32,21 +32,16 @@
 	0%, 12%, 24%{ transform: scaleY(1); }
 }
 
-/* BORED + SAD */
-.mood-bored #eyeBezelL,
-.mood-sad #eyeBezelL{ transform: translate(200px, 260px) rotate(-5deg) translate(-200px, -260px); }
-.mood-bored #eyeBezelR,
-.mood-sad #eyeBezelR{ transform: translate(400px, 260px) rotate(5deg) translate(-400px, -260px); }
-.mood-bored #brows,
-.mood-sad #brows{ display: block; }
-.mood-bored .browL,
-.mood-sad .browL{ transform: translateX(50px) rotate(-10deg); }
-.mood-bored .browR,
-.mood-sad .browR{ transform: translateX(-50px) rotate(10deg); }
-.mood-bored #mouth-bored,
-.mood-sad #mouth-sad{ display:block; fill:none; }
-.mood-bored .iris,
-.mood-sad .iris{ transform: translate(5px, 20px); }
+
+
+/* BORED */
+.mood-bored #eyeBezelL{ transform: translate(200px, 260px) rotate(-5deg) translate(-200px, -260px); }
+.mood-bored #eyeBezelR{ transform: translate(400px, 260px) rotate(5deg) translate(-400px, -260px); }
+.mood-bored #brows{ display: block; }
+.mood-bored .browL{ transform: translateX(50px) rotate(-10deg); }
+.mood-bored .browR{ transform: translateX(-50px) rotate(10deg); }
+.mood-bored #mouth-bored{ display:block; fill:none; }
+.mood-bored .iris{ transform: translate(5px, 20px); }
 
 /* HAPPY */
 .mood-happy #mouth-happy{ display:block; stroke:none; }
@@ -83,6 +78,15 @@
 	0%,100%{ transform: translate(-10px,-10px); }
 	50%{ transform: translate(10px,10px); }
 }
+
+/* SAD */
+.mood-sad #eyeBezelL{ transform: translate(200px, 260px) rotate(-30deg) translate(-200px, -260px); }
+.mood-sad #eyeBezelR{ transform: translate(400px, 260px) rotate(30deg) translate(-400px, -260px); }
+.mood-sad #brows{ display: block; }
+.mood-sad .browL{ transform: translateX(50px) translateY(-70px) rotate(-40deg); }
+.mood-sad .browR{ transform: translateX(-50px) translateY(-70px) rotate(40deg); }
+.mood-sad #mouth-sad{ display:block; fill:none; }
+.mood-sad .iris{ transform: translate(5px, 30px); }
 
 /* SLEEPING */
 .mood-sleeping .blink{ animation: none; }

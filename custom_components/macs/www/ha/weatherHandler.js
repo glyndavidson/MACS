@@ -2,8 +2,7 @@
 import { toNumber, normalizeTemperatureValue, normalizeWindValue, normalizeRainValue, normalizeBatteryValue, normalizeWeatherUnit, normalizeBatteryUnit } from "./validators.js";
 import { createDebugger } from "./debugger.js";
 
-const DEBUG_ENABLED = false;
-const debug = createDebugger("weatherHandler", DEBUG_ENABLED);
+const debug = createDebugger("weatherHandler.js");
 
 const CONDITION_KEYS = [
     "snowy",

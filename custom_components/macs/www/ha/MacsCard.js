@@ -25,8 +25,7 @@ import { WeatherHandler } from "./weatherHandler.js";
 import { createDebugger } from "./debugger.js";
 
 
-const DEBUG_ENABLED = false;
-const debug = createDebugger("macsCard", DEBUG_ENABLED);
+const debug = createDebugger("MacsCard.js");
 const cardCssUrl = (() => {
     const baseUrl = new URL(import.meta.url);
     const cssUrl = new URL("./cards.css", baseUrl);
@@ -227,25 +226,27 @@ export class MacsCard extends HTMLElement {
     _sendConfigToIframe() {
         this._updatePreviewState();
         const enabled = !!this._config.assist_pipeline_enabled;
+        const assistSatelliteEnabled = !!this._config.assist_satellite_enabled;
         const assist_pipeline_entity = enabled ? (this._config.assist_pipeline_entity || "").toString().trim() : "";
         const autoBrightnessEnabled = this._isPreview ? false : !!this._config.auto_brightness_enabled;
         const autoBrightnessTimeout = this._isPreview ? 0 : this._config.auto_brightness_timeout_minutes;
         const autoBrightnessMin = this._config.auto_brightness_min;
         const autoBrightnessMax = this._config.auto_brightness_max;
         const autoBrightnessPauseAnimations = !!this._config.auto_brightness_pause_animations;
-        const debugEnabled = typeof window !== "undefined" && typeof window.__MACS_DEBUG__ !== "undefined"
-            ? !!window.__MACS_DEBUG__
-            : undefined;
+        const debugMode = typeof window !== "undefined" && typeof window.__MACS_DEBUG__ !== "undefined"
+            ? window.__MACS_DEBUG__
+            : "None";
         // Preview mode forces kiosk/auto-brightness off so the editor stays usable.
         this._postToIframe({
             type: "macs:config",
+            assist_satellite_enabled: assistSatelliteEnabled,
             assist_pipeline_entity,
             auto_brightness_enabled: autoBrightnessEnabled,
             auto_brightness_timeout_minutes: autoBrightnessTimeout,
             auto_brightness_min: autoBrightnessMin,
             auto_brightness_max: autoBrightnessMax,
             auto_brightness_pause_animations: autoBrightnessPauseAnimations,
-            debug_enabled: debugEnabled
+            debug_mode: debugMode
         });
     }
 
@@ -479,13 +480,9 @@ export class MacsCard extends HTMLElement {
         const animationsState = hass.states[ANIMATIONS_ENTITY_ID] || null;
         const animationsEnabled = animationsState ? animationsState.state === "on" : true;
         const debugState = hass.states[DEBUG_ENTITY_ID] || null;
-        const debugEnabled = debugState ? debugState.state === "on" : undefined;
+        const debugMode = debugState ? (debugState.state || "None") : "None";
         if (typeof window !== "undefined") {
-            if (debugState) {
-                window.__MACS_DEBUG__ = debugEnabled;
-            } else if (typeof window.__MACS_DEBUG__ !== "undefined") {
-                delete window.__MACS_DEBUG__;
-            }
+            window.__MACS_DEBUG__ = debugMode;
         }
 
         // Weather handler normalizes raw HA entities into a single payload.
