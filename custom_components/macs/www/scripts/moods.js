@@ -753,7 +753,7 @@ function setWeatherConditions(conditions){
 	Object.keys(weatherConditions).forEach(key => {
 		if (weatherConditions[key]) body.classList.add(`weather-${key}`);
 	});
-	debug("Setting weather conditions to: " + JSON.stringify(weatherConditions));
+	debug(`Setting weather conditions to:\n${JSON.stringify(weatherConditions, null, 2)}`);
 	applyPrecipitation();
 }
 

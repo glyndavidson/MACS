@@ -1,6 +1,6 @@
 import { VERSION } from "./constants.js";
 
-export function createDebugger(namespace, enabled = true, msgLen=100) {
+export function createDebugger(namespace, enabled = true) {
     const ns = (namespace || "general").toString();
     let debugDiv = null;
     let visible = false;
@@ -115,15 +115,13 @@ export function createDebugger(namespace, enabled = true, msgLen=100) {
         const el = ensureDebugDiv();
         ensureHeader(el);
         const log = ensureLogContainer(el);
-        let msg = args.map(toUiString).join(" ").trim();
-        const len = msg.length;
-        msg = msg.substring(0, msgLen);
-        if (len > msgLen){
-            msg += "...";
-        }
+        const msg = args.map(toUiString).join(" ").trim();
         if (log){
             const line = document.createElement("div");
             line.textContent = msg;
+            if (msg.includes("\n")) {
+                line.style.whiteSpace = "pre-wrap";
+            }
             log.appendChild(line);
         }
         console.log(`[*MACS:${ns}]`, ...args);
