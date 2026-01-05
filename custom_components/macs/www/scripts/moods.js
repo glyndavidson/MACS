@@ -987,4 +987,8 @@ window.addEventListener('message', (e) => {
 });
 
 
+try {
+	window.parent.postMessage({ type: "macs:ready" }, window.location.origin);
+} catch (_) {}
+
 debug("Macs Moods Loaded");

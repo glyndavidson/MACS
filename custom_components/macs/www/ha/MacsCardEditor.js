@@ -25,7 +25,12 @@ const DEBUG_ENABLED = true;
 const debug = createDebugger("macsCardEditor", DEBUG_ENABLED);
 
 
-const cssUrl = new URL("./editor.css", import.meta.url).toString();
+const cssUrl = (() => {
+	const baseUrl = new URL(import.meta.url);
+	const url = new URL("./editor.css", baseUrl);
+	url.search = baseUrl.search;
+	return url.toString();
+})();
 const styleSheet = `<link rel="stylesheet" href="${cssUrl}">`;
 
 const temperatureUnitItems = [
