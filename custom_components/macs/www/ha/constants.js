@@ -71,6 +71,7 @@ export const DEFAULTS = {
     auto_brightness_timeout_minutes: 5,
     auto_brightness_min: 0,
     auto_brightness_max: 100,
+    auto_brightness_pause_animations: true,
 };
 
 export const DEFAULT_MAX_TEMP_C = 30;

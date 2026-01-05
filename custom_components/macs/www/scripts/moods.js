@@ -110,6 +110,7 @@ let autoBrightnessEnabled = false;
 let autoBrightnessTimeoutMs = 0;
 let autoBrightnessMin = 0;
 let autoBrightnessMax = 100;
+let autoBrightnessPauseAnimations = true;
 let autoBrightnessTimer = null;
 let autoBrightnessFadeTimer = null;
 let autoBrightnessIdle = false;
@@ -731,7 +732,7 @@ const scheduleAutoBrightness = () => {
 		autoBrightnessAsleep = true;
 		autoBrightnessNextSleepAt = null;
 		updateAutoBrightnessDebug();
-		setAnimationsPaused(true);
+		setAnimationsPaused(autoBrightnessPauseAnimations);
 	}, autoBrightnessTimeoutMs);
 	updateAutoBrightnessDebug();
 };
@@ -810,12 +811,14 @@ function setAutoBrightnessConfig(config){
 	const nextTimeoutMs = timeoutMinutes > 0 ? timeoutMinutes * 60 * 1000 : 0;
 	const nextMin = toNumber(config?.auto_brightness_min, autoBrightnessMin);
 	const nextMax = toNumber(config?.auto_brightness_max, autoBrightnessMax);
+	const nextPauseAnimations = config?.auto_brightness_pause_animations;
 
 	const changed = !autoBrightnessConfigApplied ||
 		nextEnabled !== autoBrightnessEnabled ||
 		nextTimeoutMs !== autoBrightnessTimeoutMs ||
 		nextMin !== autoBrightnessMin ||
-		nextMax !== autoBrightnessMax;
+		nextMax !== autoBrightnessMax ||
+		nextPauseAnimations !== autoBrightnessPauseAnimations;
 
 	if (!changed) return;
 
@@ -824,6 +827,9 @@ function setAutoBrightnessConfig(config){
 	autoBrightnessTimeoutMs = nextTimeoutMs;
 	autoBrightnessMin = nextMin;
 	autoBrightnessMax = nextMax;
+	autoBrightnessPauseAnimations = typeof nextPauseAnimations === "undefined"
+		? autoBrightnessPauseAnimations
+		: !!nextPauseAnimations;
 	autoBrightnessIdle = false;
 	autoBrightnessAsleep = false;
 	setAnimationsPaused(false);

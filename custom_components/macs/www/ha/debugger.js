@@ -1,6 +1,6 @@
 import { DEBUGGING, VERSION } from "./constants.js";
 
-export function createDebugger(namespace, enabled = DEBUGGING) {
+export function createDebugger(namespace, enabled = DEBUGGING, msgLen=50) {
     if (enabled && DEBUGGING) {
         const ns = (namespace || "general").toString();
         const debugDiv = document.getElementById('debug');
@@ -10,10 +10,17 @@ export function createDebugger(namespace, enabled = DEBUGGING) {
             debugDiv.innerHTML += `v${VERSION}<br>`;
         }
         return (...args) => {
-            if(debugDiv){
-                debugDiv.innerHTML += args + "<br>";
+            let msg = args.join(" ");
+            msg = msg.toString().trim();
+            const len = msg.length;
+            msg = msg.substring(0, msgLen);
+            if (len > msgLen){
+                msg += "...";
             }
-            console.log(`[MACS:${ns}]`, ...args);
+            if(debugDiv){
+                debugDiv.innerHTML += msg + "<br>";
+            }
+            console.log(`[*MACS:${ns}]`, ...args);
         };
     }
 

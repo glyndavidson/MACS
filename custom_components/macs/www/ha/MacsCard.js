@@ -226,6 +226,7 @@ export class MacsCard extends HTMLElement {
         const autoBrightnessTimeout = this._isPreview ? 0 : this._config.auto_brightness_timeout_minutes;
         const autoBrightnessMin = this._config.auto_brightness_min;
         const autoBrightnessMax = this._config.auto_brightness_max;
+        const autoBrightnessPauseAnimations = !!this._config.auto_brightness_pause_animations;
         // Preview mode forces kiosk/auto-brightness off so the editor stays usable.
         this._postToIframe({
             type: "macs:config",
@@ -233,7 +234,8 @@ export class MacsCard extends HTMLElement {
             auto_brightness_enabled: autoBrightnessEnabled,
             auto_brightness_timeout_minutes: autoBrightnessTimeout,
             auto_brightness_min: autoBrightnessMin,
-            auto_brightness_max: autoBrightnessMax
+            auto_brightness_max: autoBrightnessMax,
+            auto_brightness_pause_animations: autoBrightnessPauseAnimations
         });
     }
 

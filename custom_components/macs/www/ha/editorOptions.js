@@ -265,6 +265,7 @@ export function syncAutoBrightnessControls(root, config) {
 	var timeout = root.getElementById("auto_brightness_timeout_minutes");
 	var minBrightness = root.getElementById("auto_brightness_min");
 	var maxBrightness = root.getElementById("auto_brightness_max");
+	var pauseToggle = root.getElementById("auto_brightness_pause_animations_enabled");
 
 	if (toggle && toggle.checked !== enabled) {
 		toggle.checked = enabled;
@@ -273,6 +274,7 @@ export function syncAutoBrightnessControls(root, config) {
 	if (timeout) timeout.disabled = !enabled;
 	if (minBrightness) minBrightness.disabled = !enabled;
 	if (maxBrightness) maxBrightness.disabled = !enabled;
+	if (pauseToggle) pauseToggle.disabled = !enabled;
 
 	var timeoutVal = config && config.auto_brightness_timeout_minutes;
 	if (timeout && timeout.value !== timeoutVal) {
@@ -287,6 +289,11 @@ export function syncAutoBrightnessControls(root, config) {
 	var maxVal = config && config.auto_brightness_max;
 	if (maxBrightness && maxBrightness.value !== maxVal) {
 		maxBrightness.value = maxVal === null || typeof maxVal === "undefined" ? "" : String(maxVal);
+	}
+
+	var pauseVal = !!(config && config.auto_brightness_pause_animations);
+	if (pauseToggle && pauseToggle.checked !== pauseVal) {
+		pauseToggle.checked = pauseVal;
 	}
 }
 
@@ -359,6 +366,7 @@ export function readAutoBrightnessInputs(root, e, config) {
 			auto_brightness_timeout_minutes: String((config && config.auto_brightness_timeout_minutes) || ""),
 			auto_brightness_min: String((config && config.auto_brightness_min) || ""),
 			auto_brightness_max: String((config && config.auto_brightness_max) || ""),
+			auto_brightness_pause_animations: !!(config && config.auto_brightness_pause_animations),
 		};
 	}
 
@@ -367,10 +375,12 @@ export function readAutoBrightnessInputs(root, e, config) {
 	var timeout = root.getElementById("auto_brightness_timeout_minutes");
 	var minBrightness = root.getElementById("auto_brightness_min");
 	var maxBrightness = root.getElementById("auto_brightness_max");
+	var pauseToggle = root.getElementById("auto_brightness_pause_animations_enabled");
 
 	if (timeout) timeout.disabled = !enabled;
 	if (minBrightness) minBrightness.disabled = !enabled;
 	if (maxBrightness) maxBrightness.disabled = !enabled;
+	if (pauseToggle) pauseToggle.disabled = !enabled;
 
 	var parseNumber = function (value) {
 		if (value === "" || value === null || typeof value === "undefined") {
@@ -400,6 +410,7 @@ export function readAutoBrightnessInputs(root, e, config) {
 		auto_brightness_timeout_minutes: parseNumber(rawTimeout),
 		auto_brightness_min: parseNumber(rawMin),
 		auto_brightness_max: parseNumber(rawMax),
+		auto_brightness_pause_animations: readToggleValue(pauseToggle, e, config && config.auto_brightness_pause_animations),
 	};
 }
 
