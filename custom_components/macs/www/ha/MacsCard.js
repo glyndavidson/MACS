@@ -298,6 +298,11 @@ export class MacsCard extends HTMLElement {
             this._postToIframe({ type: "macs:battery", battery });
         }
     }
+    _sendBatteryStateToIframe(state) {
+        if (this._weatherHandler.getBatteryStateHasChanged?.()) {
+            this._postToIframe({ type: "macs:battery_state", battery_state: state });
+        }
+    }
     _sendBrightnessToIframe(brightness) {
         this._postToIframe({ type: "macs:brightness", brightness });
     }
@@ -495,6 +500,7 @@ export class MacsCard extends HTMLElement {
         this._sendPrecipitationToIframe(this._weatherHandler.getPrecipitation?.());
         this._sendWeatherConditionsToIframe(this._weatherHandler.getWeatherConditions?.());
         this._sendBatteryToIframe(this._weatherHandler.getBattery?.());
+        this._sendBatteryStateToIframe(this._weatherHandler.getBatteryState?.());
     }
 
 
@@ -566,10 +572,10 @@ export class MacsCard extends HTMLElement {
             this._weatherHandler.setHass(hass);
             weatherValues = this._weatherHandler.update?.() || this._weatherHandler.getPayload?.() || null;
         }
-        const batteryLow =
+        const batteryActive =
             !!this._config?.battery_charge_sensor_enabled &&
-            Number.isFinite(weatherValues?.battery) &&
-            weatherValues.battery <= 20;
+            Number.isFinite(weatherValues?.battery);
+        const batteryLow = batteryActive && weatherValues.battery <= 20;
         const batteryCharging =
             !!this._config?.battery_state_sensor_enabled &&
             weatherValues?.battery_state === true;
@@ -584,6 +590,8 @@ export class MacsCard extends HTMLElement {
                 mood = "charging";
             } else if (batteryLow) {
                 mood = "sad";
+            } else if (batteryActive && baseMood === "charging") {
+                mood = "idle";
             }
         }
 

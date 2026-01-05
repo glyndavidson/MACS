@@ -135,6 +135,7 @@ let animationsPaused = false;
 let animationsToggleEnabled = true;
 let lastBatteryPercent = null;
 let batteryBaseColors = null;
+let batteryCharging = null;
 
 let rainParticles = null;
 let snowParticles = null;
@@ -280,6 +281,10 @@ const applyBatteryDimming = (percent) => {
 	const root = document.documentElement;
 	if (!root) return;
 	if (!Number.isFinite(percent)) {
+		restoreBatteryColors();
+		return;
+	}
+	if (batteryCharging === true) {
 		restoreBatteryColors();
 		return;
 	}
@@ -765,6 +770,16 @@ function setBattery(value){
 	applyBatteryDimming(percent);
 }
 
+function setBatteryState(value) {
+	if (value === null || typeof value === "undefined") {
+		batteryCharging = null;
+		applyBatteryDimming(lastBatteryPercent);
+		return;
+	}
+	batteryCharging = !!value;
+	applyBatteryDimming(lastBatteryPercent);
+}
+
 const setBrightnessValue = (value) => {
 	const brightness = Number(value);
 	if (!Number.isFinite(brightness)) return;
@@ -1146,6 +1161,10 @@ window.addEventListener('message', (e) => {
     }
     if (e.data.type === 'macs:battery') {
         setBattery(e.data.battery ?? '0');
+        return;
+    }
+    if (e.data.type === 'macs:battery_state') {
+        setBatteryState(e.data.battery_state);
         return;
     }
     if (e.data.type === 'macs:snowfall') {
