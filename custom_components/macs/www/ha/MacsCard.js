@@ -470,10 +470,6 @@ export class MacsCard extends HTMLElement {
             this._lastAssistSatelliteState = null;
         }
 
-        // const now = Date.now();
-        const overrideMood = this._assistSatelliteOutcome?.getOverrideMood?.();
-        const mood = overrideMood ? overrideMood : ((this._config?.assist_satellite_enabled && assistMood) ? assistMood : baseMood);
-
         const brightnessState = hass.states[BRIGHTNESS_ENTITY_ID] || null;
         const brightness = normBrightness(brightnessState?.state);
         const animationsState = hass.states[ANIMATIONS_ENTITY_ID] || null;
@@ -484,6 +480,19 @@ export class MacsCard extends HTMLElement {
         if (this._weatherHandler) {
             this._weatherHandler.setHass(hass);
             weatherValues = this._weatherHandler.update?.() || this._weatherHandler.getPayload?.() || null;
+        }
+        const batteryLow =
+            !!this._config?.battery_charge_sensor_enabled &&
+            Number.isFinite(weatherValues?.battery) &&
+            weatherValues.battery <= 20;
+
+        // const now = Date.now();
+        const overrideMood = this._assistSatelliteOutcome?.getOverrideMood?.();
+        const assistEnabled = !!this._config?.assist_satellite_enabled;
+        const assistActive = assistEnabled && assistMood && assistMood !== "idle";
+        let mood = overrideMood ? overrideMood : ((assistEnabled && assistMood) ? assistMood : baseMood);
+        if (!overrideMood && !assistActive && batteryLow) {
+            mood = "sad";
         }
 
         const base = safeUrl(this._config.url);

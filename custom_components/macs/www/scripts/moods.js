@@ -4,7 +4,7 @@ import { Particle, SVG_NS } from "./particles.js";
 const DEBUG_ENABLED = true;
 const debug = createDebugger("Moods", DEBUG_ENABLED);
 
-const moods = ['idle','bored','listening','thinking','surprised','confused','sleeping','happy'];
+const moods = ['idle','bored','sad','listening','thinking','surprised','confused','sleeping','happy'];
 
 const RAIN_MAX_DROPS = 200;
 const RAIN_MIN_SPEED = 0.8;

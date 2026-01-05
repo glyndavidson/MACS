@@ -1,5 +1,5 @@
 /* Hide all mouths by default; moods selectively enable */
-#mouth-idle, #mouth-bored, #mouth-listening, #mouth-thinking, #mouth-surprised, #mouth-confused, #mouth-sleeping, #mouth-happy{ display:none; }
+#mouth-idle, #mouth-bored, #mouth-sad, #mouth-listening, #mouth-thinking, #mouth-surprised, #mouth-confused, #mouth-sleeping, #mouth-happy{ display:none; }
 
 
 /* Base animations */
@@ -32,14 +32,21 @@
 	0%, 12%, 24%{ transform: scaleY(1); }
 }
 
-/* BORED */
-.mood-bored #eyeBezelL{ transform: translate(200px, 260px) rotate(-30deg) translate(-200px, -260px); }
-.mood-bored #eyeBezelR{ transform: translate(400px, 260px) rotate(30deg) translate(-400px, -260px); }
-.mood-bored #brows{ display: block; }
-.mood-bored .browL{ transform: translateX(50px) translateY(-70px) rotate(-40deg); }
-.mood-bored .browR{ transform: translateX(-50px) translateY(-70px) rotate(40deg); }
-.mood-bored #mouth-bored{ display:block; fill:none; }
-.mood-bored .iris{ transform: translate(5px, 30px); }
+/* BORED + SAD */
+.mood-bored #eyeBezelL,
+.mood-sad #eyeBezelL{ transform: translate(200px, 260px) rotate(-30deg) translate(-200px, -260px); }
+.mood-bored #eyeBezelR,
+.mood-sad #eyeBezelR{ transform: translate(400px, 260px) rotate(30deg) translate(-400px, -260px); }
+.mood-bored #brows,
+.mood-sad #brows{ display: block; }
+.mood-bored .browL,
+.mood-sad .browL{ transform: translateX(50px) translateY(-70px) rotate(-40deg); }
+.mood-bored .browR,
+.mood-sad .browR{ transform: translateX(-50px) translateY(-70px) rotate(40deg); }
+.mood-bored #mouth-bored,
+.mood-sad #mouth-sad{ display:block; fill:none; }
+.mood-bored .iris,
+.mood-sad .iris{ transform: translate(5px, 30px); }
 
 /* HAPPY */
 .mood-happy #mouth-happy{ display:block; stroke:none; }

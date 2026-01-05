@@ -4,7 +4,7 @@
   fields:
     mood:
       name: Mood
-      description: One of bored, confused, happy, idle, listening, sleeping, surprised, thinking
+      description: One of bored, confused, happy, idle, listening, sad, sleeping, surprised, thinking
       required: true
       selector:
         select:
@@ -15,6 +15,7 @@
             - happy
             - idle
             - listening
+            - sad
             - sleeping
             - surprised
             - thinking

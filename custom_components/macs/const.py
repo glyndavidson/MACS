@@ -17,6 +17,7 @@ MOODS = (
     "happy",
     "idle",
     "listening",
+    "sad",
     "sleeping",
     "surprised",
     "thinking",
