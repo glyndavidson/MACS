@@ -89,6 +89,9 @@ const KIOSK_HOLD_MS = 800;
 const BRIGHTNESS_FADE_SECONDS = 10;
 const MOOD_IDLE_TO_BORED_MS = 30000;
 const MOOD_BORED_TO_SLEEP_MS = 30000;
+const CURSOR_LOOK_IDLE_MS = 5000;
+const EYE_LOOK_MAX_X = 20;
+const EYE_LOOK_MAX_Y = 12;
 
 
 
@@ -122,6 +125,8 @@ let lastBrightnessTarget = null;
 let lastBrightnessTransition = null;
 let moodIdleTimer = null;
 let moodBoredTimer = null;
+let cursorLookTimer = null;
+let cursorLookActive = false;
 
 let rainParticles = null;
 let snowParticles = null;
@@ -209,8 +214,43 @@ function applyBodyClass(prefix, value, allowed, fallback){
 
 // set Macs mood. Must be one of const moods
 function setMood(m){ 
-    applyBodyClass('mood', m, moods, 'idle'); 
+    applyBodyClass('mood', m, moods, 'idle');
+	setCursorLookActive(cursorLookActive);
 }
+
+const setCursorLookActive = (active) => {
+	cursorLookActive = !!active;
+	const body = document.body;
+	if (!body) return;
+	const idleActive = body.classList.contains("mood-idle");
+	if (cursorLookActive && idleActive) {
+		body.classList.add("cursor-look");
+	} else {
+		body.classList.remove("cursor-look");
+	}
+};
+
+const setCursorLookOffset = (x, y) => {
+	const root = document.documentElement;
+	if (!root) return;
+	root.style.setProperty("--eye-look-x", `${x.toFixed(2)}px`);
+	root.style.setProperty("--eye-look-y", `${y.toFixed(2)}px`);
+};
+
+const handleCursorMove = (clientX, clientY) => {
+	const width = window.innerWidth || 1;
+	const height = window.innerHeight || 1;
+	const nx = (clientX - width / 2) / (width / 2);
+	const ny = (clientY - height / 2) / (height / 2);
+	const clampedX = Math.max(-1, Math.min(1, nx));
+	const clampedY = Math.max(-1, Math.min(1, ny));
+	setCursorLookOffset(clampedX * EYE_LOOK_MAX_X, clampedY * EYE_LOOK_MAX_Y);
+	setCursorLookActive(true);
+	if (cursorLookTimer) clearTimeout(cursorLookTimer);
+	cursorLookTimer = setTimeout(() => {
+		setCursorLookActive(false);
+	}, CURSOR_LOOK_IDLE_MS);
+};
 
 const clearMoodTimers = () => {
 	if (moodIdleTimer) {
@@ -795,6 +835,14 @@ const activityEvents = ["pointerdown", "pointermove", "keydown", "wheel", "touch
 activityEvents.forEach((eventName) => {
 	window.addEventListener(eventName, registerAutoBrightnessActivity, { passive: true });
 });
+window.addEventListener("pointermove", (event) => {
+	handleCursorMove(event.clientX, event.clientY);
+}, { passive: true });
+window.addEventListener("touchmove", (event) => {
+	if (!event.touches || !event.touches.length) return;
+	const touch = event.touches[0];
+	handleCursorMove(touch.clientX, touch.clientY);
+}, { passive: true });
 document.addEventListener("visibilitychange", () => {
 	if (!document.hidden) registerAutoBrightnessActivity();
 });

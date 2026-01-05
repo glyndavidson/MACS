@@ -51,6 +51,11 @@
 	0%, 100%{ transform: translate(20px,0px); }
 	50%{ transform: translate(-20px,0px); }
 }
+.mood-idle.cursor-look .iris{
+	animation: none;
+	transform: translate(var(--eye-look-x, 0px), var(--eye-look-y, 0px));
+	transition: transform 0.15s ease-out;
+}
 
 /* LISTENING */
 .mood-listening .brow{ animation: brow-listening 1.2s ease-in-out infinite; }
