@@ -92,6 +92,8 @@ const MOOD_BORED_TO_SLEEP_MS = 30000;
 const CURSOR_LOOK_IDLE_MS = 5000;
 const EYE_LOOK_MAX_X = 20;
 const EYE_LOOK_MAX_Y = 12;
+const STAGE_LOOK_MAX_X = 8;
+const STAGE_LOOK_MAX_Y = 6;
 
 
 
@@ -226,10 +228,14 @@ const setCursorLookActive = (active) => {
 	const body = document.body;
 	if (!body) return;
 	const idleActive = body.classList.contains("mood-idle");
-	if (cursorLookActive && idleActive) {
+	const effectiveActive = cursorLookActive && idleActive;
+	if (effectiveActive) {
 		body.classList.add("cursor-look");
 	} else {
 		body.classList.remove("cursor-look");
+	}
+	if (!effectiveActive) {
+		setStageLookOffset(0, 0);
 	}
 };
 
@@ -240,6 +246,13 @@ const setCursorLookOffset = (x, y) => {
 	root.style.setProperty("--eye-look-y", `${y.toFixed(2)}px`);
 };
 
+const setStageLookOffset = (x, y) => {
+	const root = document.documentElement;
+	if (!root) return;
+	root.style.setProperty("--stage-look-x", `${x.toFixed(2)}px`);
+	root.style.setProperty("--stage-look-y", `${y.toFixed(2)}px`);
+};
+
 const handleCursorMove = (clientX, clientY) => {
 	const width = window.innerWidth || 1;
 	const height = window.innerHeight || 1;
@@ -248,6 +261,7 @@ const handleCursorMove = (clientX, clientY) => {
 	const clampedX = Math.max(-1, Math.min(1, nx));
 	const clampedY = Math.max(-1, Math.min(1, ny));
 	setCursorLookOffset(clampedX * EYE_LOOK_MAX_X, clampedY * EYE_LOOK_MAX_Y);
+	setStageLookOffset(clampedX * STAGE_LOOK_MAX_X, clampedY * STAGE_LOOK_MAX_Y);
 	setCursorLookActive(true);
 	if (cursorLookTimer) clearTimeout(cursorLookTimer);
 	cursorLookTimer = setTimeout(() => {
@@ -986,9 +1000,5 @@ window.addEventListener('message', (e) => {
     }
 });
 
-
-try {
-	window.parent.postMessage({ type: "macs:ready" }, window.location.origin);
-} catch (_) {}
 
 debug("Macs Moods Loaded");

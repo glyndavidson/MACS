@@ -19,6 +19,8 @@ body{
 	justify-content:center;
 	padding: 7vmin;
 	z-index:100;
+	transform: translate(var(--stage-look-x, 0px), var(--stage-look-y, 0px));
+	transition: transform 0.2s ease-out;
 }
 
 .char-tilt{

@@ -106,7 +106,6 @@ export class MacsCard extends HTMLElement {
             this._lastSrc = undefined;
             this._kioskHidden = false;
             this._isPreview = false;
-            this._iframeReady = false;
             this._lastAssistSatelliteState = null;
             this._lastTurnsSignature = null;
             this._lastAnimationsEnabled = null;
@@ -323,12 +322,6 @@ export class MacsCard extends HTMLElement {
             return;
         }
 
-        if (e.data.type === "macs:ready") {
-            this._iframeReady = true;
-            this._showIframe();
-            return;
-        }
-
         // Iframe requests initial config and current turns
         if (e.data.type === "macs:request_config") {
             this._sendConfigToIframe();
@@ -413,17 +406,6 @@ export class MacsCard extends HTMLElement {
     _updatePreviewState() {
         // Detect when we're rendered inside the HA card editor preview.
         this._isPreview = !!this.closest(".element-preview");
-    }
-
-    _showIframe() {
-        if (this._thumb){
-            this._thumb.classList.add("hidden");
-            this._thumb.hidden = true;
-        }
-        if (this._iframe) {
-            this._iframe.classList.remove("hidden");
-            this._iframe.hidden = false;
-        }
     }
 
     _sendWeatherIfChanged() {
@@ -549,10 +531,15 @@ export class MacsCard extends HTMLElement {
                 sendAll();
                 // First fetch after iframe is alive
                 this._pipelineTracker?.triggerFetchNewest?.();
+                if (this._thumb){
+                    this._thumb.classList.add("hidden");
+                    this._thumb.hidden = true;
+                    this._iframe.classList.remove("hidden");
+                    this._iframe.hidden = false;
+                }
             };
 
             if (src !== this._lastSrc) {
-                this._iframeReady = false;
                 this._iframe.src = src;
                 this._lastSrc = src;
             }
