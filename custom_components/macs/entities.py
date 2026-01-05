@@ -4,6 +4,7 @@ from homeassistant.components.select import SelectEntity
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.components.switch import SwitchEntity
 from homeassistant.helpers.device_registry import DeviceInfo
+from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import DOMAIN, MOODS, MACS_DEVICE
@@ -212,6 +213,35 @@ class MacsAnimationsEnabledSwitch(SwitchEntity, RestoreEntity):
     _attr_suggested_object_id = "macs_animations_enabled"
     _attr_icon = "mdi:animation"
     _attr_is_on = True
+
+    async def async_turn_on(self, **kwargs) -> None:
+        self._attr_is_on = True
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs) -> None:
+        self._attr_is_on = False
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        last_state = await self.async_get_last_state()
+        if not last_state:
+            return
+        self._attr_is_on = (last_state.state == "on")
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return MACS_DEVICE
+
+
+class MacsDebugSwitch(SwitchEntity, RestoreEntity):
+    _attr_has_entity_name = True
+    _attr_name = "Debug"
+    _attr_unique_id = "macs_debug"
+    _attr_suggested_object_id = "macs_debug"
+    _attr_icon = "mdi:bug"
+    _attr_is_on = False
+    _attr_entity_category = EntityCategory.CONFIG
 
     async def async_turn_on(self, **kwargs) -> None:
         self._attr_is_on = True

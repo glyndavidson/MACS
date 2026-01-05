@@ -174,6 +174,13 @@ const parseConditionsParam = (value) => {
 	return conditions;
 };
 
+const setDebugOverride = (enabled) => {
+	if (typeof enabled === "undefined") return;
+	if (typeof window !== "undefined") {
+		window.__MACS_DEBUG__ = !!enabled;
+	}
+};
+
 const applyIdleFloatJitter = () => {
 	const jitter = (Math.random() * 2) - 1;
 	const amp = Math.max(0.1, idleFloatBase * (1 + (jitter * IDLE_FLOAT_JITTER_RATIO)));
@@ -936,6 +943,9 @@ window.addEventListener('message', (e) => {
 	if (e.data.type === 'macs:config') {
 		if (typeof e.data.auto_brightness_enabled !== "undefined") {
 			setAutoBrightnessConfig(e.data);
+		}
+		if (typeof e.data.debug_enabled !== "undefined") {
+			setDebugOverride(e.data.debug_enabled);
 		}
 		return;
 	}

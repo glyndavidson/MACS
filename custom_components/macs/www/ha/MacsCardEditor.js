@@ -420,7 +420,7 @@ export class MacsCardEditor extends HTMLElement {
 			name: "Battery Charge",
 			label: "Use Battery Sensor?",
 			hint: null,
-			tooltip: "When enabled, the selected sensor is used and the M.A.C.S. Battery Charge entity/service is ignored.",
+			tooltip: "When enabled, the selected sensor is used and the M.A.C.S. Battery Charge entity/service is ignored. Macs Mood will turn sad at 20% Battery.",
 			placeholder: "sensor.my_battery",
 			units: true,
 			minMax: true,

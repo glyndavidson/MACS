@@ -17,7 +17,7 @@
  * and the M.A.C.S. frontend character.
  */
 
-import { VERSION, DEFAULTS, MOOD_ENTITY_ID, BRIGHTNESS_ENTITY_ID, ANIMATIONS_ENTITY_ID } from "./constants.js";
+import { VERSION, DEFAULTS, MOOD_ENTITY_ID, BRIGHTNESS_ENTITY_ID, ANIMATIONS_ENTITY_ID, DEBUG_ENTITY_ID } from "./constants.js";
 import { normMood, normBrightness, safeUrl, getTargetOrigin, assistStateToMood} from "./validators.js";
 import { SatelliteTracker } from "./assistSatellite.js";
 import { AssistPipelineTracker } from "./assistPipeline.js";
@@ -233,6 +233,9 @@ export class MacsCard extends HTMLElement {
         const autoBrightnessMin = this._config.auto_brightness_min;
         const autoBrightnessMax = this._config.auto_brightness_max;
         const autoBrightnessPauseAnimations = !!this._config.auto_brightness_pause_animations;
+        const debugEnabled = typeof window !== "undefined" && typeof window.__MACS_DEBUG__ !== "undefined"
+            ? !!window.__MACS_DEBUG__
+            : undefined;
         // Preview mode forces kiosk/auto-brightness off so the editor stays usable.
         this._postToIframe({
             type: "macs:config",
@@ -241,7 +244,8 @@ export class MacsCard extends HTMLElement {
             auto_brightness_timeout_minutes: autoBrightnessTimeout,
             auto_brightness_min: autoBrightnessMin,
             auto_brightness_max: autoBrightnessMax,
-            auto_brightness_pause_animations: autoBrightnessPauseAnimations
+            auto_brightness_pause_animations: autoBrightnessPauseAnimations,
+            debug_enabled: debugEnabled
         });
     }
 
@@ -474,6 +478,15 @@ export class MacsCard extends HTMLElement {
         const brightness = normBrightness(brightnessState?.state);
         const animationsState = hass.states[ANIMATIONS_ENTITY_ID] || null;
         const animationsEnabled = animationsState ? animationsState.state === "on" : true;
+        const debugState = hass.states[DEBUG_ENTITY_ID] || null;
+        const debugEnabled = debugState ? debugState.state === "on" : undefined;
+        if (typeof window !== "undefined") {
+            if (debugState) {
+                window.__MACS_DEBUG__ = debugEnabled;
+            } else if (typeof window.__MACS_DEBUG__ !== "undefined") {
+                delete window.__MACS_DEBUG__;
+            }
+        }
 
         // Weather handler normalizes raw HA entities into a single payload.
         let weatherValues = null;
