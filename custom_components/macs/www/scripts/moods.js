@@ -127,6 +127,7 @@ let moodIdleTimer = null;
 let moodBoredTimer = null;
 let cursorLookTimer = null;
 let cursorLookActive = false;
+let animationsPaused = false;
 
 let rainParticles = null;
 let snowParticles = null;
@@ -250,6 +251,35 @@ const handleCursorMove = (clientX, clientY) => {
 	cursorLookTimer = setTimeout(() => {
 		setCursorLookActive(false);
 	}, CURSOR_LOOK_IDLE_MS);
+};
+
+const setAnimationsPaused = (paused) => {
+	const next = !!paused;
+	if (animationsPaused === next) return;
+	animationsPaused = next;
+	const body = document.body;
+	if (body) body.classList.toggle("animations-paused", animationsPaused);
+
+	if (animationsPaused) {
+		if (idleFloatJitterTimer) {
+			clearTimeout(idleFloatJitterTimer);
+			idleFloatJitterTimer = null;
+		}
+		if (cursorLookTimer) {
+			clearTimeout(cursorLookTimer);
+			cursorLookTimer = null;
+		}
+		setCursorLookActive(false);
+		if (rainParticles) rainParticles.reset();
+		if (snowParticles) snowParticles.reset();
+		if (leafParticles) leafParticles.reset();
+		return;
+	}
+
+	applyIdleFloatJitter();
+	updateRainDrops(rainIntensity < 0 ? 0 : rainIntensity, true);
+	updateSnowFlakes(snowIntensity < 0 ? 0 : snowIntensity, true);
+	updateLeaves(true);
 };
 
 const clearMoodTimers = () => {
@@ -483,18 +513,21 @@ const setRainViewBoxFromSvg = () => {
 };
 
 const updateRainDrops = (intensity, forceUpdate = false) => {
+	if (animationsPaused) return;
 	setRainViewBoxFromSvg();
 	if (!rainParticles) return;
 	rainParticles.update(intensity, forceUpdate);
 };
 
 const updateSnowFlakes = (intensity, forceUpdate = false) => {
+	if (animationsPaused) return;
 	setRainViewBoxFromSvg();
 	if (!snowParticles) return;
 	snowParticles.update(intensity, forceUpdate);
 };
 
 const updateLeaves = (forceUpdate = false) => {
+	if (animationsPaused) return;
 	setRainViewBoxFromSvg();
 	if (!leafParticles) return;
 	leafParticles.updateFromEnvironment({
@@ -661,12 +694,16 @@ const scheduleAutoBrightness = () => {
 		autoBrightnessFadeTimer = null;
 	}
 
-	if (!autoBrightnessEnabled) return;
+	if (!autoBrightnessEnabled) {
+		setAnimationsPaused(false);
+		return;
+	}
 
 	if (!Number.isFinite(autoBrightnessTimeoutMs) || autoBrightnessTimeoutMs <= 0) {
 		autoBrightnessIdle = false;
 		autoBrightnessAsleep = false;
 		autoBrightnessNextSleepAt = null;
+		setAnimationsPaused(false);
 		applyBrightness();
 		updateAutoBrightnessDebug();
 		return;
@@ -694,6 +731,7 @@ const scheduleAutoBrightness = () => {
 		autoBrightnessAsleep = true;
 		autoBrightnessNextSleepAt = null;
 		updateAutoBrightnessDebug();
+		setAnimationsPaused(true);
 	}, autoBrightnessTimeoutMs);
 	updateAutoBrightnessDebug();
 };
@@ -710,6 +748,7 @@ const registerAutoBrightnessActivity = () => {
 
 	scheduleAutoBrightness();
 	resetMoodSequence();
+	setAnimationsPaused(false);
 };
 
 const sendKioskToggle = () => {
@@ -761,6 +800,7 @@ function setAutoBrightnessConfig(config){
 	if (isEditor) {
 		autoBrightnessEnabled = false;
 		autoBrightnessIdle = false;
+		setAnimationsPaused(false);
 		updateAutoBrightnessDebug();
 		return;
 	}
@@ -786,6 +826,7 @@ function setAutoBrightnessConfig(config){
 	autoBrightnessMax = nextMax;
 	autoBrightnessIdle = false;
 	autoBrightnessAsleep = false;
+	setAnimationsPaused(false);
 	ensureAutoBrightnessDebugTimer();
 	scheduleAutoBrightness();
 	applyBrightness();

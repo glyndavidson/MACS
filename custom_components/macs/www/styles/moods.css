@@ -51,6 +51,12 @@
 	0%, 100%{ transform: translate(20px,0px); }
 	50%{ transform: translate(-20px,0px); }
 }
+.animations-paused .char,
+.animations-paused .blink,
+.animations-paused .iris,
+.animations-paused .brow {
+	animation-play-state: paused !important;
+}
 .mood-idle.cursor-look .iris{
 	animation: none;
 	transform: translate(var(--eye-look-x, 0px), var(--eye-look-y, 0px));
