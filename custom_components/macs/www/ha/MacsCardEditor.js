@@ -61,7 +61,8 @@ const instructions = `
 			<div class="row">
 				<label>Custom Integrations</label>
 			<div>
-				<p>For custom integrations, Macs works like any other device and exposes entities which allow full control over his behavior.<br>Some examples are given below:</p>
+				<p>For custom integrations, like making him look surprised when a motion sensor is triggered, Macs works like any other device and exposes entities which allow full control over his behavior.
+				<br>Some examples are given below:</p>
 				<div class="entity-grid">
 					<div class="header">Entity</div>
 					<div class="header">Action</div>
@@ -380,7 +381,7 @@ export class MacsCardEditor extends HTMLElement {
 			id: "weather_conditions",
 			name: "Weather Conditions",
 			label: "Auto-Detect Weather Conditions?",
-			hint: null,
+			hint: "Allows Macs to know when it's snowing, foggy, lightning etc.",
 			placeholder: "weather.forecast_home",
 			selectItems: conditionItems,
 			selectValue: this._config.weather_conditions ?? "",
@@ -406,7 +407,7 @@ export class MacsCardEditor extends HTMLElement {
 			id: "auto_brightness",
 			name: "Kiosk Mode",
 			label: "Enable Kiosk Mode?",
-			hint: "Applies to this card only.<br>Tip: tap and hold anywhere on the card to toggle the sidebar and navbar.",
+			hint: "Hold anywhere on the card to toggle the sidebar and navbar.",
 			placeholder: "",
 			select: false,
 			entity: false,

@@ -7,7 +7,7 @@ export function createDebugger(namespace, enabled = DEBUGGING) {
         if(debugDiv){
             debugDiv.style.display = "block";
             debugDiv.innerHTML = "<h1>Debugging</h1>";
-            debugDiv.innerHTML += VERSION + "<br>";
+            debugDiv.innerHTML += `v${VERSION}<br>`;
         }
         return (...args) => {
             if(debugDiv){

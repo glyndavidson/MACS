@@ -15,7 +15,14 @@
  * - train "Hey Macs" wakeword
  * - change happy trigger from idle to responding. Actually, idle OR responding, whichever comes first.
  * - update readme screenshot
- */
+ * - make bored mood look less sad. Maybe rename bored to sad and create new bored mood.
+ * - create low batter / battery charge indicator / battery plugged in
+ * - add wake from sleep service, sleeping toggle
+ * - Update Custom Integrations examples
+ * - add a macs.show handler - "show me my shopping list", "show me my camera" etc? Shopping list likely easy, camera difficult.
+ * - disable weather effects after screentimeout (saves battery/power - does it really?) if useful, make it optional
+ * 
+ *  */
 
 
 

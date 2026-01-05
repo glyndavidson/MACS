@@ -669,6 +669,7 @@ const registerAutoBrightnessActivity = () => {
 	}
 
 	scheduleAutoBrightness();
+	resetMoodSequence();
 };
 
 const sendKioskToggle = () => {

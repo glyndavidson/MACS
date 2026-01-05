@@ -27,24 +27,15 @@ import { createDebugger } from "./debugger.js";
 
 const DEBUG_ENABLED = false;
 const debug = createDebugger("macsCard", DEBUG_ENABLED);
+const cardCssUrl = new URL("./cards.css", import.meta.url).toString();
+// Kiosk UI hides HA chrome and forces the card to full-viewport.
 const KIOSK_STYLE_ID = "macs-kiosk-style";
-const KIOSK_STYLE = `
-    app-drawer-layout app-drawer,
-    app-drawer-layout [drawer],
-    ha-sidebar,
-    hui-sidebar {
-        display: none !important;
-    }
-    app-header,
-    app-toolbar,
-    ha-tabs,
-    .header {
-        display: none !important;
-    }
-    app-drawer-layout > [main] {
-        margin-left: 0 !important;
-    }
-`;
+const kioskCssUrl = (() => {
+    const baseUrl = new URL(import.meta.url);
+    const cssUrl = new URL("./kiosk.css", baseUrl);
+    cssUrl.search = baseUrl.search;
+    return cssUrl.toString();
+})();
 
 
 export class MacsCard extends HTMLElement {
@@ -70,10 +61,7 @@ export class MacsCard extends HTMLElement {
             throw new Error("macs-card: invalid config");
         }
 
-        // locked to postmessage mode - todo, remove this option
-        //const mode = "postMessage";
-
-        // merge defaults with user config. Todo, remove mode?
+        // Merge defaults with user config and lock "core" fields to constants so the card behaves consistently.
         this._config = {
             ...DEFAULTS,
             ...config,
@@ -86,19 +74,12 @@ export class MacsCard extends HTMLElement {
         // Only run the first time setConfig is called
         if (!this._root) {
             // Shadow DOM wrapper + iframe shell
-            // (Creating a Shadow Root so CSS styles don’t mess with HA, and HA styles don’t mess with Macs.)
+            // (Creating a Shadow Root so CSS styles don't mess with HA, and HA styles don't mess with Macs.)
             this._root = this.attachShadow({ mode: "open" });
 
             // the iframe (hidden whilst loading - display thumbnail instead)
             this._root.innerHTML = `
-                <style>
-                    :host { display: block; height: 100%; }
-                    ha-card { height: 100%; overflow: hidden; border-radius: var(--ha-card-border-radius, 12px); }
-                    .wrap { height: 100%; width: 100%; }
-                    iframe, img { border: 0; width: 100%; height: 100%; display: block; }
-                    img { object-fit: cover; }
-                    .hidden { display: none !important; }
-                </style>
+                <link rel="stylesheet" href="${cardCssUrl}">
                 <ha-card><div class="wrap"><img class="thumb" /><iframe class="hidden"></iframe></div></ha-card>
             `;
             this._iframe = this._root.querySelector("iframe");
@@ -126,8 +107,10 @@ export class MacsCard extends HTMLElement {
             // Keep home assistant state
             this._hass = null;
 
+            // Track assist satellite state transitions for wake-word logic.
             this._assistSatelliteOutcome = new SatelliteTracker({});
 
+            // Track pipeline turns (assistant chat history) and forward to iframe.
             this._pipelineTracker = new AssistPipelineTracker({
                 onTurns: (turns) => {
                     if (!this._iframe) return;
@@ -136,6 +119,7 @@ export class MacsCard extends HTMLElement {
             });
             if (this._pipelineTracker) this._pipelineTracker.setConfig(this._config);
 
+            // Normalize and cache weather data so we only post changes to the iframe.
             this._weatherHandler = new WeatherHandler();
             this._weatherHandler.setConfig(this._config);
 
@@ -146,6 +130,7 @@ export class MacsCard extends HTMLElement {
             this._messageListenerActive = true;
         }
         else {
+            // Reapply config to existing handlers when HA updates config for this card.
             if (!this._weatherHandler) {
                 this._weatherHandler = new WeatherHandler();
             }
@@ -165,6 +150,7 @@ export class MacsCard extends HTMLElement {
         try { window.removeEventListener("message", this._onMessage); } catch (_) {}
         this._messageListenerActive = false;
 
+        // Dispose long-lived helpers to avoid leaks if HA removes/recreates the card.
        try { this._pipelineTracker?.dispose?.(); } catch (_) {}
        this._pipelineTracker  = null;
 
@@ -225,6 +211,7 @@ export class MacsCard extends HTMLElement {
         if (!this._iframe?.contentWindow) return;
         const base = safeUrl(this._config?.url);
         const targetOrigin = getTargetOrigin(base.toString());
+        // Always target the iframe origin to avoid cross-origin leaks.
         try { this._iframe.contentWindow.postMessage(payload, targetOrigin); } catch (_) {}
     }
 
@@ -239,6 +226,7 @@ export class MacsCard extends HTMLElement {
         const autoBrightnessTimeout = this._isPreview ? 0 : this._config.auto_brightness_timeout_minutes;
         const autoBrightnessMin = this._config.auto_brightness_min;
         const autoBrightnessMax = this._config.auto_brightness_max;
+        // Preview mode forces kiosk/auto-brightness off so the editor stays usable.
         this._postToIframe({
             type: "macs:config",
             assist_pipeline_entity,
@@ -251,6 +239,7 @@ export class MacsCard extends HTMLElement {
 
     _sendMoodToIframe(mood, options = {}) {
         const payload = { type: "macs:mood", mood };
+        // reset_sleep tells the iframe to reset its idle/sleep timers.
         if (options.resetSleep) payload.reset_sleep = true;
         this._postToIframe(payload);
     }
@@ -286,6 +275,7 @@ export class MacsCard extends HTMLElement {
     _sendTurnsToIframe() {
         // Turns are kept newest-first in the card, but sent as-is
         const turns = this._pipelineTracker?.getTurns?.() || [];
+        // Avoid spamming iframe with identical payloads.
         const signature = JSON.stringify(turns);
         if (signature === this._lastTurnsSignature) return;
         this._lastTurnsSignature = signature;
@@ -303,6 +293,7 @@ export class MacsCard extends HTMLElement {
 
         if (!e.data || typeof e.data !== "object") return;
 
+        // Long-press gesture in the iframe toggles HA chrome visibility.
         if (e.data.type === "macs:toggle_kiosk") {
             if (this._isPreview) {
                 debug("kiosk-toggle", { ignored: true, reason: "preview" });
@@ -320,6 +311,7 @@ export class MacsCard extends HTMLElement {
     }
 
     _getKioskStyleRoots() {
+        // Walk HA shadow roots so we can inject kiosk styles in the right place.
         const roots = [];
         const hass = document.querySelector("home-assistant");
         const hassRoot = hass?.shadowRoot;
@@ -341,6 +333,7 @@ export class MacsCard extends HTMLElement {
     }
 
     _applyKioskStyles(enabled) {
+        // Inject/remove kiosk CSS inside each shadow root to hide HA chrome.
         const roots = this._getKioskStyleRoots();
         roots.forEach((root) => {
             const existing = root.getElementById(KIOSK_STYLE_ID);
@@ -349,15 +342,17 @@ export class MacsCard extends HTMLElement {
                 return;
             }
             if (!existing) {
-                const style = document.createElement("style");
-                style.id = KIOSK_STYLE_ID;
-                style.textContent = KIOSK_STYLE;
-                root.appendChild(style);
+                const link = document.createElement("link");
+                link.id = KIOSK_STYLE_ID;
+                link.rel = "stylesheet";
+                link.href = kioskCssUrl;
+                root.appendChild(link);
             }
         });
     }
 
     _applyKioskCardStyle(enabled) {
+        // Force the card itself to full-viewport; restore prior inline styles when disabled.
         if (enabled) {
             if (typeof this._kioskHostStyleBackup === "undefined") {
                 this._kioskHostStyleBackup = this.getAttribute("style");
@@ -390,11 +385,13 @@ export class MacsCard extends HTMLElement {
     }
 
     _updatePreviewState() {
+        // Detect when we're rendered inside the HA card editor preview.
         this._isPreview = !!this.closest(".element-preview");
     }
 
     _sendWeatherIfChanged() {
         if (!this._weatherHandler) return;
+        // Only post deltas to keep iframe traffic minimal.
         this._sendTemperatureToIframe(this._weatherHandler.getTemperature?.());
         this._sendWindSpeedToIframe(this._weatherHandler.getWindSpeed?.());       
         this._sendPrecipitationToIframe(this._weatherHandler.getPrecipitation?.());
@@ -427,6 +424,7 @@ export class MacsCard extends HTMLElement {
 
         //this._ensureSubscriptions();
 
+        // Read current HA state into local values.
         const moodState = hass.states[MOOD_ENTITY_ID] || null;
         //const mood = normMood(moodState?.state);
         const baseMood = normMood(moodState?.state);
@@ -446,6 +444,7 @@ export class MacsCard extends HTMLElement {
                 debug(tracker);
                 if (this._config?.assist_satellite_enabled && satState && tracker) tracker.update(satState);
             }
+            // Detect idle -> listening transition to treat as a wake-word event.
             wakewordTriggered = prevSatState === "idle" && satState === "listening";
             this._lastAssistSatelliteState = satState || null;
         } else {
@@ -459,6 +458,7 @@ export class MacsCard extends HTMLElement {
         const brightnessState = hass.states[BRIGHTNESS_ENTITY_ID] || null;
         const brightness = normBrightness(brightnessState?.state);
 
+        // Weather handler normalizes raw HA entities into a single payload.
         let weatherValues = null;
         if (this._weatherHandler) {
             this._weatherHandler.setHass(hass);
@@ -476,6 +476,7 @@ export class MacsCard extends HTMLElement {
         } else {
             base.searchParams.delete("v");
         }
+        // Helper to send the full state bundle to the iframe.
         const sendAll = () => {
             this._sendConfigToIframe();
             this._sendMoodToIframe(mood);
@@ -503,6 +504,7 @@ export class MacsCard extends HTMLElement {
 
             const src = base.toString();
             this._iframe.onload = () => {
+                // Reset change tracking so the first postMessage burst sends everything.
                 this._weatherHandler?.resetChangeTracking?.();
                 sendAll();
                 // First fetch after iframe is alive
@@ -528,6 +530,7 @@ export class MacsCard extends HTMLElement {
             // Subsequent updates: only send what changed
             if (wakewordTriggered) {
                 this._lastMood = mood;
+                // Wake-word resets the iframe's idle/sleep timers.
                 this._sendMoodToIframe(mood, { resetSleep: true });
             } else if (mood !== this._lastMood) {
                 this._lastMood = mood;
@@ -549,4 +552,3 @@ export class MacsCard extends HTMLElement {
         return 6;
     }
 }
-

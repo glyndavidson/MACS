@@ -1,0 +1,17 @@
+app-drawer-layout app-drawer,
+app-drawer-layout [drawer],
+ha-sidebar,
+hui-sidebar {
+    display: none !important;
+}
+
+app-header,
+app-toolbar,
+ha-tabs,
+.header {
+    display: none !important;
+}
+
+app-drawer-layout > [main] {
+    margin-left: 0 !important;
+}
