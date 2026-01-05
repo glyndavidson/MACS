@@ -94,10 +94,10 @@ const EYE_LOOK_MAX_Y = 12;
 const STAGE_LOOK_MAX_X = 8;
 const STAGE_LOOK_MAX_Y = 6;
 const LOW_BATTERY_CUTOFF = 20;
-const TEMP_NEUTRAL_MIN = 20;
-const TEMP_NEUTRAL_MAX = 80;
-const TEMP_COLD_COLOR = "#1e55ff";
-const TEMP_WARM_COLOR = "#ff9a3c";
+const BEZEL_WARM_MIN = 90;
+const BEZEL_COLD_MAX = 10;
+const BEZEL_WARM_RGB = [255, 102, 0];
+const BEZEL_COLD_RGB = [0, 228, 255];
 
 
 
@@ -139,7 +139,6 @@ let animationsPaused = false;
 let animationsToggleEnabled = true;
 let lastBatteryPercent = null;
 let baseColors = null;
-let temperatureColors = null;
 let batteryCharging = null;
 let batteryStateSensorEnabled = false;
 
@@ -207,19 +206,6 @@ const LOW_BATTERY_BLACK_VARS = [
 	"--sclera-gradient-highlight"
 ];
 
-const TEMP_TINT_VARS = [
-	"--sclera-gradient-fill",
-	"--sclera-gradient-shadow",
-	"--sclera-outer-glow",
-	"--sclera-inner-glow",
-	"--iris-outer-glow",
-	"--iris-inner-glow",
-	"--mouth-fill",
-	"--mouth-glow",
-	"--brow-fill",
-	"--brow-glow"
-];
-
 const LOW_BATTERY_FADE_VARS = [
 	"--sclera-outer-glow",
 	"--sclera-inner-glow",
@@ -235,7 +221,6 @@ const BASE_COLOR_VARS = (() => {
 		...LOW_BATTERY_ZERO_VARS,
 		...LOW_BATTERY_BLACK_VARS,
 		...LOW_BATTERY_FADE_VARS,
-		...TEMP_TINT_VARS,
 		"--sclera-charging-glow"
 	];
 	return Array.from(new Set(vars));
@@ -282,60 +267,6 @@ const toRgba = (value, alpha) => {
 	return `rgba(${Math.round(parsed.r)}, ${Math.round(parsed.g)}, ${Math.round(parsed.b)}, ${a})`;
 };
 
-const clamp01 = (value) => Math.max(0, Math.min(1, value));
-
-const srgbToLinear = (c) => (c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4));
-const linearToSrgb = (c) => (c <= 0.0031308 ? 12.92 * c : 1.055 * Math.pow(c, 1 / 2.4) - 0.055);
-
-const toOkLab = (color) => {
-	if (!color) return null;
-	const r = srgbToLinear(color.r / 255);
-	const g = srgbToLinear(color.g / 255);
-	const b = srgbToLinear(color.b / 255);
-
-	const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
-	const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
-	const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
-
-	return {
-		L: 0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s,
-		a: 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s,
-		b: 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s
-	};
-};
-
-const okLabToRgb = (lab) => {
-	if (!lab) return null;
-	const l = lab.L + 0.3963377774 * lab.a + 0.2158037573 * lab.b;
-	const m = lab.L - 0.1055613458 * lab.a - 0.0638541728 * lab.b;
-	const s = lab.L - 0.0894841775 * lab.a - 1.2914855480 * lab.b;
-
-	const l3 = l * l * l;
-	const m3 = m * m * m;
-	const s3 = s * s * s;
-
-	const r = linearToSrgb(4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3);
-	const g = linearToSrgb(-1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3);
-	const b = linearToSrgb(-0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3);
-
-	return {
-		r: Math.round(clamp01(r) * 255),
-		g: Math.round(clamp01(g) * 255),
-		b: Math.round(clamp01(b) * 255)
-	};
-};
-
-const mixOkLab = (from, to, t) => ({
-	L: from.L + (to.L - from.L) * t,
-	a: from.a + (to.a - from.a) * t,
-	b: from.b + (to.b - from.b) * t
-});
-
-const rgbToString = (rgb) => {
-	if (!rgb) return "";
-	return `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
-};
-
 const ensureBaseColors = () => {
 	const root = document.documentElement;
 	if (!root) return;
@@ -362,7 +293,7 @@ const applyColorSet = (colors) => {
 };
 
 const getActiveColors = () => {
-	const colors = temperatureColors || baseColors;
+	const colors = baseColors;
 	if (!colors) return null;
 	if (isChargingVisualActive() && colors["--sclera-charging-glow"]) {
 		return {
@@ -395,63 +326,46 @@ const applyBatteryDimming = (percent) => {
 	});
 };
 
-const applyTemperatureTint = (percent) => {
-	ensureBaseColors();
-	if (!baseColors) return;
-	if (!Number.isFinite(percent)) {
-		temperatureColors = null;
-		applyBatteryDimming(lastBatteryPercent);
-		return;
-	}
-
-	const temp = clampRange(percent, 0, 100);
-	let ratio = 0;
-	let targetHex = "";
-	if (temp < TEMP_NEUTRAL_MIN) {
-		ratio = (TEMP_NEUTRAL_MIN - temp) / TEMP_NEUTRAL_MIN;
-		targetHex = TEMP_COLD_COLOR;
-	} else if (temp > TEMP_NEUTRAL_MAX) {
-		ratio = (temp - TEMP_NEUTRAL_MAX) / (100 - TEMP_NEUTRAL_MAX);
-		targetHex = TEMP_WARM_COLOR;
-	}
-
-	if (!targetHex || ratio <= 0) {
-		temperatureColors = null;
-		applyBatteryDimming(lastBatteryPercent);
-		return;
-	}
-
-	const targetOk = toOkLab(parseColor(targetHex));
-	if (!targetOk) {
-		temperatureColors = null;
-		applyBatteryDimming(lastBatteryPercent);
-		return;
-	}
-
-	const next = { ...baseColors };
-	TEMP_TINT_VARS.forEach((key) => {
-		const base = baseColors[key];
-		const parsed = parseColor(base);
-		if (!parsed) return;
-		const baseOk = toOkLab(parsed);
-		if (!baseOk) return;
-		const mixed = mixOkLab(baseOk, targetOk, ratio);
-		next[key] = rgbToString(okLabToRgb(mixed)) || base;
-	});
-
-	if (isChargingVisualActive() && baseColors["--sclera-charging-glow"]) {
-		next["--sclera-inner-glow"] = baseColors["--sclera-charging-glow"];
-	}
-
-	temperatureColors = next;
-	applyBatteryDimming(lastBatteryPercent);
-};
-
 function isChargingVisualActive() {
 	if (batteryCharging !== true) return false;
 	if (!batteryStateSensorEnabled) return true;
 	return Number.isFinite(lastBatteryPercent) && lastBatteryPercent <= LOW_BATTERY_CUTOFF;
 }
+
+const setBezelGlowFromTemperature = (percent) => {
+	const root = document.documentElement;
+	if (!root) return;
+	if (!Number.isFinite(percent)) {
+		root.style.setProperty("--bezel-glow-color", "rgba(0, 0, 0, 0)");
+		root.style.setProperty("--bezel-glow-y", "0px");
+		return;
+	}
+
+	const temp = clampRange(percent, 0, 100);
+	let alpha = 0;
+	let rgb = null;
+	let offsetY = 0;
+
+	if (temp <= BEZEL_COLD_MAX) {
+		alpha = (BEZEL_COLD_MAX - temp) / BEZEL_COLD_MAX;
+		rgb = BEZEL_COLD_RGB;
+		offsetY = alpha * 10;
+	} else if (temp >= BEZEL_WARM_MIN) {
+		alpha = (temp - BEZEL_WARM_MIN) / (100 - BEZEL_WARM_MIN);
+		rgb = BEZEL_WARM_RGB;
+		offsetY = -alpha * 10;
+	}
+
+	alpha = clampRange(alpha, 0, 1) * 0.8;
+	if (!rgb) {
+		root.style.setProperty("--bezel-glow-color", "rgba(0, 0, 0, 0)");
+		root.style.setProperty("--bezel-glow-y", "0px");
+		return;
+	}
+	const color = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha.toFixed(3)})`;
+	root.style.setProperty("--bezel-glow-color", color);
+	root.style.setProperty("--bezel-glow-y", `${offsetY.toFixed(2)}px`);
+};
 
 const applyIdleFloatJitter = () => {
 	const jitter = (Math.random() * 2) - 1;
@@ -869,7 +783,7 @@ function setTemperature(value){
 	const percent = clampPercent(value, 0);
 	const intensity = percent / 100;
 	document.documentElement.style.setProperty('--temperature-intensity', intensity.toString());
-	applyTemperatureTint(percent);
+	setBezelGlowFromTemperature(percent);
 }
 
 function setWindSpeed(value){

@@ -22,6 +22,11 @@
 	--brow-fill: #6dd3d7;
 	--brow-glow: #00ffdd;
 
+	/* Bezel glow */
+	--bezel-glow-color: rgba(0, 0, 0, 0);
+	--bezel-glow-x: 0px;
+	--bezel-glow-y: 0px;
+
 	/* Tuning knobs */
 	--faceScale: 0.60;
 	--brightness-level: 1;
