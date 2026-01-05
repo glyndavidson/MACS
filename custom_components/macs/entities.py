@@ -234,6 +234,34 @@ class MacsAnimationsEnabledSwitch(SwitchEntity, RestoreEntity):
         return MACS_DEVICE
 
 
+class MacsChargingSwitch(SwitchEntity, RestoreEntity):
+    _attr_has_entity_name = True
+    _attr_name = "Charging"
+    _attr_unique_id = "macs_charging"
+    _attr_suggested_object_id = "macs_charging"
+    _attr_icon = "mdi:battery-charging"
+    _attr_is_on = False
+
+    async def async_turn_on(self, **kwargs) -> None:
+        self._attr_is_on = True
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs) -> None:
+        self._attr_is_on = False
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        last_state = await self.async_get_last_state()
+        if not last_state:
+            return
+        self._attr_is_on = (last_state.state == "on")
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        return MACS_DEVICE
+
+
 DEBUG_OPTIONS = (
     "None",
     "All",

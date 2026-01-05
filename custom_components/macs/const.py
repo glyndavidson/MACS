@@ -13,7 +13,6 @@ MACS_DEVICE = DeviceInfo(
 
 MOODS = (
     "bored",
-    "charging",
     "confused",
     "happy",
     "idle",
@@ -43,6 +42,9 @@ ATTR_BATTERY_CHARGE = "battery_charge"
 
 SERVICE_SET_ANIMATIONS_ENABLED = "set_animations_enabled"
 ATTR_ANIMATIONS_ENABLED = "animations_enabled"
+
+SERVICE_SET_CHARGING = "set_charging"
+ATTR_CHARGING = "charging"
 
 SERVICE_SEND_USER_MESSAGE = "send_user_message"
 SERVICE_SEND_ASSISTANT_MESSAGE = "send_assistant_message"

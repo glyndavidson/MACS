@@ -1,4 +1,4 @@
-﻿import { TEMPERATURE_ENTITY_ID, WIND_ENTITY_ID, PRECIPITATION_ENTITY_ID, BATTERY_CHARGE_ENTITY_ID } from "./constants.js";
+import { TEMPERATURE_ENTITY_ID, WIND_ENTITY_ID, PRECIPITATION_ENTITY_ID, BATTERY_CHARGE_ENTITY_ID, BATTERY_STATE_ENTITY_ID } from "./constants.js";
 import { toNumber, normalizeTemperatureValue, normalizeWindValue, normalizeRainValue, normalizeBatteryValue, normalizeWeatherUnit, normalizeBatteryUnit } from "./validators.js";
 import { createDebugger } from "./debugger.js";
 
@@ -380,10 +380,10 @@ export class WeatherHandler {
     }
 
     _normalizeBatteryState() {
-        if (!this._config?.battery_state_sensor_enabled) {
-            return null;
-        }
-        const entityId = (this._config.battery_state_sensor_entity || "").toString().trim();
+        const useSensor = !!this._config?.battery_state_sensor_enabled;
+        const entityId = useSensor
+            ? (this._config.battery_state_sensor_entity || "").toString().trim()
+            : BATTERY_STATE_ENTITY_ID;
         if (!entityId) {
             return null;
         }
@@ -640,3 +640,4 @@ export class WeatherHandler {
 
 
 }
+

@@ -32,6 +32,8 @@ from .const import (
     ATTR_BATTERY_CHARGE,
     SERVICE_SET_ANIMATIONS_ENABLED,
     ATTR_ANIMATIONS_ENABLED,
+    SERVICE_SET_CHARGING,
+    ATTR_CHARGING,
     SERVICE_SEND_USER_MESSAGE,
     SERVICE_SEND_ASSISTANT_MESSAGE,
     ATTR_MESSAGE,
@@ -154,6 +156,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     migrate("macs_temperature", "number.macs_temperature")
     migrate("macs_windspeed", "number.macs_windspeed")
     migrate("macs_precipitation", "number.macs_precipitation")
+    migrate("macs_charging", "switch.macs_charging")
     # Replace legacy debug switch with config select.
     legacy_debug = next(
         (e for e in reg.entities.values() if e.platform == DOMAIN and e.unique_id == "macs_debug" and e.domain == "switch"),
@@ -277,6 +280,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             ATTR_ANIMATIONS_ENABLED,
             "macs_animations_enabled",
             "animations enabled"
+        )
+
+    async def handle_set_charging(call: ServiceCall) -> None:
+        await _set_switch_entity(
+            call,
+            ATTR_CHARGING,
+            "macs_charging",
+            "charging"
         )
 
     async def handle_set_weather_conditions_snowy(call: ServiceCall) -> None:
@@ -460,6 +471,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             schema=vol.Schema({vol.Required(ATTR_ANIMATIONS_ENABLED): cv.boolean}),
         )
 
+    if not hass.services.has_service(DOMAIN, SERVICE_SET_CHARGING):
+        hass.services.async_register(
+            DOMAIN,
+            SERVICE_SET_CHARGING,
+            handle_set_charging,
+            schema=vol.Schema({vol.Required(ATTR_CHARGING): cv.boolean}),
+        )
+
     if not hass.services.has_service(DOMAIN, SERVICE_SET_WEATHER_CONDITIONS_SNOWY):
         hass.services.async_register(
             DOMAIN,
@@ -595,6 +614,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         hass.services.async_remove(DOMAIN, SERVICE_SET_WINDSPEED)
         hass.services.async_remove(DOMAIN, SERVICE_SET_PRECIPITATION)
         hass.services.async_remove(DOMAIN, SERVICE_SET_BATTERY_CHARGE)
+        hass.services.async_remove(DOMAIN, SERVICE_SET_CHARGING)
         hass.services.async_remove(DOMAIN, SERVICE_SET_WEATHER_CONDITIONS_SNOWY)
         hass.services.async_remove(DOMAIN, SERVICE_SET_WEATHER_CONDITIONS_CLOUDY)
         hass.services.async_remove(DOMAIN, SERVICE_SET_WEATHER_CONDITIONS_RAINY)

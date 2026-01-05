@@ -572,27 +572,17 @@ export class MacsCard extends HTMLElement {
             this._weatherHandler.setHass(hass);
             weatherValues = this._weatherHandler.update?.() || this._weatherHandler.getPayload?.() || null;
         }
-        const batteryActive =
-            !!this._config?.battery_charge_sensor_enabled &&
-            Number.isFinite(weatherValues?.battery);
+        const batteryActive = Number.isFinite(weatherValues?.battery);
         const batteryLow = batteryActive && weatherValues.battery <= 20;
-        const batteryCharging =
-            !!this._config?.battery_state_sensor_enabled &&
-            weatherValues?.battery_state === true;
+        const batteryCharging = weatherValues?.battery_state === true;
 
         // const now = Date.now();
         const overrideMood = this._assistSatelliteOutcome?.getOverrideMood?.();
         const assistEnabled = !!this._config?.assist_satellite_enabled;
         const assistActive = assistEnabled && assistMood && assistMood !== "idle";
         let mood = overrideMood ? overrideMood : ((assistEnabled && assistMood) ? assistMood : baseMood);
-        if (!overrideMood && !assistActive) {
-            if (batteryLow && batteryCharging) {
-                mood = "charging";
-            } else if (batteryLow) {
-                mood = "sad";
-            } else if (batteryActive && baseMood === "charging") {
-                mood = "idle";
-            }
+        if (!overrideMood && !assistActive && batteryLow && !batteryCharging) {
+            mood = "sad";
         }
 
         const base = safeUrl(this._config.url);

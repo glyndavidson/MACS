@@ -3,7 +3,7 @@ import { Particle, SVG_NS } from "./particles.js";
 
 const debug = createDebugger("moods.js");
 
-const moods = ['bored','charging','confused','happy','idle','listening','sad','sleeping','surprised','thinking'];
+const moods = ['bored','confused','happy','idle','listening','sad','sleeping','surprised','thinking'];
 
 const RAIN_MAX_DROPS = 200;
 const RAIN_MIN_SPEED = 0.8;
@@ -770,13 +770,21 @@ function setBattery(value){
 	applyBatteryDimming(percent);
 }
 
+function setChargingActive(active) {
+	const body = document.body;
+	if (!body) return;
+	body.classList.toggle("charging", !!active);
+}
+
 function setBatteryState(value) {
 	if (value === null || typeof value === "undefined") {
 		batteryCharging = null;
+		setChargingActive(false);
 		applyBatteryDimming(lastBatteryPercent);
 		return;
 	}
 	batteryCharging = !!value;
+	setChargingActive(batteryCharging);
 	applyBatteryDimming(lastBatteryPercent);
 }
 

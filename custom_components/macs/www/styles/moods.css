@@ -1,5 +1,5 @@
 /* Hide all mouths by default; moods selectively enable */
-#mouth-idle, #mouth-bored, #mouth-sad, #mouth-charging, #mouth-listening, #mouth-thinking, #mouth-surprised, #mouth-confused, #mouth-sleeping, #mouth-happy{ display:none; }
+#mouth-idle, #mouth-bored, #mouth-sad, #mouth-listening, #mouth-thinking, #mouth-surprised, #mouth-confused, #mouth-sleeping, #mouth-happy{ display:none; }
 
 
 /* Base animations */
@@ -44,15 +44,14 @@
 .mood-bored .iris{ transform: translate(-15px, -15px); }
 
 /* CHARGING */
-.mood-charging{
-	--sclera-inner-glow: var(--sclera-outer-glow);
+.charging{
+	--sclera-inner-glow: var(--sclera-charging-glow);
 }
-.mood-charging #mouth-charging{ display:block; stroke:none; }
 .charge-mask{
 	transform-box: fill-box;
 	transform-origin: center bottom;
 }
-.mood-charging .charge-mask{
+.charging .charge-mask{
 	animation: chargeFill 2.4s ease-in-out infinite;
 }
 @keyframes chargeFill{
@@ -79,10 +78,10 @@
 	animation-play-state: paused !important;
 }
 
-.mood-charging #leftEye .sclera circle:nth-child(3) {
+.charging #leftEye .sclera circle:nth-child(3) {
 	mask: url(#chargeMaskLeft);
 }
-.mood-charging #rightEye .sclera circle:nth-child(3) {
+.charging #rightEye .sclera circle:nth-child(3) {
 	mask: url(#chargeMaskRight);
 }
 .mood-idle.cursor-look .iris{
