@@ -1,6 +1,6 @@
 import { TEMPERATURE_ENTITY_ID, WIND_ENTITY_ID, PRECIPITATION_ENTITY_ID, BATTERY_CHARGE_ENTITY_ID, BATTERY_STATE_ENTITY_ID } from "./constants.js";
 import { toNumber, normalizeTemperatureValue, normalizeWindValue, normalizeRainValue, normalizeBatteryValue, normalizeWeatherUnit, normalizeBatteryUnit } from "./validators.js";
-import { createDebugger } from "./debugger.js";
+import { createDebugger } from "../shared/debugger.js";
 
 const debug = createDebugger("weatherHandler.js");
 

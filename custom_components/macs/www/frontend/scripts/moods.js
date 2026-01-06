@@ -1,4 +1,4 @@
-﻿import { createDebugger } from "../ha/debugger.js";
+﻿import { createDebugger } from "../../shared/debugger.js";
 import { Particle, SVG_NS } from "./particles.js";
 
 const debug = createDebugger("moods.js");
@@ -70,7 +70,7 @@ const LEAF_OPACITY_VARIATION = 0;		// Random opacity spread around the intensity
 const LEAF_SPIN_MIN = 120;				// 
 const LEAF_SPIN_MAX = 120;				// 
 const LEAF_VARIANTS = 10;				// 
-const LEAF_IMAGE_BASE = "images/weather/leaves/leaf_";
+const LEAF_IMAGE_BASE = "frontend/images/weather/leaves/leaf_";
 
 
 
@@ -774,10 +774,6 @@ function setPrecipitation(value){
 	applyPrecipitation();
 }
 
-function setSnowfall(value){
-	setPrecipitation(value);
-}
-
 function setWeatherConditions(conditions){
 	weatherConditions = (conditions && typeof conditions === "object") ? conditions : {};
 	const body = document.body;
@@ -1091,14 +1087,8 @@ setRainViewBoxFromSvg();
 setTemperature(qs.get('temperature') ?? '0');
 setWindSpeed(qs.get('windspeed') ?? '0');
 const precipitationParam = qs.get('precipitation');
-const rainfallParam = qs.get('rainfall');
-const snowfallParam = qs.get('snowfall');
 if (precipitationParam !== null) {
 	setPrecipitation(precipitationParam);
-} else if (rainfallParam !== null) {
-	setPrecipitation(rainfallParam);
-} else if (snowfallParam !== null) {
-	setPrecipitation(snowfallParam);
 } else {
 	setPrecipitation('0');
 }
@@ -1188,11 +1178,6 @@ window.addEventListener('message', (e) => {
         debug("Setting precipitation to: " + (e.data.precipitation ?? '0'));
         return;
     }
-    if (e.data.type === 'macs:rainfall') {
-        setPrecipitation(e.data.rainfall ?? '0');
-        debug("Setting precipitation to: " + (e.data.rainfall ?? '0'));
-        return;
-    }
     if (e.data.type === 'macs:weather_conditions') {
         setWeatherConditions(e.data.conditions);
         return;
@@ -1209,11 +1194,6 @@ window.addEventListener('message', (e) => {
     }
     if (e.data.type === 'macs:battery_state') {
         setBatteryState(e.data.battery_state);
-        return;
-    }
-    if (e.data.type === 'macs:snowfall') {
-        setSnowfall(e.data.snowfall ?? '0');
-        debug("Setting snowfall to: " + (e.data.snowfall ?? '0'));
         return;
     }
     if (e.data.type === 'macs:brightness') {

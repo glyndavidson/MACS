@@ -21,8 +21,8 @@
 
 
 
-import {MacsCard} from "./ha/MacsCard.js";
-import {MacsCardEditor} from "./ha/MacsCardEditor.js";
+import {MacsCard} from "./backend/MacsCard.js";
+import {MacsCardEditor} from "./backend/MacsCardEditor.js";
 
 const macsVersion = new URL(import.meta.url).searchParams.get("v");
 if (macsVersion) {

@@ -22,7 +22,7 @@ import { normMood, normBrightness, safeUrl, getTargetOrigin, assistStateToMood} 
 import { SatelliteTracker } from "./assistSatellite.js";
 import { AssistPipelineTracker } from "./assistPipeline.js";
 import { WeatherHandler } from "./weatherHandler.js";
-import { createDebugger } from "./debugger.js";
+import { createDebugger } from "../shared/debugger.js";
 
 
 const debug = createDebugger("MacsCard.js");

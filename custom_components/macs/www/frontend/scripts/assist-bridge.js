@@ -1,4 +1,4 @@
-import { createDebugger } from "../ha/debugger.js";
+import { createDebugger } from "../../shared/debugger.js";
 
 const debug = createDebugger("assist-bridge.js");
 

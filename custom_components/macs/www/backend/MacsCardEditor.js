@@ -18,7 +18,7 @@
 
 
 import { DEFAULTS } from "./constants.js";
-import { createDebugger } from "./debugger.js";
+import { createDebugger } from "../shared/debugger.js";
 import { loadAssistantOptions, loadWeatherOptions, readAssistStateInputs, readAutoBrightnessInputs, readPipelineInputs, readWeatherInputs, syncAssistStateControls, syncConditionControls, syncAutoBrightnessControls, syncPipelineControls, syncWeatherControls } from "./editorOptions.js";
 
 const debug = createDebugger("MacsCardEditor.js");
@@ -73,9 +73,6 @@ const instructions = `
 
 					<div>select.macs_mood</div>
 					<div>macs.set_mood</div>
-
-					<div>select.macs_weather</div>
-					<div>macs.set_weather</div>
 
 						<div>number.macs_brightness</div>
 						<div>macs.set_brightness</div>

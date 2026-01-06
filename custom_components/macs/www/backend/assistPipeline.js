@@ -1,5 +1,5 @@
 import { DEFAULTS, CONVERSATION_ENTITY_ID } from "./constants.js";
-import { createDebugger } from "./debugger.js";
+import { createDebugger } from "../shared/debugger.js";
 
 const debug = createDebugger("assistPipeline.js");
 

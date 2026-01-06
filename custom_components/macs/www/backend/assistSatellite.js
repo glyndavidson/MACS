@@ -5,7 +5,7 @@
 
 import {DEFAULTS} from "./constants.js";
 
-import { createDebugger } from "./debugger.js";
+import { createDebugger } from "../shared/debugger.js";
 const debug = createDebugger("assistSatellite.js");
 
 export class SatelliteTracker{
