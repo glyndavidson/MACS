@@ -85,6 +85,33 @@ export const DEFAULT_MAX_RAIN_MM = 10;
 export const MACS_MESSAGE_EVENT = "macs_message";
 export const DEFAULT_MIN_RAIN_MM = 0;
 
+// Unit options used by the card editor.
+export const TEMPERATURE_UNIT_ITEMS = [
+    { id: "", name: "Auto", aliases: [] },
+    { id: "c", name: "Celsius (°C)", aliases: ["c", "°c", "celsius", "degc", "degree c", "degrees c", "degree celsius", "degrees celsius"] },
+    { id: "f", name: "Fahrenheit (°F)", aliases: ["f", "°f", "fahrenheit", "degf", "degree f", "degrees f", "degree fahrenheit", "degrees fahrenheit"] },
+];
+
+export const WIND_UNIT_ITEMS = [
+    { id: "", name: "Auto", aliases: [] },
+    { id: "mph", name: "Miles per hour (mph)", aliases: ["mph", "mi/h", "mile per hour", "miles per hour", "m/h"] },
+    { id: "kph", name: "Kilometres per hour (kph)", aliases: ["kph", "km/h", "kmh", "kilometre per hour", "kilometres per hour", "kilometer per hour", "kilometers per hour"] },
+    { id: "mps", name: "Metres per second (m/s)", aliases: ["mps", "m/s", "meter per second", "meters per second", "metre per second", "metres per second"] },
+    { id: "knots", name: "Knots", aliases: ["knots", "knot", "kn", "kt", "kt/h", "kts"] },
+];
+
+export const PRECIPITATION_UNIT_ITEMS = [
+    { id: "", name: "Auto", aliases: [] },
+    { id: "%", name: "Chance of rain (%)", aliases: ["%", "percent", "percentage", "chance", "chance of rain", "chance of precipitation", "probability", "probability of precipitation"] },
+    { id: "mm", name: "Millimetres (mm)", aliases: ["mm", "millimeter", "millimeters", "millimetre", "millimetres"] },
+    { id: "in", name: "Inches (in)", aliases: ["in", "inch", "inches", "in."] },
+];
+
+export const BATTERY_CHARGE_UNIT_ITEMS = [
+    { id: "%", name: "Percent (%)", aliases: ["%", "percent", "percentage"] },
+    { id: "v", name: "Volts (V)", aliases: ["v", "volt", "volts"] },
+];
+
 
 // HA entity IDs this card listens to
 export const MOOD_ENTITY_ID = "select.macs_mood";

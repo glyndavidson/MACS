@@ -2,7 +2,7 @@
  * Shared helpers for normalising values and safely handling URLs
  */
 
-import {DEFAULTS, DEFAULT_MAX_TEMP_C, DEFAULT_MIN_TEMP_C, DEFAULT_MAX_WIND_MPH, DEFAULT_MIN_WIND_MPH, DEFAULT_MAX_RAIN_MM, DEFAULT_MIN_RAIN_MM} from "../shared/constants.js";
+import {DEFAULTS, DEFAULT_MAX_TEMP_C, DEFAULT_MIN_TEMP_C, DEFAULT_MAX_WIND_MPH, DEFAULT_MIN_WIND_MPH, DEFAULT_MAX_RAIN_MM, DEFAULT_MIN_RAIN_MM, TEMPERATURE_UNIT_ITEMS, WIND_UNIT_ITEMS, PRECIPITATION_UNIT_ITEMS, BATTERY_CHARGE_UNIT_ITEMS, VERSION, rootUrl} from "../shared/constants.js";
 
 
 
@@ -17,6 +17,39 @@ export function safeUrl(baseUrl) {
 }
 export function getTargetOrigin(absoluteUrlString) {
     try { return new URL(absoluteUrlString).origin; } catch { return window.location.origin; }
+}
+export function getValidUrl(path, params = null) {
+    const url = new URL(path, rootUrl);
+    const search = new URLSearchParams();
+    if (VERSION && VERSION !== "Unknown") {
+        search.set("v", VERSION);
+    }
+    if (params instanceof URLSearchParams) {
+        params.forEach((value, key) => {
+            if (value !== null && typeof value !== "undefined") {
+                search.set(key, value.toString());
+            }
+        });
+    } else if (typeof params === "string") {
+        const cleaned = params.startsWith("?") ? params.slice(1) : params;
+        const extra = new URLSearchParams(cleaned);
+        extra.forEach((value, key) => {
+            if (value !== null && typeof value !== "undefined") {
+                search.set(key, value.toString());
+            }
+        });
+    } else if (params && typeof params === "object") {
+        Object.entries(params).forEach(([key, value]) => {
+            if (value !== null && typeof value !== "undefined") {
+                search.set(key, value.toString());
+            }
+        });
+    }
+    const query = search.toString();
+    if (query) {
+        url.search = query;
+    }
+    return url.toString();
 }
 
 
@@ -92,43 +125,33 @@ export function toNumber(value) {
     return Number.isFinite(n) ? n : null;
 }
 
-export function normalizeTempUnit(value) {
-    const u = (value || "").toString().trim().toLowerCase();
-    if (!u) return "";
-    if (u.indexOf("f") !== -1) return "f";
-    return "c";
-}
-
-export function normalizeWindUnit(value) {
-    const u = (value || "").toString().trim().toLowerCase();
-    if (!u) return "";
-    if (u === "kph" || u === "km/h") return "kph";
-    if (u === "mps" || u === "m/s") return "mps";
-    if (u === "knots" || u === "kn" || u === "kt" || u === "kt/h") return "knots";
-    return "mph";
-}
-
-export function normalizeRainUnit(value) {
-    const u = (value || "").toString().trim().toLowerCase();
-    if (!u) return "";
-    if (u === "%" || u.indexOf("percent") !== -1) return "%";
-    if (u === "in" || u === "inch" || u === "inches") return "in";
-    return "mm";
-}
-
-export function normalizeBatteryUnit(value) {
-    const u = (value || "").toString().trim().toLowerCase();
-    if (!u) return "";
-    if (u === "%" || u.indexOf("percent") !== -1) return "%";
-    if (u === "v" || u === "volt" || u === "volts") return "v";
-    return "%";
-}
-
-export function normalizeWeatherUnit(kind, value) {
-    if (kind === "temp") return normalizeTempUnit(value);
-    if (kind === "wind") return normalizeWindUnit(value);
-    if (kind === "rain") return normalizeRainUnit(value);
+export function normalizeUnit(kind, value) {
+    const k = (kind || "").toString().trim().toLowerCase();
+    if (k === "temp") return normalizeUnitFromItems(value, TEMPERATURE_UNIT_ITEMS, "c");
+    if (k === "wind") return normalizeUnitFromItems(value, WIND_UNIT_ITEMS, "mph");
+    if (k === "rain") return normalizeUnitFromItems(value, PRECIPITATION_UNIT_ITEMS, "mm");
+    if (k === "battery") return normalizeUnitFromItems(value, BATTERY_CHARGE_UNIT_ITEMS, "%");
     return "";
+}
+
+function normalizeUnitFromItems(value, items, fallback) {
+    const token = (value || "").toString().trim().toLowerCase();
+    if (!token || token === "auto") return "";
+    const list = Array.isArray(items) ? items : [];
+    for (let i = 0; i < list.length; i++) {
+        const item = list[i];
+        if (!item) continue;
+        const id = (item.id || "").toString().trim().toLowerCase();
+        if (!id) continue;
+        if (token === id) return item.id;
+        const aliases = Array.isArray(item.aliases) ? item.aliases : [];
+        for (let j = 0; j < aliases.length; j++) {
+            const alias = (aliases[j] || "").toString().trim().toLowerCase();
+            if (!alias) continue;
+            if (token === alias) return item.id;
+        }
+    }
+    return fallback || "";
 }
 
 
@@ -199,7 +222,7 @@ export function getDefaultBatteryRange(unit) {
 }
 
 export function normalizeTemperatureValue(value, unit, minValue, maxValue) {
-    const normalizedUnit = normalizeTempUnit(unit);
+    const normalizedUnit = normalizeUnit("temp", unit);
     const defaults = getDefaultTempRange(normalizedUnit);
     const min = toNumberOrNull(minValue);
     const max = toNumberOrNull(maxValue);
@@ -210,7 +233,7 @@ export function normalizeTemperatureValue(value, unit, minValue, maxValue) {
 }
 
 export function normalizeWindValue(value, unit, minValue, maxValue) {
-    const normalizedUnit = normalizeWindUnit(unit);
+    const normalizedUnit = normalizeUnit("wind", unit);
     const defaults = getDefaultWindRange(normalizedUnit);
     const min = toNumberOrNull(minValue);
     const max = toNumberOrNull(maxValue);
@@ -221,7 +244,7 @@ export function normalizeWindValue(value, unit, minValue, maxValue) {
 }
 
 export function normalizeRainValue(value, unit, minValue, maxValue) {
-    const normalizedUnit = normalizeRainUnit(unit);
+    const normalizedUnit = normalizeUnit("rain", unit);
     const defaults = getDefaultRainRange(normalizedUnit);
     const min = toNumberOrNull(minValue);
     const max = toNumberOrNull(maxValue);
@@ -232,7 +255,7 @@ export function normalizeRainValue(value, unit, minValue, maxValue) {
 }
 
 export function normalizeBatteryValue(value, unit, minValue, maxValue) {
-    const normalizedUnit = normalizeBatteryUnit(unit);
+    const normalizedUnit = normalizeUnit("battery", unit);
     const defaults = getDefaultBatteryRange(normalizedUnit);
     const min = toNumberOrNull(minValue);
     const max = toNumberOrNull(maxValue);

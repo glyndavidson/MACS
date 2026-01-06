@@ -1,5 +1,5 @@
 import { TEMPERATURE_ENTITY_ID, WIND_ENTITY_ID, PRECIPITATION_ENTITY_ID, BATTERY_CHARGE_ENTITY_ID, BATTERY_STATE_ENTITY_ID } from "../shared/constants.js";
-import { toNumber, normalizeTemperatureValue, normalizeWindValue, normalizeRainValue, normalizeBatteryValue, normalizeWeatherUnit, normalizeBatteryUnit } from "./validators.js";
+import { toNumber, normalizeTemperatureValue, normalizeWindValue, normalizeRainValue, normalizeBatteryValue, normalizeUnit } from "./validators.js";
 import { createDebugger } from "../shared/debugger.js";
 
 const debug = createDebugger("sensorHandler.js");
@@ -161,10 +161,10 @@ export class SensorHandler {
     }
 
     _resolveUnit(sensorUnit, configUnit, kind) {
-        const cfg = normalizeWeatherUnit(kind, configUnit);
+        const cfg = normalizeUnit(kind, configUnit);
         if (cfg) return cfg;
 
-        const su = normalizeWeatherUnit(kind, sensorUnit);
+        const su = normalizeUnit(kind, sensorUnit);
         if (su) return su;
 
         if (kind === "temp") {
@@ -180,10 +180,10 @@ export class SensorHandler {
     }
 
     _resolveBatteryUnit(sensorUnit, configUnit) {
-        const cfg = normalizeBatteryUnit(configUnit);
+        const cfg = normalizeUnit("battery", configUnit);
         if (cfg) return cfg;
 
-        const su = normalizeBatteryUnit(sensorUnit);
+        const su = normalizeUnit("battery", sensorUnit);
         if (su) return su;
 
         return "%";

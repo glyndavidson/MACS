@@ -18,7 +18,7 @@
  */
 
 import { VERSION, DEFAULTS, MOOD_ENTITY_ID, BRIGHTNESS_ENTITY_ID, ANIMATIONS_ENTITY_ID, DEBUG_ENTITY_ID, MACS_MESSAGE_EVENT } from "../shared/constants.js";
-import { normMood, normBrightness, safeUrl, getTargetOrigin, assistStateToMood} from "./validators.js";
+import { normMood, normBrightness, safeUrl, getTargetOrigin, assistStateToMood, getValidUrl} from "./validators.js";
 import { SatelliteTracker } from "./assistSatellite.js";
 import { AssistPipelineTracker } from "./assistPipeline.js";
 import { SensorHandler } from "./sensorHandler.js";
@@ -27,20 +27,10 @@ import { MessagePoster } from "../shared/postmessage.js";
 
 
 const debug = createDebugger("MacsCard.js");
-const cardCssUrl = (() => {
-    const baseUrl = new URL(import.meta.url);
-    const cssUrl = new URL("./cards.css", baseUrl);
-    cssUrl.search = baseUrl.search;
-    return cssUrl.toString();
-})();
+const cardCssUrl = getValidUrl("backend/cards.css");
 // Kiosk UI hides HA chrome and forces the card to full-viewport.
 const KIOSK_STYLE_ID = "macs-kiosk-style";
-const kioskCssUrl = (() => {
-    const baseUrl = new URL(import.meta.url);
-    const cssUrl = new URL("./kiosk.css", baseUrl);
-    cssUrl.search = baseUrl.search;
-    return cssUrl.toString();
-})();
+const kioskCssUrl = getValidUrl("backend/kiosk.css");
 
 
 export class MacsCard extends HTMLElement {

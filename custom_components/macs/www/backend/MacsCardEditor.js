@@ -1,4 +1,4 @@
-﻿/**
+/**
  * MacsCardEditor
  * ---------------
  * Home Assistant Lovelace card editor for M.A.C.S. (Mood-Aware Character SVG).
@@ -17,47 +17,16 @@
 
 
 
-import { DEFAULTS } from "../shared/constants.js";
+import { DEFAULTS, TEMPERATURE_UNIT_ITEMS, WIND_UNIT_ITEMS, PRECIPITATION_UNIT_ITEMS, BATTERY_CHARGE_UNIT_ITEMS } from "../shared/constants.js";
 import { createDebugger } from "../shared/debugger.js";
+import { getValidUrl } from "./validators.js";
 import { loadAssistantOptions, loadWeatherOptions, readAssistStateInputs, readAutoBrightnessInputs, readPipelineInputs, readWeatherInputs, syncAssistStateControls, syncConditionControls, syncAutoBrightnessControls, syncPipelineControls, syncWeatherControls } from "./editorOptions.js";
 
 const debug = createDebugger("MacsCardEditor.js");
 
 
-const cssUrl = (() => {
-	const baseUrl = new URL(import.meta.url);
-	const url = new URL("./editor.css", baseUrl);
-	url.search = baseUrl.search;
-	return url.toString();
-})();
+const cssUrl = getValidUrl("backend/editor.css");
 const styleSheet = `<link rel="stylesheet" href="${cssUrl}">`;
-
-const temperatureUnitItems = [
-	{ id: "", name: "Auto" },
-	{ id: "c", name: "Celsius (°C)" },
-	{ id: "f", name: "Fahrenheit (°F)" },
-];
-
-const windUnitItems = [
-	{ id: "", name: "Auto" },
-	{ id: "mph", name: "Miles per hour (mph)" },
-	{ id: "kph", name: "Kilometres per hour (kph)" },
-	{ id: "mps", name: "Metres per second (m/s)" },
-	{ id: "knots", name: "Knots" },
-];
-
-const precipitationUnitItems = [
-	{ id: "", name: "Auto" },
-	{ id: "%", name: "Chance of rain (%)" },
-	{ id: "mm", name: "Millimetres (mm)" },
-	{ id: "in", name: "Inches (in)" },
-];
-
-const batteryChargeUnitItems = [
-	{ id: "%", name: "Percent (%)" },
-	{ id: "v", name: "Volts (V)" },
-];
-
 
 const instructions = `
 	<!-- Show dialogue -->
@@ -363,7 +332,7 @@ export class MacsCardEditor extends HTMLElement {
 			selectItems: temperatureItems,
 			selectValue: this._config.temperature_sensor_entity ?? "",
 			selectOptions: { allowCustom: true, customFlag: !!this._config.temperature_sensor_custom },
-			unitItems: temperatureUnitItems,
+			unitItems: TEMPERATURE_UNIT_ITEMS,
 			unitValue: this._config.temperature_sensor_unit ?? ""
 		});
 
@@ -379,7 +348,7 @@ export class MacsCardEditor extends HTMLElement {
 			selectItems: windItems,
 			selectValue: this._config.wind_sensor_entity ?? "",
 			selectOptions: { allowCustom: true, customFlag: !!this._config.wind_sensor_custom },
-			unitItems: windUnitItems,
+			unitItems: WIND_UNIT_ITEMS,
 			unitValue: this._config.wind_sensor_unit ?? ""
 		});
 
@@ -395,7 +364,7 @@ export class MacsCardEditor extends HTMLElement {
 			selectItems: precipitationItems,
 			selectValue: this._config.precipitation_sensor_entity ?? "",
 			selectOptions: { allowCustom: true, customFlag: !!this._config.precipitation_sensor_custom },
-			unitItems: precipitationUnitItems,
+			unitItems: PRECIPITATION_UNIT_ITEMS,
 			unitValue: this._config.precipitation_sensor_unit ?? ""
 		});
 
@@ -423,7 +392,7 @@ export class MacsCardEditor extends HTMLElement {
 			selectItems: batteryItems,
 			selectValue: this._config.battery_charge_sensor_entity ?? "",
 			selectOptions: { allowCustom: true, customFlag: !!this._config.battery_charge_sensor_custom },
-			unitItems: batteryChargeUnitItems,
+			unitItems: BATTERY_CHARGE_UNIT_ITEMS,
 			unitValue: this._config.battery_charge_sensor_unit ?? "%"
 		});
 
@@ -633,6 +602,8 @@ export class MacsCardEditor extends HTMLElement {
 
 	}
 }
+
+
 
 
 
