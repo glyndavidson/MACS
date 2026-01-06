@@ -1,6 +1,6 @@
 import { createDebugger } from "./debugger.js";
 
-const debug = createDebugger("message_poster");
+const debug = createDebugger(import.meta.url);
 
 export class MessagePoster {
 	constructor({

@@ -26,7 +26,7 @@ import { createDebugger } from "../shared/debugger.js";
 import { MessagePoster } from "../shared/messagePoster.js";
 
 
-const debug = createDebugger("card");
+const debug = createDebugger(import.meta.url);
 
 
 // Kiosk UI hides HA chrome and forces the card to full-viewport.

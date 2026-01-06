@@ -25,14 +25,14 @@ Reduce service registration boilerplate in __init__.py by driving async_register
 Collapse the repetitive weather-condition switch classes in entities.py into a tiny factory/base class with a definition list (name/icon/unique_id).
 Consolidate the _sendTemperature/_sendWindSpeed/_sendPrecipitation/... helpers in MacsCard.js into a table-driven sender so change checks + postMessage are in one place.
 Deduplicate the normalize/read logic in sensorHandler.js (temperature/wind/precip/battery are almost identical patterns).
-Replace the long if (e.data.type === ...) chain in moods.js with a message-handler map to make intent clearer and reduce branching noise.
+Replace the long if (e.data.type === ...) chain in MacsFrontend.js with a message-handler map to make intent clearer and reduce branching noise.
 If you want me to start on any of these, pick one:
 
 __init__.py services mapping
 entities.py switch factory
 MacsCard.js sender map
 sensorHandler.js normalization helper
-moods.js handler map
+MacsFrontend.js handler map
 
 */
 

@@ -1,7 +1,7 @@
 import { VERSION } from "./constants.js";
 
 export function createDebugger(namespace, enabled = true) {
-    const ns = (namespace || "general").toString();
+    const nsSource = (namespace || "general").toString();
     let debugDiv = null;
     let visible = false;
     let backlog = [];
@@ -11,6 +11,49 @@ export function createDebugger(namespace, enabled = true) {
     const stripJs = (value) => (value.endsWith(".js") ? value.slice(0, -3) : value);
     const normalizeKey = (value) => normalizeToken(value).replace(/[\s-]+/g, "_");
     let targetsLoading = false;
+    let missingTargetWarned = false;
+    const getFileName = (value) => {
+        if (!value) return "";
+        const raw = value.toString();
+        try {
+            const url = new URL(raw);
+            return url.pathname.split("/").pop() || "";
+        } catch (_) {
+            const trimmed = raw.split("?")[0].split("#")[0];
+            const parts = trimmed.split("/");
+            return parts[parts.length - 1] || "";
+        }
+    };
+    const nsFile = getFileName(nsSource);
+    const nsDisplay = nsFile || nsSource;
+    const ns = stripJs(nsDisplay);
+    const addTokens = (value, collector) => {
+        const token = normalizeToken(value);
+        const key = normalizeKey(value);
+        [token, key, stripJs(token), stripJs(key)].forEach((entry) => {
+            if (entry) collector.add(entry);
+        });
+    };
+    const buildBaseTokens = () => {
+        const tokens = new Set();
+        [nsSource, nsDisplay, nsFile].forEach((value) => addTokens(value, tokens));
+        return tokens;
+    };
+    const buildEntryTokens = (entry) => {
+        const tokens = new Set();
+        const entryKey = entry?.key || "";
+        const entryLabel = entry?.label || "";
+        const entryFile = entry?.filename || "";
+        const entryFileName = getFileName(entryFile);
+        [entryKey, entryLabel, entryFile, entryFileName].forEach((value) => addTokens(value, tokens));
+        return tokens;
+    };
+    const tokensIntersect = (left, right) => {
+        for (const token of left) {
+            if (right.has(token)) return true;
+        }
+        return false;
+    };
 
     const getTargets = () => {
         if (typeof window === "undefined") return [];
@@ -35,6 +78,7 @@ export function createDebugger(namespace, enabled = true) {
                         if (window.dispatchEvent) {
                             window.dispatchEvent(new CustomEvent("macs-debug-update"));
                         }
+                        checkTargetRegistration();
                     }
                 })
                 .catch(() => {});
@@ -53,23 +97,14 @@ export function createDebugger(namespace, enabled = true) {
         if (!selection || selection === "none") return false;
         if (selection === "all") return true;
         const wanted = selection.split(",").map((entry) => normalizeToken(entry));
-        const targetTokens = new Set();
-        const target = normalizeToken(ns);
-        const targetKey = normalizeKey(ns);
-        [target, targetKey, stripJs(target), stripJs(targetKey)].forEach((token) => {
-            if (token) targetTokens.add(token);
-        });
+        const baseTokens = buildBaseTokens();
+        const targetTokens = new Set(baseTokens);
 
         const targets = getTargets();
         targets.forEach((entry) => {
-            const entryKey = normalizeKey(entry?.key || "");
-            const entryLabel = normalizeToken(entry?.label || "");
-            if (!entryKey || !entryLabel) return;
-            if (entryKey === targetKey || entryLabel === target || entryLabel === targetKey) {
-                targetTokens.add(entryKey);
-                targetTokens.add(entryLabel);
-                targetTokens.add(stripJs(entryKey));
-                targetTokens.add(stripJs(entryLabel));
+            const entryTokens = buildEntryTokens(entry);
+            if (tokensIntersect(entryTokens, baseTokens)) {
+                entryTokens.forEach((token) => targetTokens.add(token));
             }
         });
 
@@ -189,6 +224,7 @@ export function createDebugger(namespace, enabled = true) {
         } else {
             hideDebug();
         }
+        checkTargetRegistration();
     };
 
     if (typeof window !== "undefined" && window?.addEventListener) {
@@ -258,6 +294,18 @@ export function createDebugger(namespace, enabled = true) {
         if (!toggle) return true;
         return toggle.checked;
     };
+
+    function checkTargetRegistration() {
+        if (missingTargetWarned) return;
+        const targets = getTargets();
+        if (!Array.isArray(targets) || !targets.length) return;
+        const baseTokens = buildBaseTokens();
+        const found = targets.some((entry) => tokensIntersect(buildEntryTokens(entry), baseTokens));
+        if (!found) {
+            missingTargetWarned = true;
+            console.warn(`[MACS] Debug target missing for ${nsDisplay}. Add it to shared/debugTargets.json.`);
+        }
+    }
 
     const log = (...args) => {
         const enabledNow = isEnabled();

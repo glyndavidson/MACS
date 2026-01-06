@@ -1,11 +1,11 @@
 [
-  { "key": "card", "label": "Card" },
-  { "key": "editor", "label": "Editor" },
-  { "key": "assist_pipeline", "label": "Assist Pipeline" },
-  { "key": "assist_satellite", "label": "Assist Satellite" },
-  { "key": "sensors", "label": "Sensors" },
-  { "key": "message_poster", "label": "Message Poster" },
-  { "key": "message_listener", "label": "Message Listener" },
-  { "key": "moods", "label": "Moods" },
-  { "key": "assist_bridge", "label": "Assist Bridge" }
+  { "key": "card", "label": "Card", "filename": "MacsCard.js" },
+  { "key": "editor", "label": "Editor", "filename": "MacsCardEditor.js" },
+  { "key": "assist_pipeline", "label": "Assist Pipeline", "filename": "assistPipeline.js" },
+  { "key": "assist_satellite", "label": "Assist Satellite", "filename": "assistSatellite.js" },
+  { "key": "sensors", "label": "Sensors", "filename": "sensorHandler.js" },
+  { "key": "message_poster", "label": "Message Poster", "filename": "messagePoster.js" },
+  { "key": "message_listener", "label": "Message Listener", "filename": "messageListener.js" },
+  { "key": "frontend", "label": "Frontend", "filename": "MacsFrontend.js" },
+  { "key": "assist_bridge", "label": "Assist Bridge", "filename": "assist-bridge.js" }
 ]

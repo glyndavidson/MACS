@@ -1,7 +1,7 @@
 import { createDebugger } from "../../shared/debugger.js";
 import { MessageListener } from "../../shared/messageListener.js";
 
-const debug = createDebugger("assist_bridge");
+const debug = createDebugger(import.meta.url);
 const messageListener = new MessageListener({
   recipient: "assist-bridge",
   getExpectedSource: () => window.parent,
