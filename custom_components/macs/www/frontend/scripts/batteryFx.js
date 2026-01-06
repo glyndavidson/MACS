@@ -1,3 +1,8 @@
+/**
+ * Battery FX
+ * ----------
+ * Handles charging visuals and low-battery dimming.
+ */
 const LOW_BATTERY_CUTOFF = 20;
 
 const LOW_BATTERY_ZERO_VARS = [

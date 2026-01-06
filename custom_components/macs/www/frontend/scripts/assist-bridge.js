@@ -1,3 +1,8 @@
+/**
+ * Assist Bridge
+ * -------------
+ * Renders Assist conversation messages inside the iframe.
+ */
 import { createDebugger } from "../../shared/debugger.js";
 import { MessageListener } from "../../shared/messageListener.js";
 

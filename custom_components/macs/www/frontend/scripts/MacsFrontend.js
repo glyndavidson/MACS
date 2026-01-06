@@ -1,3 +1,8 @@
+/**
+ * Macs Frontend
+ * -------------
+ * Coordinates frontend effects, message handling, and runtime setup.
+ */
 import { createDebugger } from "../../shared/debugger.js";
 import { MessagePoster } from "../../shared/messagePoster.js";
 import { MessageListener } from "../../shared/messageListener.js";

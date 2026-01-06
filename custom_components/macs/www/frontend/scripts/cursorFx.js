@@ -1,3 +1,8 @@
+/**
+ * Cursor FX
+ * ---------
+ * Drives eye and stage offsets based on pointer movement.
+ */
 const CURSOR_LOOK_IDLE_MS = 5000;
 const EYE_LOOK_MAX_X = 20;
 const EYE_LOOK_MAX_Y = 12;

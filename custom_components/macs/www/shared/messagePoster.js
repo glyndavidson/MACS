@@ -1,3 +1,8 @@
+/**
+ * Message Poster
+ * --------------
+ * Shared postMessage sender with debug logging.
+ */
 import { createDebugger } from "./debugger.js";
 
 const debug = createDebugger(import.meta.url);

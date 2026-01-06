@@ -1,7 +1,12 @@
-// Monitor the satellite state. 
-// If the assistant understood a voice request, satellite goes idle > listening > processing > responding > idle. 
+/**
+ * Assist Satellite Tracker
+ * -----------------------
+ * Monitors satellite state transitions and maps them into mood updates.
+ */
+// Monitor the satellite state.
+// If the assistant understood a voice request, satellite goes idle > listening > processing > responding > idle.
 // If the state goes idle > listening > idle, then it hasn't understood.
-// this functions keeps track of the satellite's state.
+// This function keeps track of the satellite's state.
 
 import {DEFAULTS} from "../shared/constants.js";
 

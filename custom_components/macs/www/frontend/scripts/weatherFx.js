@@ -1,71 +1,10 @@
+/**
+ * Weather FX
+ * ----------
+ * Drives rain, snow, and leaf effects plus related CSS state.
+ */
 import { Particle, SVG_NS } from "./particles.js";
-import {
-	RAIN_MAX_DROPS,
-	RAIN_MIN_SPEED,
-	RAIN_MAX_SPEED,
-	RAIN_DROP_SIZE_MIN,
-	RAIN_DROP_SIZE_MAX,
-	RAIN_SIZE_VARIATION,
-	RAIN_SIZE_SPEED_RANGE,
-	RAIN_OPACITY_MIN,
-	RAIN_OPACITY_MAX,
-	RAIN_OPACITY_VARIATION,
-	RAIN_COUNT_EXPONENT,
-	RAIN_SPEED_JITTER_MIN,
-	RAIN_SPEED_JITTER_MAX,
-	RAIN_WIND_TILT_MAX,
-	RAIN_TILT_VARIATION,
-	RAIN_PATH_PADDING,
-	RAIN_WIND_SPEED_MULTIPLIER,
-	RAIN_SPAWN_OFFSET,
-	RAIN_SPAWN_VARIATION,
-	RAIN_START_DELAY_MAX,
-	SNOW_MAX_FLAKES,
-	SNOW_MIN_SPEED,
-	SNOW_MAX_SPEED,
-	SNOW_SIZE_MIN,
-	SNOW_SIZE_MAX,
-	SNOW_SIZE_VARIATION,
-	SNOW_OPACITY_MIN,
-	SNOW_OPACITY_MAX,
-	SNOW_OPACITY_VARIATION,
-	SNOW_MIN_DURATION,
-	SNOW_SPEED_JITTER_MIN,
-	SNOW_SPEED_JITTER_MAX,
-	SNOW_WIND_TILT_MAX,
-	SNOW_TILT_VARIATION,
-	SNOW_PATH_PADDING,
-	SNOW_WIND_SPEED_MULTIPLIER,
-	SNOW_START_DELAY_RATIO,
-	LEAF_MAX_COUNT,
-	LEAF_MIN_SPEED,
-	LEAF_MAX_SPEED,
-	LEAF_WIND_EXPONENT,
-	LEAF_MIN_DURATION,
-	LEAF_SPEED_JITTER_MIN,
-	LEAF_SPEED_JITTER_MAX,
-	LEAF_START_STAGGER,
-	LEAF_START_JITTER,
-	LEAF_RESPAWN_DELAY_MIN,
-	LEAF_RESPAWN_DELAY_JITTER,
-	LEAF_WIND_TILT_MAX,
-	LEAF_TILT_VARIATION,
-	LEAF_SIZE_MIN,
-	LEAF_SIZE_MAX,
-	LEAF_SIZE_VARIATION,
-	LEAF_SPAWN_OFFSET,
-	LEAF_SPAWN_VARIATION,
-	LEAF_PATH_PADDING,
-	LEAF_OPACITY_MIN,
-	LEAF_OPACITY_MAX,
-	LEAF_OPACITY_VARIATION,
-	LEAF_SPIN_MIN,
-	LEAF_SPIN_MAX,
-	LEAF_VARIANTS,
-	LEAF_IMAGE_BASE,
-	WIND_TILT_MAX,
-	WIND_TILT_EXPONENT,
-} from "./weatherFxTweaker.js";
+import * as FX_CONFIG from "./weatherFxTweaker.js";
 
 const clampPercent = (value, fallback = 0) => {
 	const num = Number(value);
@@ -114,42 +53,42 @@ export function createWeatherFx({ debug, getIsPaused, onWindChange } = {}) {
 		if (!rainParticles) {
 			rainParticles = new Particle("rain", {
 				container: document.getElementById("rain-drops"),
-				maxCount: RAIN_MAX_DROPS,
-				countExponent: RAIN_COUNT_EXPONENT,
+				maxCount: FX_CONFIG.RAIN_MAX_DROPS,
+				countExponent: FX_CONFIG.RAIN_COUNT_EXPONENT,
 				element: {
 					namespace: SVG_NS,
 					tag: "ellipse",
 					className: "drop"
 				},
 				size: {
-					min: RAIN_DROP_SIZE_MIN,
-					max: RAIN_DROP_SIZE_MAX,
-					variation: RAIN_SIZE_VARIATION
+					min: FX_CONFIG.RAIN_DROP_SIZE_MIN,
+					max: FX_CONFIG.RAIN_DROP_SIZE_MAX,
+					variation: FX_CONFIG.RAIN_SIZE_VARIATION
 				},
 				opacity: {
-					min: RAIN_OPACITY_MIN,
-					max: RAIN_OPACITY_MAX,
-					variation: RAIN_OPACITY_VARIATION
+					min: FX_CONFIG.RAIN_OPACITY_MIN,
+					max: FX_CONFIG.RAIN_OPACITY_MAX,
+					variation: FX_CONFIG.RAIN_OPACITY_VARIATION
 				},
 				speed: {
-					min: RAIN_MIN_SPEED,
-					max: RAIN_MAX_SPEED,
-					jitterMin: RAIN_SPEED_JITTER_MIN,
-					jitterMax: RAIN_SPEED_JITTER_MAX,
-					sizeRange: RAIN_SIZE_SPEED_RANGE,
-					windMultiplier: RAIN_WIND_SPEED_MULTIPLIER
+					min: FX_CONFIG.RAIN_MIN_SPEED,
+					max: FX_CONFIG.RAIN_MAX_SPEED,
+					jitterMin: FX_CONFIG.RAIN_SPEED_JITTER_MIN,
+					jitterMax: FX_CONFIG.RAIN_SPEED_JITTER_MAX,
+					sizeRange: FX_CONFIG.RAIN_SIZE_SPEED_RANGE,
+					windMultiplier: FX_CONFIG.RAIN_WIND_SPEED_MULTIPLIER
 				},
 				wind: {
-					tiltMax: RAIN_WIND_TILT_MAX,
-					tiltVariation: RAIN_TILT_VARIATION
+					tiltMax: FX_CONFIG.RAIN_WIND_TILT_MAX,
+					tiltVariation: FX_CONFIG.RAIN_TILT_VARIATION
 				},
 				path: {
-					padding: RAIN_PATH_PADDING,
-					spawnOffset: RAIN_SPAWN_OFFSET,
-					spawnVariation: RAIN_SPAWN_VARIATION
+					padding: FX_CONFIG.RAIN_PATH_PADDING,
+					spawnOffset: FX_CONFIG.RAIN_SPAWN_OFFSET,
+					spawnVariation: FX_CONFIG.RAIN_SPAWN_VARIATION
 				},
 				delay: {
-					startDelayMax: RAIN_START_DELAY_MAX
+					startDelayMax: FX_CONFIG.RAIN_START_DELAY_MAX
 				}
 			});
 		}
@@ -157,39 +96,39 @@ export function createWeatherFx({ debug, getIsPaused, onWindChange } = {}) {
 		if (!snowParticles) {
 			snowParticles = new Particle("snow", {
 				container: document.getElementById("snow-flakes"),
-				maxCount: SNOW_MAX_FLAKES,
+				maxCount: FX_CONFIG.SNOW_MAX_FLAKES,
 				element: {
 					namespace: SVG_NS,
 					tag: "circle",
 					className: "flake"
 				},
 				size: {
-					min: SNOW_SIZE_MIN,
-					max: SNOW_SIZE_MAX,
-					variation: SNOW_SIZE_VARIATION
+					min: FX_CONFIG.SNOW_SIZE_MIN,
+					max: FX_CONFIG.SNOW_SIZE_MAX,
+					variation: FX_CONFIG.SNOW_SIZE_VARIATION
 				},
 				opacity: {
-					min: SNOW_OPACITY_MIN,
-					max: SNOW_OPACITY_MAX,
-					variation: SNOW_OPACITY_VARIATION
+					min: FX_CONFIG.SNOW_OPACITY_MIN,
+					max: FX_CONFIG.SNOW_OPACITY_MAX,
+					variation: FX_CONFIG.SNOW_OPACITY_VARIATION
 				},
 				speed: {
-					min: SNOW_MIN_SPEED,
-					max: SNOW_MAX_SPEED,
-					jitterMin: SNOW_SPEED_JITTER_MIN,
-					jitterMax: SNOW_SPEED_JITTER_MAX,
-					minDuration: SNOW_MIN_DURATION,
-					windMultiplier: SNOW_WIND_SPEED_MULTIPLIER
+					min: FX_CONFIG.SNOW_MIN_SPEED,
+					max: FX_CONFIG.SNOW_MAX_SPEED,
+					jitterMin: FX_CONFIG.SNOW_SPEED_JITTER_MIN,
+					jitterMax: FX_CONFIG.SNOW_SPEED_JITTER_MAX,
+					minDuration: FX_CONFIG.SNOW_MIN_DURATION,
+					windMultiplier: FX_CONFIG.SNOW_WIND_SPEED_MULTIPLIER
 				},
 				wind: {
-					tiltMax: SNOW_WIND_TILT_MAX,
-					tiltVariation: SNOW_TILT_VARIATION
+					tiltMax: FX_CONFIG.SNOW_WIND_TILT_MAX,
+					tiltVariation: FX_CONFIG.SNOW_TILT_VARIATION
 				},
 				path: {
-					padding: SNOW_PATH_PADDING
+					padding: FX_CONFIG.SNOW_PATH_PADDING
 				},
 				delay: {
-					startDelayRatio: SNOW_START_DELAY_RATIO
+					startDelayRatio: FX_CONFIG.SNOW_START_DELAY_RATIO
 				}
 			});
 		}
@@ -197,7 +136,7 @@ export function createWeatherFx({ debug, getIsPaused, onWindChange } = {}) {
 		if (!leafParticles) {
 			leafParticles = new Particle("leaf", {
 				container: document.getElementById("leaf-layer"),
-				maxCount: LEAF_MAX_COUNT,
+				maxCount: FX_CONFIG.LEAF_MAX_COUNT,
 				element: {
 					tag: "img",
 					className: "leaf",
@@ -208,47 +147,47 @@ export function createWeatherFx({ debug, getIsPaused, onWindChange } = {}) {
 					}
 				},
 				size: {
-					min: LEAF_SIZE_MIN,
-					max: LEAF_SIZE_MAX,
-					variation: LEAF_SIZE_VARIATION
+					min: FX_CONFIG.LEAF_SIZE_MIN,
+					max: FX_CONFIG.LEAF_SIZE_MAX,
+					variation: FX_CONFIG.LEAF_SIZE_VARIATION
 				},
 				opacity: {
-					min: LEAF_OPACITY_MIN,
-					max: LEAF_OPACITY_MAX,
-					variation: LEAF_OPACITY_VARIATION
+					min: FX_CONFIG.LEAF_OPACITY_MIN,
+					max: FX_CONFIG.LEAF_OPACITY_MAX,
+					variation: FX_CONFIG.LEAF_OPACITY_VARIATION
 				},
 				speed: {
-					min: LEAF_MIN_SPEED,
-					max: LEAF_MAX_SPEED,
-					jitterMin: LEAF_SPEED_JITTER_MIN,
-					jitterMax: LEAF_SPEED_JITTER_MAX,
-					minDuration: LEAF_MIN_DURATION,
+					min: FX_CONFIG.LEAF_MIN_SPEED,
+					max: FX_CONFIG.LEAF_MAX_SPEED,
+					jitterMin: FX_CONFIG.LEAF_SPEED_JITTER_MIN,
+					jitterMax: FX_CONFIG.LEAF_SPEED_JITTER_MAX,
+					minDuration: FX_CONFIG.LEAF_MIN_DURATION,
 					sizeBase: 0.85,
 					sizeScale: 0.4
 				},
 				wind: {
-					tiltMax: LEAF_WIND_TILT_MAX,
-					tiltVariation: LEAF_TILT_VARIATION,
-					exponent: LEAF_WIND_EXPONENT
+					tiltMax: FX_CONFIG.LEAF_WIND_TILT_MAX,
+					tiltVariation: FX_CONFIG.LEAF_TILT_VARIATION,
+					exponent: FX_CONFIG.LEAF_WIND_EXPONENT
 				},
 				path: {
-					padding: LEAF_PATH_PADDING,
-					spawnOffset: LEAF_SPAWN_OFFSET,
-					spawnVariation: LEAF_SPAWN_VARIATION
+					padding: FX_CONFIG.LEAF_PATH_PADDING,
+					spawnOffset: FX_CONFIG.LEAF_SPAWN_OFFSET,
+					spawnVariation: FX_CONFIG.LEAF_SPAWN_VARIATION
 				},
 				spin: {
-					min: LEAF_SPIN_MIN,
-					max: LEAF_SPIN_MAX
+					min: FX_CONFIG.LEAF_SPIN_MIN,
+					max: FX_CONFIG.LEAF_SPIN_MAX
 				},
 				images: {
-					basePath: LEAF_IMAGE_BASE,
-					variants: LEAF_VARIANTS
+					basePath: FX_CONFIG.LEAF_IMAGE_BASE,
+					variants: FX_CONFIG.LEAF_VARIANTS
 				},
 				delay: {
-					startStagger: LEAF_START_STAGGER,
-					startJitter: LEAF_START_JITTER,
-					respawnMin: LEAF_RESPAWN_DELAY_MIN,
-					respawnJitter: LEAF_RESPAWN_DELAY_JITTER
+					startStagger: FX_CONFIG.LEAF_START_STAGGER,
+					startJitter: FX_CONFIG.LEAF_START_JITTER,
+					respawnMin: FX_CONFIG.LEAF_RESPAWN_DELAY_MIN,
+					respawnJitter: FX_CONFIG.LEAF_RESPAWN_DELAY_JITTER
 				},
 				thresholds: {
 					windMin: 0.1,
@@ -340,7 +279,7 @@ export function createWeatherFx({ debug, getIsPaused, onWindChange } = {}) {
 		if (rainParticles) rainParticles.setWindIntensity(intensity);
 		if (snowParticles) snowParticles.setWindIntensity(intensity);
 		if (leafParticles) leafParticles.setWindIntensity(intensity);
-		const tilt = Math.pow(intensity, WIND_TILT_EXPONENT) * -WIND_TILT_MAX;
+		const tilt = Math.pow(intensity, FX_CONFIG.WIND_TILT_EXPONENT) * -FX_CONFIG.WIND_TILT_MAX;
 		document.documentElement.style.setProperty('--wind-tilt', `${tilt.toFixed(1)}deg`);
 		if (notifyWind) notifyWind(intensity);
 		updateRainDrops(rainIntensity < 0 ? 0 : rainIntensity, true);

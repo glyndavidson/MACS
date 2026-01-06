@@ -1,3 +1,8 @@
+/**
+ * Message Listener
+ * ----------------
+ * Shared postMessage listener with origin filtering and routing.
+ */
 export class MessageListener {
 	constructor({
 		recipient = "unknown",

@@ -1,3 +1,8 @@
+/**
+ * Kiosk FX
+ * --------
+ * Manages auto-brightness, sleep timers, and kiosk gestures.
+ */
 const KIOSK_HOLD_MS = 800;
 const BRIGHTNESS_FADE_SECONDS = 10;
 

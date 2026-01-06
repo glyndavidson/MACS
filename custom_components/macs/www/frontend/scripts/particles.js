@@ -1,3 +1,8 @@
+/**
+ * Particles
+ * ---------
+ * Generic particle system used by weather effects.
+ */
 const SVG_NS = "http://www.w3.org/2000/svg";
 const clamp01 = (value) => Math.max(0, Math.min(1, value));
 const shuffle = (items) => {

@@ -1,3 +1,8 @@
+/**
+ * Sensor Handler
+ * --------------
+ * Normalizes HA sensor states and derives weather condition flags.
+ */
 import { TEMPERATURE_ENTITY_ID, WIND_ENTITY_ID, PRECIPITATION_ENTITY_ID, BATTERY_CHARGE_ENTITY_ID, BATTERY_STATE_ENTITY_ID } from "../shared/constants.js";
 import { toNumber, normalizeTemperatureValue, normalizeWindValue, normalizeRainValue, normalizeBatteryValue, normalizeUnit } from "./validators.js";
 import { createDebugger } from "../shared/debugger.js";

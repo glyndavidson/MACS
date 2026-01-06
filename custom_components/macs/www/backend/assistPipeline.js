@@ -1,3 +1,8 @@
+/**
+ * Assist Pipeline Tracker
+ * -----------------------
+ * Tracks conversation runs for the Assist pipeline and surfaces turns for the UI.
+ */
 import { DEFAULTS, CONVERSATION_ENTITY_ID } from "../shared/constants.js";
 import { createDebugger } from "../shared/debugger.js";
 

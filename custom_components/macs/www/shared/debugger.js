@@ -1,3 +1,8 @@
+/**
+ * Debugger
+ * --------
+ * Shared debug logger and UI panel with target filtering.
+ */
 import { VERSION } from "./constants.js";
 
 export function createDebugger(namespace, enabled = true) {

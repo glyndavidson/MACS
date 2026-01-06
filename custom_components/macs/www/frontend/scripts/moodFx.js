@@ -1,3 +1,8 @@
+/**
+ * Mood FX
+ * -------
+ * Applies mood classes and runs idle->bored->sleep sequence logic.
+ */
 const MOODS = ['bored','confused','happy','idle','listening','sad','sleeping','surprised','thinking'];
 const MOOD_IDLE_TO_BORED_MS = 30000;
 const MOOD_BORED_TO_SLEEP_MS = 30000;

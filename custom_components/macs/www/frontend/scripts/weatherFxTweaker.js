@@ -1,3 +1,8 @@
+/**
+ * Weather FX Tweaker
+ * ------------------
+ * Constants for tuning weather particle behavior.
+ */
 export const RAIN_MAX_DROPS = 200;
 export const RAIN_MIN_SPEED = 0.8;
 export const RAIN_MAX_SPEED = 4;

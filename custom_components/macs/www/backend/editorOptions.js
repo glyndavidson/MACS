@@ -1,4 +1,9 @@
-﻿// Helper and editor option utilities for the MACS editor.
+﻿/**
+ * Editor Options
+ * --------------
+ * Loads dynamic option lists used by the card editor.
+ */
+// Helper and editor option utilities for the MACS editor.
 
 export async function loadSatellites(hass) {
 	// Guard against missing HA state.
