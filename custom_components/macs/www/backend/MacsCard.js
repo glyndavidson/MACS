@@ -27,10 +27,12 @@ import { MessagePoster } from "../shared/postmessage.js";
 
 
 const debug = createDebugger("MacsCard.js");
-const cardCssUrl = getValidUrl("backend/cards.css");
+
+
 // Kiosk UI hides HA chrome and forces the card to full-viewport.
 const KIOSK_STYLE_ID = "macs-kiosk-style";
 const kioskCssUrl = getValidUrl("backend/kiosk.css");
+const cardCssUrl = getValidUrl("backend/cards.css");
 
 
 export class MacsCard extends HTMLElement {
@@ -431,7 +433,6 @@ export class MacsCard extends HTMLElement {
         }
 
         if (e.data.type === "macs:init_ack") {
-            debug("iframe init ack");
             debug("init: ack received");
             this._iframeBootstrapped = true;
             this._revealIframe();

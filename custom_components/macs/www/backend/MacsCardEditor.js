@@ -530,6 +530,5 @@ export class MacsCardEditor extends HTMLElement {
 
 			ids.forEach((id) => wireInput(this.shadowRoot, id, onChange));
 		});
-
 	}
 }
