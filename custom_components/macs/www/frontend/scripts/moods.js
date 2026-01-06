@@ -1,89 +1,94 @@
-﻿import { createDebugger } from "../../shared/debugger.js";
-import { MessagePoster } from "../../shared/postmessage.js";
+import { createDebugger } from "../../shared/debugger.js";
+import { MessagePoster } from "../../shared/messagePoster.js";
+import { MessageListener } from "../../shared/messageListener.js";
 import { Particle, SVG_NS } from "./particles.js";
+import {
+	RAIN_MAX_DROPS,
+	RAIN_MIN_SPEED,
+	RAIN_MAX_SPEED,
+	RAIN_DROP_SIZE_MIN,
+	RAIN_DROP_SIZE_MAX,
+	RAIN_SIZE_VARIATION,
+	RAIN_SIZE_SPEED_RANGE,
+	RAIN_OPACITY_MIN,
+	RAIN_OPACITY_MAX,
+	RAIN_OPACITY_VARIATION,
+	RAIN_COUNT_EXPONENT,
+	RAIN_SPEED_JITTER_MIN,
+	RAIN_SPEED_JITTER_MAX,
+	RAIN_WIND_TILT_MAX,
+	RAIN_TILT_VARIATION,
+	RAIN_PATH_PADDING,
+	RAIN_WIND_SPEED_MULTIPLIER,
+	RAIN_SPAWN_OFFSET,
+	RAIN_SPAWN_VARIATION,
+	RAIN_START_DELAY_MAX,
+	SNOW_MAX_FLAKES,
+	SNOW_MIN_SPEED,
+	SNOW_MAX_SPEED,
+	SNOW_SIZE_MIN,
+	SNOW_SIZE_MAX,
+	SNOW_SIZE_VARIATION,
+	SNOW_OPACITY_MIN,
+	SNOW_OPACITY_MAX,
+	SNOW_OPACITY_VARIATION,
+	SNOW_MIN_DURATION,
+	SNOW_SPEED_JITTER_MIN,
+	SNOW_SPEED_JITTER_MAX,
+	SNOW_WIND_TILT_MAX,
+	SNOW_TILT_VARIATION,
+	SNOW_PATH_PADDING,
+	SNOW_WIND_SPEED_MULTIPLIER,
+	SNOW_START_DELAY_RATIO,
+	LEAF_MAX_COUNT,
+	LEAF_MIN_SPEED,
+	LEAF_MAX_SPEED,
+	LEAF_WIND_EXPONENT,
+	LEAF_MIN_DURATION,
+	LEAF_SPEED_JITTER_MIN,
+	LEAF_SPEED_JITTER_MAX,
+	LEAF_START_STAGGER,
+	LEAF_START_JITTER,
+	LEAF_RESPAWN_DELAY_MIN,
+	LEAF_RESPAWN_DELAY_JITTER,
+	LEAF_WIND_TILT_MAX,
+	LEAF_TILT_VARIATION,
+	LEAF_SIZE_MIN,
+	LEAF_SIZE_MAX,
+	LEAF_SIZE_VARIATION,
+	LEAF_SPAWN_OFFSET,
+	LEAF_SPAWN_VARIATION,
+	LEAF_PATH_PADDING,
+	LEAF_OPACITY_MIN,
+	LEAF_OPACITY_MAX,
+	LEAF_OPACITY_VARIATION,
+	LEAF_SPIN_MIN,
+	LEAF_SPIN_MAX,
+	LEAF_VARIANTS,
+	LEAF_IMAGE_BASE,
+	WIND_TILT_MAX,
+	WIND_TILT_EXPONENT,
+} from "./weatherFxTweaker.js";
 
-const debug = createDebugger("moods.js");
+const debug = createDebugger("moods");
 const messagePoster = new MessagePoster({
 	sender: "frontend",
 	recipient: "backend",
 	getRecipientWindow: () => window.parent,
 	getTargetOrigin: () => window.location.origin,
 });
+const messageListener = new MessageListener({
+	recipient: "moods",
+	getExpectedSource: () => window.parent,
+	getExpectedOrigin: () => window.location.origin,
+	allowNullOrigin: true,
+	onMessage: handleMessage,
+});
+messageListener.start();
 let readySent = false;
 
 const moods = ['bored','confused','happy','idle','listening','sad','sleeping','surprised','thinking'];
 
-const RAIN_MAX_DROPS = 200;
-const RAIN_MIN_SPEED = 0.8;
-const RAIN_MAX_SPEED = 4;
-const RAIN_DROP_SIZE_MIN = 0.6;
-const RAIN_DROP_SIZE_MAX = 1.3;
-const RAIN_SIZE_VARIATION = 10;
-const RAIN_SIZE_SPEED_RANGE = 0.8;
-const RAIN_OPACITY_MIN = 0.2;
-const RAIN_OPACITY_MAX = 0.8;
-const RAIN_OPACITY_VARIATION = 8;
-const RAIN_COUNT_EXPONENT = 1.5; // > 1 = fewer drops at low precipitation, ramping up later. < 1 = more drops at low precipitation
-const RAIN_SPEED_JITTER_MIN = -0.2;
-const RAIN_SPEED_JITTER_MAX = 0.2;
-const RAIN_WIND_TILT_MAX = 89;
-const RAIN_TILT_VARIATION = 1;
-const RAIN_PATH_PADDING = 60;
-const RAIN_WIND_SPEED_MULTIPLIER = 1;
-const RAIN_SPAWN_OFFSET = 120;
-const RAIN_SPAWN_VARIATION = 1;
-const RAIN_START_DELAY_MAX = 2;
-
-const SNOW_MAX_FLAKES = 500;
-const SNOW_MIN_SPEED = 0.05;
-const SNOW_MAX_SPEED = 0.1;
-const SNOW_SIZE_MIN = 2;
-const SNOW_SIZE_MAX = 5;
-const SNOW_SIZE_VARIATION = 0.6;
-const SNOW_OPACITY_MIN = 0.1;
-const SNOW_OPACITY_MAX = 1;
-const SNOW_OPACITY_VARIATION = 0.8;
-const SNOW_MIN_DURATION = 6;
-const SNOW_SPEED_JITTER_MIN = -0.2;
-const SNOW_SPEED_JITTER_MAX = 0.2;
-const SNOW_WIND_TILT_MAX = 89;
-const SNOW_TILT_VARIATION = 15;
-const SNOW_PATH_PADDING = 80;
-const SNOW_WIND_SPEED_MULTIPLIER = 20;
-const SNOW_START_DELAY_RATIO = 1;
-
-
-const LEAF_MAX_COUNT = 20; 				// Maximum number of leaf particles when leaf intensity is 100%.
-const LEAF_MIN_SPEED = 0.5;				// Base minimum travel speed (slowest leaves at low wind).
-const LEAF_MAX_SPEED = 2;				// Base maximum travel speed (fastest leaves at high wind).
-const LEAF_WIND_EXPONENT = 0.5;			// Non‑linear curve for wind strength (lower = wind effect ramps faster at low wind).
-const LEAF_MIN_DURATION = 1;			// Minimum travel time (seconds) for a leaf at low wind; this fades toward 0 as wind increases.
-const LEAF_SPEED_JITTER_MIN = -0.15;	// Random speed jitter lower bound (negative slows some leaves).
-const LEAF_SPEED_JITTER_MAX = 0.15;		// Random speed jitter upper bound (positive speeds some leaves).
-const LEAF_START_STAGGER = 5;			// Base delay between leaf starts by slot (seconds).
-const LEAF_START_JITTER = 0.2;			// Extra random per‑leaf delay (seconds).
-const LEAF_RESPAWN_DELAY_MIN = 0.1;		// Minimum pause before a leaf re‑enters after finishing its path (seconds).
-const LEAF_RESPAWN_DELAY_JITTER = 0.8;	// 
-const LEAF_WIND_TILT_MAX = 89;			// Maximum tilt angle from wind (degrees, 89 ≈ nearly horizontal).
-const LEAF_TILT_VARIATION = 18;			// Random per‑leaf tilt variance (adds divergence so they don’t all travel parallel).
-const LEAF_SIZE_MIN = 100;				// Smallest leaf size in px.
-const LEAF_SIZE_MAX = 200;				// Largest leaf size in px.
-const LEAF_SIZE_VARIATION = 0.5;		// Random size spread around the intensity value (0 = no variation, higher = more variance)
-const LEAF_SPAWN_OFFSET = 300;			// How far beyond the entry edge leaves spawn (off‑screen).
-const LEAF_SPAWN_VARIATION = 1.4;		// Random multiplier for spawn offset (more variation = more staggered start distances).
-const LEAF_PATH_PADDING = 140;			// Extra off‑screen padding for path calculations (bigger = longer travel off‑screen).
-const LEAF_OPACITY_MIN = 1;				// Minimum opacity per leaf.
-const LEAF_OPACITY_MAX = 1;				// Maximum opacity per leaf.
-const LEAF_OPACITY_VARIATION = 0;		// Random opacity spread around the intensity value.
-const LEAF_SPIN_MIN = 120;				// 
-const LEAF_SPIN_MAX = 120;				// 
-const LEAF_VARIANTS = 10;				// 
-const LEAF_IMAGE_BASE = "frontend/images/weather/leaves/leaf_";
-
-
-
-const WIND_TILT_MAX = 25;
-const WIND_TILT_EXPONENT = 2.2;
 
 const IDLE_FLOAT_BASE_VMIN = 1.2;
 const IDLE_FLOAT_MAX_VMIN = 20;
@@ -995,7 +1000,7 @@ const registerAutoBrightnessActivity = () => {
 
 const sendKioskToggle = () => {
 	debug("Kiosk hold: toggling sidebar/navbar");
-	messagePoster.post({ type: "macs:toggle_kiosk" });
+	messagePoster.post({ type: "macs:toggle_kiosk", recipient: "backend" });
 };
 
 const startKioskHold = () => {
@@ -1174,12 +1179,10 @@ window.addEventListener('resize', () => {
 	updateLeaves();
 });
 
-window.addEventListener('message', (e) => {
-    if (!messagePoster.isValidEvent(e)) return;
-    if (!e.data || typeof e.data !== 'object') return;
+function handleMessage(payload) {
+	if (!payload || typeof payload !== 'object') return;
 
-	if (e.data.type === 'macs:init') {
-		const payload = e.data || {};
+	if (payload.type === 'macs:init') {
 		applyConfigPayload(payload.config);
 		if (typeof payload.mood !== "undefined") {
 			setBaseMood(payload.mood || 'idle');
@@ -1192,72 +1195,73 @@ window.addEventListener('message', (e) => {
 			animationsToggleEnabled = !!payload.animations_enabled;
 			applyAnimationsToggle();
 		}
-		messagePoster.post({ type: "macs:init_ack" });
+		messagePoster.post({ type: "macs:init_ack", recipient: "backend" });
 		return;
 	}
 
-	if (e.data.type === 'macs:config') {
-		applyConfigPayload(e.data);
+	if (payload.type === 'macs:config') {
+		applyConfigPayload(payload);
 		return;
 	}
 
-	if (e.data.type === 'macs:animations_enabled') {
-		animationsToggleEnabled = !!e.data.enabled;
+	if (payload.type === 'macs:animations_enabled') {
+		animationsToggleEnabled = !!payload.enabled;
 		applyAnimationsToggle();
 		return;
 	}
 
-    if (e.data.type === 'macs:mood') {
-        setBaseMood(e.data.mood || 'idle');
-        if (e.data.reset_sleep) {
+    if (payload.type === 'macs:mood') {
+        setBaseMood(payload.mood || 'idle');
+        if (payload.reset_sleep) {
             debug("Wakeword: reset sleep timer");
             registerAutoBrightnessActivity();
             resetMoodSequence();
         }
         return;
     }
-    if (e.data.type === 'macs:temperature') {
-        setTemperature(e.data.temperature ?? '0');
-        debug("Setting temperature to: " + (e.data.temperature ?? '0'));
+    if (payload.type === 'macs:temperature') {
+        setTemperature(payload.temperature ?? '0');
+        debug("Setting temperature to: " + (payload.temperature ?? '0'));
         return;
     }
-    if (e.data.type === 'macs:windspeed') {
-        setWindSpeed(e.data.windspeed ?? '0');
-        debug("Setting windspeed to: " + (e.data.windspeed ?? '0'));
+    if (payload.type === 'macs:windspeed') {
+        setWindSpeed(payload.windspeed ?? '0');
+        debug("Setting windspeed to: " + (payload.windspeed ?? '0'));
         return;
     }
-    if (e.data.type === 'macs:precipitation') {
-        setPrecipitation(e.data.precipitation ?? '0');
-        debug("Setting precipitation to: " + (e.data.precipitation ?? '0'));
+    if (payload.type === 'macs:precipitation') {
+        setPrecipitation(payload.precipitation ?? '0');
+        debug("Setting precipitation to: " + (payload.precipitation ?? '0'));
         return;
     }
-    if (e.data.type === 'macs:weather_conditions') {
-        setWeatherConditions(e.data.conditions);
+    if (payload.type === 'macs:weather_conditions') {
+        setWeatherConditions(payload.conditions);
         return;
     }
-    if (e.data.type === 'macs:turns') {
+    if (payload.type === 'macs:turns') {
         debug("Pipeline: reset sleep timer");
         registerAutoBrightnessActivity();
         resetMoodSequence();
         return;
     }
-    if (e.data.type === 'macs:battery') {
-        setBattery(e.data.battery ?? '0');
+    if (payload.type === 'macs:battery') {
+        setBattery(payload.battery ?? '0');
         return;
     }
-    if (e.data.type === 'macs:battery_state') {
-        setBatteryState(e.data.battery_state);
+    if (payload.type === 'macs:battery_state') {
+        setBatteryState(payload.battery_state);
         return;
     }
-    if (e.data.type === 'macs:brightness') {
-        setBrightness(e.data.brightness ?? '100');
+    if (payload.type === 'macs:brightness') {
+        setBrightness(payload.brightness ?? '100');
         return;
     }
-});
+}
 
 
 debug("Macs Moods Loaded");
 if (!readySent) {
 	readySent = true;
-	messagePoster.post({ type: "macs:ready" });
+messagePoster.post({ type: "macs:ready", recipient: "backend" });
 }
+

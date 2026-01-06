@@ -1,0 +1,11 @@
+[
+  { "key": "card", "label": "Card" },
+  { "key": "editor", "label": "Editor" },
+  { "key": "assist_pipeline", "label": "Assist Pipeline" },
+  { "key": "assist_satellite", "label": "Assist Satellite" },
+  { "key": "sensors", "label": "Sensors" },
+  { "key": "message_poster", "label": "Message Poster" },
+  { "key": "message_listener", "label": "Message Listener" },
+  { "key": "moods", "label": "Moods" },
+  { "key": "assist_bridge", "label": "Assist Bridge" }
+]

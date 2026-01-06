@@ -9,6 +9,37 @@ export function createDebugger(namespace, enabled = true) {
 
     const normalizeToken = (value) => (value ?? "").toString().trim().toLowerCase();
     const stripJs = (value) => (value.endsWith(".js") ? value.slice(0, -3) : value);
+    const normalizeKey = (value) => normalizeToken(value).replace(/[\s-]+/g, "_");
+    let targetsLoading = false;
+
+    const getTargets = () => {
+        if (typeof window === "undefined") return [];
+        const targets = window.__MACS_DEBUG_TARGETS__;
+        return Array.isArray(targets) ? targets : [];
+    };
+
+    const ensureTargetsLoaded = () => {
+        if (typeof window === "undefined") return;
+        if (window.__MACS_DEBUG_TARGETS__ || targetsLoading) return;
+        targetsLoading = true;
+        try {
+            const url = new URL("/macs/shared/debugTargets.json", window.location.origin);
+            if (VERSION && VERSION !== "Unknown") {
+                url.searchParams.set("v", VERSION);
+            }
+            fetch(url.toString(), { cache: "no-store" })
+                .then((resp) => (resp && resp.ok ? resp.json() : null))
+                .then((data) => {
+                    if (Array.isArray(data)) {
+                        window.__MACS_DEBUG_TARGETS__ = data;
+                        if (window.dispatchEvent) {
+                            window.dispatchEvent(new CustomEvent("macs-debug-update"));
+                        }
+                    }
+                })
+                .catch(() => {});
+        } catch (_) {}
+    };
 
     const resolveOverride = () => {
         if (typeof window === "undefined") return "none";
@@ -22,12 +53,30 @@ export function createDebugger(namespace, enabled = true) {
         if (!selection || selection === "none") return false;
         if (selection === "all") return true;
         const wanted = selection.split(",").map((entry) => normalizeToken(entry));
+        const targetTokens = new Set();
         const target = normalizeToken(ns);
-        const targetNoExt = stripJs(target);
+        const targetKey = normalizeKey(ns);
+        [target, targetKey, stripJs(target), stripJs(targetKey)].forEach((token) => {
+            if (token) targetTokens.add(token);
+        });
+
+        const targets = getTargets();
+        targets.forEach((entry) => {
+            const entryKey = normalizeKey(entry?.key || "");
+            const entryLabel = normalizeToken(entry?.label || "");
+            if (!entryKey || !entryLabel) return;
+            if (entryKey === targetKey || entryLabel === target || entryLabel === targetKey) {
+                targetTokens.add(entryKey);
+                targetTokens.add(entryLabel);
+                targetTokens.add(stripJs(entryKey));
+                targetTokens.add(stripJs(entryLabel));
+            }
+        });
+
         return wanted.some((entry) => {
             if (!entry) return false;
-            const entryNoExt = stripJs(entry);
-            return entry === target || entryNoExt === targetNoExt;
+            const entryKey = normalizeKey(entry);
+            return targetTokens.has(entry) || targetTokens.has(entryKey) || targetTokens.has(stripJs(entry));
         });
     };
 
@@ -145,6 +194,7 @@ export function createDebugger(namespace, enabled = true) {
     if (typeof window !== "undefined" && window?.addEventListener) {
         window.addEventListener("macs-debug-update", updateVisibility);
     }
+    ensureTargetsLoaded();
 
     const looksLikeJson = (value) => {
         if (typeof value !== "string") return false;

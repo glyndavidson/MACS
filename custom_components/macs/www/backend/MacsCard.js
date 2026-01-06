@@ -23,10 +23,10 @@ import { SatelliteTracker } from "./assistSatellite.js";
 import { AssistPipelineTracker } from "./assistPipeline.js";
 import { SensorHandler } from "./sensorHandler.js";
 import { createDebugger } from "../shared/debugger.js";
-import { MessagePoster } from "../shared/postmessage.js";
+import { MessagePoster } from "../shared/messagePoster.js";
 
 
-const debug = createDebugger("MacsCard.js");
+const debug = createDebugger("card");
 
 
 // Kiosk UI hides HA chrome and forces the card to full-viewport.
@@ -117,6 +117,7 @@ export class MacsCard extends HTMLElement {
             this._lastTurnsSignature = null;
             this._lastAnimationsEnabled = null;
             this._lastConfigSignature = null;
+            this._lastBridgeConfigSignature = null;
             this._syntheticTurns = [];
             this._unsubMessageEvents = null;
             this._messageSubToken = 0;
@@ -159,6 +160,7 @@ export class MacsCard extends HTMLElement {
                 this._sendSensorIfChanged();
             }
             this._lastConfigSignature = null;
+            this._lastBridgeConfigSignature = null;
         }
     }
 
@@ -266,6 +268,16 @@ export class MacsCard extends HTMLElement {
         };
     }
 
+    _buildBridgeConfigPayload() {
+        const enabled = !!this._config.assist_pipeline_enabled;
+        const assist_pipeline_entity = enabled ? (this._config.assist_pipeline_entity || "").toString().trim() : "";
+        const maxTurns = this._config.max_turns ?? DEFAULTS.max_turns;
+        return {
+            assist_pipeline_entity,
+            max_turns: maxTurns,
+        };
+    }
+
     _buildTurnsPayload() {
         const turns = this._pipelineTracker?.getTurns?.() || [];
         const synthetic = this._syntheticTurns || [];
@@ -282,21 +294,30 @@ export class MacsCard extends HTMLElement {
         const snapshot = state || this._pendingState;
         if (!snapshot) return;
         const config = this._buildConfigPayload();
+        const bridgeConfig = this._buildBridgeConfigPayload();
         const turns = this._buildTurnsPayload();
-        const payload = {
+        const moodPayload = {
             type: "macs:init",
+            recipient: "moods",
             config,
             mood: snapshot.mood ?? null,
             sensors: snapshot.sensorValues ?? null,
             brightness: Number.isFinite(snapshot.brightness) ? snapshot.brightness : null,
             animations_enabled: typeof snapshot.animationsEnabled === "boolean" ? snapshot.animationsEnabled : null,
+        };
+        const bridgePayload = {
+            type: "macs:init",
+            recipient: "assist-bridge",
+            config: bridgeConfig,
             turns
         };
 
-        this._postToIframe(payload);
+        this._postToIframe(moodPayload);
+        this._postToIframe(bridgePayload);
         this._initSent = true;
 
-        this._lastConfigSignature = JSON.stringify({ type: "macs:config", ...config });
+        this._lastConfigSignature = JSON.stringify({ type: "macs:config", recipient: "moods", ...config });
+        this._lastBridgeConfigSignature = JSON.stringify({ type: "macs:config", recipient: "assist-bridge", ...bridgeConfig });
         this._lastTurnsSignature = JSON.stringify(turns);
 
         this._lastMood = snapshot.mood;
@@ -349,54 +370,67 @@ export class MacsCard extends HTMLElement {
 
 
     _sendConfigToIframe(force = false) {
-        const payload = {
+        const moodPayload = {
             type: "macs:config",
+            recipient: "moods",
             ...this._buildConfigPayload(),
         };
-        const signature = JSON.stringify(payload);
-        if (!force && signature === this._lastConfigSignature) return;
-        this._lastConfigSignature = signature;
-        this._postToIframe(payload);
+        const moodSignature = JSON.stringify(moodPayload);
+        if (force || moodSignature !== this._lastConfigSignature) {
+            this._lastConfigSignature = moodSignature;
+            this._postToIframe(moodPayload);
+        }
+
+        const bridgePayload = {
+            type: "macs:config",
+            recipient: "assist-bridge",
+            ...this._buildBridgeConfigPayload(),
+        };
+        const bridgeSignature = JSON.stringify(bridgePayload);
+        if (force || bridgeSignature !== this._lastBridgeConfigSignature) {
+            this._lastBridgeConfigSignature = bridgeSignature;
+            this._postToIframe(bridgePayload);
+        }
     }
 
     _sendMoodToIframe(mood, options = {}) {
-        const payload = { type: "macs:mood", mood };
+        const payload = { type: "macs:mood", recipient: "moods", mood };
         // reset_sleep tells the iframe to reset its idle/sleep timers.
         if (options.resetSleep) payload.reset_sleep = true;
         this._postToIframe(payload);
     }
     _sendTemperatureToIframe(temperature) {
         if (this._sensorHandler.getTemperatureHasChanged?.()) {
-            this._postToIframe({ type: "macs:temperature", temperature });
+            this._postToIframe({ type: "macs:temperature", recipient: "moods", temperature });
         }
     }
     _sendWindSpeedToIframe(windspeed) {
         if (this._sensorHandler.getWindSpeedHasChanged?.()) {
-            this._postToIframe({ type: "macs:windspeed", windspeed });
+            this._postToIframe({ type: "macs:windspeed", recipient: "moods", windspeed });
         }
     }
     _sendPrecipitationToIframe(precipitation) {
         if (this._sensorHandler.getPrecipitationHasChanged?.()) {
-            this._postToIframe({ type: "macs:precipitation", precipitation });
+            this._postToIframe({ type: "macs:precipitation", recipient: "moods", precipitation });
         }
     }
     _sendWeatherConditionsToIframe(conditions) {
         if (this._sensorHandler.getWeatherConditionsHasChanged?.()) {
-            this._postToIframe({ type: "macs:weather_conditions", conditions: conditions || {} });
+            this._postToIframe({ type: "macs:weather_conditions", recipient: "moods", conditions: conditions || {} });
         }
     }
     _sendBatteryToIframe(battery) {
         if (this._sensorHandler.getBatteryHasChanged?.()) {
-            this._postToIframe({ type: "macs:battery", battery });
+            this._postToIframe({ type: "macs:battery", recipient: "moods", battery });
         }
     }
     _sendBatteryStateToIframe(state) {
         if (this._sensorHandler.getBatteryStateHasChanged?.()) {
-            this._postToIframe({ type: "macs:battery_state", battery_state: state });
+            this._postToIframe({ type: "macs:battery_state", recipient: "moods", battery_state: state });
         }
     }
     _sendBrightnessToIframe(brightness) {
-        this._postToIframe({ type: "macs:brightness", brightness });
+        this._postToIframe({ type: "macs:brightness", recipient: "moods", brightness });
     }
 
     _sendAnimationsEnabledToIframe(enabled) {
@@ -407,7 +441,7 @@ export class MacsCard extends HTMLElement {
         const next = !!enabled;
         if (this._lastAnimationsEnabled === next) return;
         this._lastAnimationsEnabled = next;
-        this._postToIframe({ type: "macs:animations_enabled", enabled: next });
+        this._postToIframe({ type: "macs:animations_enabled", recipient: "moods", enabled: next });
     }
 
     _sendTurnsToIframe() {
@@ -417,13 +451,15 @@ export class MacsCard extends HTMLElement {
         const signature = JSON.stringify(payloadTurns);
         if (signature === this._lastTurnsSignature) return;
         this._lastTurnsSignature = signature;
-        this._postToIframe({ type: "macs:turns", turns: payloadTurns });
+        this._postToIframe({ type: "macs:turns", recipient: "all", turns: payloadTurns });
     }
 
     _onMessage(e) {
         if (!this._messagePoster || !this._messagePoster.isValidEvent(e)) return;
 
         if (!e.data || typeof e.data !== "object") return;
+        const recipient = (e.data.recipient || "").toString().trim().toLowerCase();
+        if (recipient && recipient !== "backend" && recipient !== "all") return;
 
         if (e.data.type === "macs:ready") {
             debug("iframe ready");

@@ -128,7 +128,7 @@ export const CONVERSATION_ENTITY_ID = "conversation.home_assistant";
 
 
 
-const CARD_EDITOR_INFO = `
+export const CARD_EDITOR_INFO = `
 	<!-- Show dialogue -->
 		<div class="group">
 			<div class="row">
@@ -163,7 +163,7 @@ const CARD_EDITOR_INFO = `
 		</div>
 	`;
 
-const CARD_EDITOR_ABOUT = `
+export const CARD_EDITOR_ABOUT = `
 	<!-- About -->
 		<div class="group">
 			<div class="row about">

@@ -2,7 +2,7 @@ import { TEMPERATURE_ENTITY_ID, WIND_ENTITY_ID, PRECIPITATION_ENTITY_ID, BATTERY
 import { toNumber, normalizeTemperatureValue, normalizeWindValue, normalizeRainValue, normalizeBatteryValue, normalizeUnit } from "./validators.js";
 import { createDebugger } from "../shared/debugger.js";
 
-const debug = createDebugger("sensorHandler.js");
+const debug = createDebugger("sensors");
 
 const CONDITION_KEYS = [
     "snowy",

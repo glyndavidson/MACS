@@ -1,4 +1,7 @@
-﻿from __future__ import annotations
+from __future__ import annotations
+
+import json
+from pathlib import Path
 
 from homeassistant.components.select import SelectEntity
 from homeassistant.components.number import NumberEntity, NumberMode
@@ -8,6 +11,23 @@ from homeassistant.helpers.entity import EntityCategory
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import DOMAIN, MOODS, MACS_DEVICE
+
+def _load_debug_labels() -> list[str]:
+    path = Path(__file__).parent / "www" / "shared" / "debugTargets.json"
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return []
+    if not isinstance(raw, list):
+        return []
+    labels: list[str] = []
+    for entry in raw:
+        if not isinstance(entry, dict):
+            continue
+        label = str(entry.get("label", "")).strip()
+        if label:
+            labels.append(label)
+    return labels
 
 # macs_mood dropdown select entity
 class MacsMoodSelect(SelectEntity, RestoreEntity):
@@ -262,17 +282,11 @@ class MacsChargingSwitch(SwitchEntity, RestoreEntity):
         return MACS_DEVICE
 
 
+_DEBUG_LABELS = _load_debug_labels()
 DEBUG_OPTIONS = (
     "None",
     "All",
-    "MacsCard.js",
-    "MacsCardEditor.js",
-    "assistPipeline.js",
-    "assistSatellite.js",
-    "sensorHandler.js",
-    "postmessage.js",
-    "moods.js",
-    "assist-bridge.js",
+    *_DEBUG_LABELS,
 )
 
 
@@ -300,7 +314,6 @@ class MacsDebugSelect(SelectEntity, RestoreEntity):
     @property
     def device_info(self) -> DeviceInfo:
         return MACS_DEVICE
-
 
 
 class MacsWeatherConditionsSnowySwitch(SwitchEntity, RestoreEntity):
@@ -665,3 +678,8 @@ class MacsWeatherConditionsExceptionalSwitch(SwitchEntity, RestoreEntity):
     @property
     def device_info(self) -> DeviceInfo:
         return MACS_DEVICE
+
+
+
+
+

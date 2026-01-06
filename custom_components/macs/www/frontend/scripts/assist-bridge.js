@@ -1,14 +1,14 @@
 import { createDebugger } from "../../shared/debugger.js";
-import { MessagePoster } from "../../shared/postmessage.js";
+import { MessageListener } from "../../shared/messageListener.js";
 
-const debug = createDebugger("assist-bridge.js");
-const messagePoster = new MessagePoster({
-  sender: "assist-bridge",
-  recipient: "backend",
-  logReceive: false,
-  getRecipientWindow: () => window.parent,
-  getTargetOrigin: () => window.location.origin,
+const debug = createDebugger("assist_bridge");
+const messageListener = new MessageListener({
+  recipient: "assist-bridge",
+  getExpectedSource: () => window.parent,
+  getExpectedOrigin: () => window.location.origin,
+  onMessage: handleMessage,
 });
+messageListener.start();
 
 
 /* ===========================
@@ -90,26 +90,25 @@ const applyTurnsPayload = (turns) => {
   renderChat();
 };
 
-window.addEventListener("message", (e) => {
-  if (!messagePoster.isValidEvent(e)) return;
-  if (!e.data || typeof e.data !== "object") return;
+function handleMessage(payload) {
+  if (!payload || typeof payload !== "object") return;
 
-  if (e.data.type === "macs:init") {
-    applyConfigPayload(e.data.config);
-    applyTurnsPayload(e.data.turns);
+  if (payload.type === "macs:init") {
+    applyConfigPayload(payload.config);
+    applyTurnsPayload(payload.turns);
     return;
   }
 
-  if (e.data.type === "macs:config") {
-    applyConfigPayload(e.data);
+  if (payload.type === "macs:config") {
+    applyConfigPayload(payload);
     return;
   }
 
-  if (e.data.type === "macs:turns") {
-    applyTurnsPayload(e.data.turns);
+  if (payload.type === "macs:turns") {
+    applyTurnsPayload(payload.turns);
     return;
   }
-});
+}
 
 // Initial UI
 messages = [{

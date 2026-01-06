@@ -19,7 +19,7 @@ import { createDebugger } from "../shared/debugger.js";
 import { getValidUrl } from "./validators.js";
 import { loadAssistantOptions, loadWeatherOptions, readAssistStateInputs, readAutoBrightnessInputs, readPipelineInputs, readWeatherInputs, syncAssistStateControls, syncConditionControls, syncAutoBrightnessControls, syncPipelineControls, syncWeatherControls } from "./editorOptions.js";
 
-const debug = createDebugger("MacsCardEditor.js");
+const debug = createDebugger("editor");
 
 function createHtmlGroup({ id, name, label, hint = null, tooltip = null, placeholder, units = false, minMax = false, customInput = "", select = true, entity = true }) {
 	const safeHint = hint
