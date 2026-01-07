@@ -20,7 +20,9 @@
  * - only show blowing leaves if weather condition is windy
  * - rethink debugger. When first created, I thought backend could post to debug div, but it can't because it's in an iframe.
  * - so, use console for backend, and debug div for frontend, makes it much easier to separate then.
- * - bug: setting temperature min to negative number doesn't seem to normalise.
+ * - highlight errors in debug ui.
+ * - Use assist dialogue to display errors
+ * - bug: deleting min/max doesn't update config
  */
 
 /*Here are the best refactor opportunities I see right now:

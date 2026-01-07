@@ -51,6 +51,12 @@ let idleFloatJitterTimer = null;
 let isEditor = false;
 let animationsPaused = false;
 
+const warnIfNull = (label, value) => {
+	if (value !== null) return false;
+	debug(`<span class="error">${label} is null</span>`);
+	return true;
+};
+
 const parseConditionsParam = (value) => {
 	const conditions = {};
 	if (!value) return conditions;
@@ -160,22 +166,34 @@ const applyConfigPayload = (config) => {
 const applySensorPayload = (sensors) => {
 	if (!sensors || typeof sensors !== "object") return;
 	if (typeof sensors.temperature !== "undefined") {
-		if (weatherFx) weatherFx.setTemperature(sensors.temperature);
+		if (!warnIfNull("temperature", sensors.temperature) && weatherFx) {
+			weatherFx.setTemperature(sensors.temperature);
+		}
 	}
 	if (typeof sensors.windspeed !== "undefined") {
-		if (weatherFx) weatherFx.setWindSpeed(sensors.windspeed);
+		if (!warnIfNull("windspeed", sensors.windspeed) && weatherFx) {
+			weatherFx.setWindSpeed(sensors.windspeed);
+		}
 	}
 	if (typeof sensors.precipitation !== "undefined") {
-		if (weatherFx) weatherFx.setPrecipitation(sensors.precipitation);
+		if (!warnIfNull("precipitation", sensors.precipitation) && weatherFx) {
+			weatherFx.setPrecipitation(sensors.precipitation);
+		}
 	}
 	if (typeof sensors.conditions !== "undefined") {
-		if (weatherFx) weatherFx.setWeatherConditions(sensors.conditions);
+		if (!warnIfNull("conditions", sensors.conditions) && weatherFx) {
+			weatherFx.setWeatherConditions(sensors.conditions);
+		}
 	}
 	if (typeof sensors.battery !== "undefined") {
-		if (batteryFx) batteryFx.setBattery(sensors.battery);
+		if (!warnIfNull("battery", sensors.battery) && batteryFx) {
+			batteryFx.setBattery(sensors.battery);
+		}
 	}
 	if (typeof sensors.battery_state !== "undefined") {
-		if (batteryFx) batteryFx.setBatteryState(sensors.battery_state);
+		if (!warnIfNull("battery_state", sensors.battery_state) && batteryFx) {
+			batteryFx.setBatteryState(sensors.battery_state);
+		}
 	}
 };
 
@@ -268,21 +286,25 @@ function handleMessage(payload) {
         return;
     }
     if (payload.type === 'macs:temperature') {
+        if (warnIfNull("temperature", payload.temperature)) return;
         if (weatherFx) weatherFx.setTemperature(payload.temperature ?? '0');
         debug("Setting temperature to: " + (payload.temperature ?? '0'));
         return;
     }
     if (payload.type === 'macs:windspeed') {
+        if (warnIfNull("windspeed", payload.windspeed)) return;
         if (weatherFx) weatherFx.setWindSpeed(payload.windspeed ?? '0');
         debug("Setting windspeed to: " + (payload.windspeed ?? '0'));
         return;
     }
     if (payload.type === 'macs:precipitation') {
+        if (warnIfNull("precipitation", payload.precipitation)) return;
         if (weatherFx) weatherFx.setPrecipitation(payload.precipitation ?? '0');
         debug("Setting precipitation to: " + (payload.precipitation ?? '0'));
         return;
     }
     if (payload.type === 'macs:weather_conditions') {
+        if (warnIfNull("conditions", payload.conditions)) return;
         if (weatherFx) weatherFx.setWeatherConditions(payload.conditions);
         return;
     }
@@ -293,10 +315,12 @@ function handleMessage(payload) {
         return;
     }
     if (payload.type === 'macs:battery') {
+		if (warnIfNull("battery", payload.battery)) return;
 		if (batteryFx) batteryFx.setBattery(payload.battery ?? '0');
         return;
     }
     if (payload.type === 'macs:battery_state') {
+		if (warnIfNull("battery_state", payload.battery_state)) return;
 		if (batteryFx) batteryFx.setBatteryState(payload.battery_state);
         return;
     }

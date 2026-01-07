@@ -257,7 +257,16 @@ export function createDebugger(namespace, enabled = true) {
     const appendLine = (logEl, msg) => {
         if (!logEl) return;
         const line = document.createElement("div");
-        line.textContent = msg;
+        const asString = typeof msg === "string" ? msg : "";
+        const trimmed = asString.trim();
+        if (trimmed.startsWith("<span") && trimmed.endsWith("</span>")) {
+            line.innerHTML = msg;
+        } else {
+            line.textContent = msg;
+        }
+        if (typeof msg === "string" && msg.startsWith("ERROR:")) {
+            line.className = "debug-error";
+        }
         if (msg.includes("\n")) {
             line.style.whiteSpace = "pre-wrap";
         }

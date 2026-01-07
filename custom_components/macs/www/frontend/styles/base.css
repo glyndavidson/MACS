@@ -201,6 +201,10 @@ body.temp-scarf .scarf{
 	border-bottom:1px solid #555;
 }
 #debug .debug-autoscroll input{ margin: 0 6px 0 0; }
+#debug .debug-log .debug-error,
+#debug .debug-log .error{
+	color:#ff6a6a;
+}
 
 #debug::-webkit-scrollbar{
 	width: 8px;
