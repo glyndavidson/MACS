@@ -24,7 +24,6 @@
  * - Use assist dialogue to display errors
  * - bug: deleting min/max doesn't update config
  * - fullscreen kiosk not working on desktop - possible clash with debug div?
- * - change temperature effects from 5, 10, 90 and 95, to 10, 20, 80 and 90.
  */
 
 /*Here are the best refactor opportunities I see right now:

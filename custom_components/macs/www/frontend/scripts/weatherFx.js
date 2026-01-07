@@ -271,12 +271,12 @@ export function createWeatherFx({ debug, getIsPaused, onWindChange } = {}) {
 		document.documentElement.style.setProperty('--temperature-intensity', intensity.toString());
 		const body = document.body;
 		if (body) {
-			body.classList.toggle("temp-icicles", percent >= 0 && percent <= 5);
-			body.classList.toggle("temp-scarf", percent >= 0 && percent <= 10);
-			body.classList.toggle("temp-handkerchief", percent >= 90);
+			body.classList.toggle("temp-icicles", percent >= 0 && percent <= 10);
+			body.classList.toggle("temp-scarf", percent >= 0 && percent <= 20);
+			body.classList.toggle("temp-handkerchief", percent >= 80);
 			const bezelRectL = document.querySelector('#eyeBezelL rect:nth-child(2)');
 			const bezelRectR = document.querySelector('#eyeBezelR rect:nth-child(2)');
-			if(percent >= 95){
+			if(percent >= 90){
 				bezelRectL.setAttribute('fill', 'url(#bezelMetalHot)'); 
 				bezelRectR.setAttribute('fill', 'url(#bezelMetalHot)'); 
 			}
