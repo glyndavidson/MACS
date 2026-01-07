@@ -273,6 +273,17 @@ export function createWeatherFx({ debug, getIsPaused, onWindChange } = {}) {
 		if (body) {
 			body.classList.toggle("temp-icicles", percent >= 0 && percent <= 5);
 			body.classList.toggle("temp-scarf", percent >= 0 && percent <= 10);
+			body.classList.toggle("temp-handkerchief", percent >= 90);
+			const bezelRectL = document.querySelector('#eyeBezelL rect:nth-child(2)');
+			const bezelRectR = document.querySelector('#eyeBezelR rect:nth-child(2)');
+			if(percent >= 95){
+				bezelRectL.setAttribute('fill', 'url(#bezelMetalHot)'); 
+				bezelRectR.setAttribute('fill', 'url(#bezelMetalHot)'); 
+			}
+			else{
+				bezelRectL.setAttribute('fill', 'url(#bezelMetal)'); 
+				bezelRectR.setAttribute('fill', 'url(#bezelMetal)'); 
+			}
 		}
 	};
 

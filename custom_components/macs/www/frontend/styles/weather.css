@@ -59,3 +59,15 @@ body.weather-wind .char{ animation: windSway 2.8s ease-in-out infinite; }
 	from{ transform: translateX(-20%); }
 	to{ transform: translateX(140%); }
 }
+
+
+
+body.temp-scarf .scarf{
+	display: block;
+}
+body.temp-handkerchief .handkerchief{
+	display: block;
+}
+body.temp-icicles .icicle{
+	display: block;
+}

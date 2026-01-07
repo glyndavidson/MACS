@@ -41,17 +41,8 @@ body{
 	animation: idleFloat var(--idle-float-duration, 9s) ease-in-out infinite;
 }
 
-.icicle{
+.icicle, .scarf, .handkerchief{
 	display: none;
-}
-body.temp-icicles .icicle{
-	display: block;
-}
-.scarf{
-	display: none;
-}
-body.temp-scarf .scarf{
-	display: block;
 }
 
 .brow{
