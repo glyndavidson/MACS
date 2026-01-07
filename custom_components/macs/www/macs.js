@@ -10,7 +10,6 @@
  * --------
  * - test non-admin user
  * - add seasons: christmas, halloween etc.
- * - create a "charging" mood.
  * - train "Hey Macs" wakeword
  * - change happy trigger from idle to responding. Actually, idle OR responding, whichever comes first.
  * - update readme screenshot

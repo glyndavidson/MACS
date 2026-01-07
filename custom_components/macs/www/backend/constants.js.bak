@@ -37,7 +37,7 @@ export const DEFAULTS = {
     assist_satellite_entity: "",    // entity_id of a satellite device to monitor assistant state from
     assist_satellite_custom: false, // whether the satellite entity is custom (true) or selected from HA assistant satellites (false)	
     max_turns: 2,  			 		// number of turns (voice requests) to show in the iframe		
-    preview_image: new URL("frontend/images/card_preview.png", rootUrl).toString(), 
+    preview_image: new URL("backend/images/loading.jpg", rootUrl).toString(), 
     assist_outcome_duration_ms: 1000,
     // Weather sensor inputs (frontend UI defaults)
     temperature_sensor_enabled: false,
