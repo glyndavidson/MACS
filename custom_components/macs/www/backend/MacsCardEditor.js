@@ -19,7 +19,6 @@ import { loadAssistantOptions, loadWeatherOptions, readAssistStateInputs, readAu
 
 const debug = createDebugger(import.meta.url);
 
-
 function createInputGroup(groups, definition) {
 	if (!groups || !definition) return null;
 

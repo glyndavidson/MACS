@@ -5,12 +5,13 @@
  */
 import { VERSION } from "./constants.js";
 
-export function createDebugger(namespace, enabled = true) {
-    const nsSource = (namespace || "general").toString();
+export function createDebugger(namespace) {
+    const nsSource = namespace.toString();
     let debugDiv = null;
     let visible = false;
     const BACKLOG_LIMIT = 200;
 
+    
     const normalizeToken = (value) => (value ?? "").toString().trim().toLowerCase();
     const stripJs = (value) => (value.endsWith(".js") ? value.slice(0, -3) : value);
     const normalizeKey = (value) => normalizeToken(value).replace(/[\s-]+/g, "_");
@@ -100,6 +101,7 @@ export function createDebugger(namespace, enabled = true) {
     const matchesNamespace = (selection) => {
         if (!selection || selection === "none") return false;
         if (selection === "all") return true;
+
         const wanted = selection.split(",").map((entry) => normalizeToken(entry));
         const baseTokens = buildBaseTokens();
         const targetTokens = new Set(baseTokens);
@@ -120,7 +122,6 @@ export function createDebugger(namespace, enabled = true) {
     };
 
     const isEnabled = () => {
-        if (!enabled) return false;
         return matchesNamespace(resolveOverride());
     };
 
@@ -370,6 +371,7 @@ export function createDebugger(namespace, enabled = true) {
         const enabledNow = isEnabled();
         if (!enabledNow) {
             hideDebug();
+            return;
         }
         const entries = args.map((arg) => ({
             arg,
@@ -389,7 +391,7 @@ export function createDebugger(namespace, enabled = true) {
             showDebug();
             flushQueue();
         }
-        console.log(`[*MACS:${ns}]`, ...args);
+        console.log(`[O]‿[O] MACS: ${ns}`, ...args);
     };
 
     log.show = updateVisibility;
