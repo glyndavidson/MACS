@@ -12,8 +12,6 @@
  * This file is frontend-only and does not perform any backend logic.
  */
 
-
-
 import { DEFAULTS, TEMPERATURE_UNIT_ITEMS, WIND_UNIT_ITEMS, PRECIPITATION_UNIT_ITEMS, BATTERY_CHARGE_UNIT_ITEMS, CARD_EDITOR_INFO, CARD_EDITOR_ABOUT } from "../shared/constants.js";
 import { createDebugger } from "../shared/debugger.js";
 import { getValidUrl } from "./validators.js";
@@ -21,28 +19,56 @@ import { loadAssistantOptions, loadWeatherOptions, readAssistStateInputs, readAu
 
 const debug = createDebugger(import.meta.url);
 
-function createHtmlGroup({ id, name, label, hint = null, tooltip = null, placeholder, units = false, minMax = false, customInput = "", select = true, entity = true }) {
-	const safeHint = hint
-		? hint.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-		: "";
-	const safeTooltipAttr = tooltip
-		? tooltip.toString().replace(/&/g, "&amp;").replace(/"/g, "&quot;")
-		: "";
-	const safeTooltipHtml = tooltip
-		? tooltip.toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-		: "";
+
+function createInputGroup(groups, definition) {
+	if (!groups || !definition) return null;
+
+	const group = {
+		id: definition.id,
+		name: definition.name,
+		label: definition.label,
+		tOverview: definition.tOverview,
+		tPurpose: definition.tPurpose,
+		tExpections: definition.tExpections,
+		tRequired: definition.tRequired,
+		tOverrides: definition.tOverrides,
+		placeholder: definition.placeholder,
+		units: !!definition.units,
+		minMax: !!definition.minMax,
+		select: typeof definition.select === "undefined" ? true : !!definition.select,
+		entity: typeof definition.entity === "undefined" ? true : !!definition.entity,
+		customInput: definition.customInput || "",
+		extraIds: Array.isArray(definition.extraIds) ? definition.extraIds : [],
+		selectItems: typeof definition.selectItems === "undefined" ? null : definition.selectItems,
+		selectValue: definition.selectValue,
+		selectOptions: typeof definition.selectOptions === "undefined" ? null : definition.selectOptions,
+		unitItems: typeof definition.unitItems === "undefined" ? null : definition.unitItems,
+		unitValue: definition.unitValue,
+		wire: definition.wire !== false
+	};
+
+	group.html = createHtmlGroup(group);
+	groups.push(group);
+	return group;
+}
+
+
+
+function createHtmlGroup({ id, name, label, tOverview, tPurpose, tExpections, tRequired, tOverrides, placeholder, units = false, minMax = false, customInput = "", select = true, entity = true }) {
+	const ttOverview 	= getHintBlock("Overview", 		 tOverview);
+	const ttPurpose 	= getHintBlock("Purpose",		 tPurpose);
+	const ttExpections 	= getHintBlock("What to Expect", tExpections);
+	const ttRequired 	= getHintBlock("Required", 		 tRequired);
+	const ttOverrides 	= getHintBlock("Overrides", 	 tOverrides);
+	const hint = ttOverview + ttPurpose + ttExpections + ttRequired + ttOverrides;
+	
 	let htmlString = `
 		<!-- ${name} -->
 			<div class="group" id="${id}">
 				<div class="row">
-					<label for="${id}_enabled">${label}${safeTooltipAttr ? ` <ha-icon class="tooltip" icon="mdi:information-outline" tabindex="0" role="button" aria-label="${safeTooltipAttr}" data-target="${id}_hint"></ha-icon>` : ""}</label>
+					<label for="${id}_enabled">${label}<ha-icon class="tooltip" icon="mdi:information-outline" tabindex="0" role="button" aria-label="${hint}" data-target="${id}_hint"></ha-icon></label>
 					<ha-switch id="${id}_enabled"></ha-switch>
-					${safeHint ? `
-						<div class="hint always">${safeHint}</div>
-					` : ""}
-					${safeTooltipHtml ? `
-						<div class="hint" id="${id}_hint">${safeTooltipHtml}</div>
-					` : ""}
+					<div class="hint" id="${id}_hint">${hint}</div>
 				</div>
 
 				${select ? `
@@ -76,6 +102,12 @@ function createHtmlGroup({ id, name, label, hint = null, tooltip = null, placeho
 	return htmlString;
 }
 
+function getHintBlock(heading, content){
+	return `<span class="hint-heading">${heading}</span><span class='hint-content'>${content}.</span><br>`;
+}
+
+
+
 function populateCombobox(root, id, items, selectedId, options = {}) {
 	if (!root) return null;
 
@@ -108,34 +140,6 @@ function populateCombobox(root, id, items, selectedId, options = {}) {
 	return el;
 }
 
-function createInputGroup(groups, definition) {
-	if (!groups || !definition) return null;
-
-	const group = {
-		id: definition.id,
-		name: definition.name,
-		label: definition.label,
-		hint: definition.hint,
-		tooltip: definition.tooltip,
-		placeholder: definition.placeholder,
-		units: !!definition.units,
-		minMax: !!definition.minMax,
-		select: typeof definition.select === "undefined" ? true : !!definition.select,
-		entity: typeof definition.entity === "undefined" ? true : !!definition.entity,
-		customInput: definition.customInput || "",
-		extraIds: Array.isArray(definition.extraIds) ? definition.extraIds : [],
-		selectItems: typeof definition.selectItems === "undefined" ? null : definition.selectItems,
-		selectValue: definition.selectValue,
-		selectOptions: typeof definition.selectOptions === "undefined" ? null : definition.selectOptions,
-		unitItems: typeof definition.unitItems === "undefined" ? null : definition.unitItems,
-		unitValue: definition.unitValue,
-		wire: definition.wire !== false
-	};
-
-	group.html = createHtmlGroup(group);
-	groups.push(group);
-	return group;
-}
 
 function setupInputGroup(root, config, group) {
 	if (!root || !group) return;
@@ -228,8 +232,11 @@ export class MacsCardEditor extends HTMLElement {
 			id: "assist_satellite",
 			name: "Assist Satellite",
 			label: "React to Wake-Words?",
-			hint: null,
-			tooltip: "When enabled, M.A.C.S. follows the selected Assist satellite state and overrides the mood select.",
+			tOverview: "When enabled, Macs's moods reflect the state of the selected Assist satellite",
+			tPurpose: "This provides a visual indication of whether or your wake-word has been triggered, and if the assistant is listening",
+			tExpections: "Wake word changes Macs's mood to listening. Whilst the Assistant is processing your input, Macs's mood changes to thinking. If your request was succesful, Macs's mood changes to happy. If the assistant didn't understand your request, his mood changes to confused. After a short delay, his mood returns to idle until another wake word is triggered",
+			tRequired: "An Assistant Satellite (Microphone), which broadcasts listening, processing, and idle states. (Macs was developed using the Atom Echo)",
+			tOverrides: "When enabled, Macs will ignore the value set in macs.mood",
 			placeholder: "assist_satellite.my_device",
 			selectItems: satItems,
 			selectValue: this._config.assist_satellite_entity ?? "",
@@ -240,8 +247,11 @@ export class MacsCardEditor extends HTMLElement {
 			id: "assist_pipeline",
 			name: "Assistant Pipeline",
 			label: "Display Dialogue?",
-			hint: null,
-			tooltip: "When enabled, M.A.C.S. shows dialogue from the selected Assist pipeline.",
+			tOverview: "When enabled, Macs displays the dialogue with the selected Assistant",
+			tPurpose: "This provides a visual indication of what the assistant thinks you have said",
+			tExpections: "Any written or spoken dialogue with the chosen assistant displayed as text",
+			tRequired: "Admin account - To obtain assistant dialogue, Macs utilises Home Assistants debugging features which require the user to be logged in as admin",
+			tOverrides: "None",
 			placeholder: "01k...",
 			selectItems: pipelineItems,
 			selectValue: this._config.assist_pipeline_entity ?? "",
@@ -252,8 +262,11 @@ export class MacsCardEditor extends HTMLElement {
 			id: "temperature_sensor",
 			name: "Temperature",
 			label: "Use Temperature Sensor?",
-			hint: null,
-			tooltip: "When enabled, the selected sensor is used and the M.A.C.S. Temperature entity/service is ignored.",
+			tOverview: "When enabled, Macs will give a visual indication of when temperatures are hot or cold",
+			tPurpose: "If this option is enabled, Macs will ignore macs.temperature, and use readings from this sensor instead",
+			tExpections: "",
+			tRequired: "",
+			tOverrides: "",
 			placeholder: "sensor.my_temperature",
 			units: true,
 			minMax: true,
@@ -268,8 +281,11 @@ export class MacsCardEditor extends HTMLElement {
 			id: "wind_sensor",
 			name: "Wind Sensor",
 			label: "Use Wind Sensor?",
-			hint: null,
-			tooltip: "When enabled, the selected sensor is used and the M.A.C.S. Wind Speed entity/service is ignored.",
+			tOverview: "When enabled, Macs will give a visual indication of wind speeds",
+			tPurpose: "If this option is enabled, Macs will ignore macs.temperature, and use readings from this sensor instead",
+			tExpections: "",
+			tRequired: "",
+			tOverrides: "",
 			placeholder: "sensor.my_wind_speed",
 			units: true,
 			minMax: true,
@@ -284,8 +300,11 @@ export class MacsCardEditor extends HTMLElement {
 			id: "precipitation_sensor",
 			name: "Rainfall Sensor",
 			label: "Use Rainfall Sensor?",
-			hint: null,
-			tooltip: "When enabled, the selected sensor is used and the M.A.C.S. Precipitation entity/service is ignored.",
+			tOverview: "When enabled, the selected sensor is used and the M.A.C.S. Precipitation entity/service is ignored.",
+			tPurpose: "",
+			tExpections: "",
+			tRequired: "",
+			tOverrides: "",
 			placeholder: "sensor.my_rain",
 			units: true,
 			minMax: true,
@@ -300,8 +319,11 @@ export class MacsCardEditor extends HTMLElement {
 			id: "weather_conditions",
 			name: "Weather Conditions",
 			label: "Auto-Detect Weather Conditions?",
-			hint: null,
-			tooltip: "When enabled, conditions come from the selected weather entity and the condition toggles are ignored.",
+			tOverview: "When enabled, conditions come from the selected weather entity and the condition toggles are ignored.",
+			tPurpose: "",
+			tExpections: "",
+			tRequired: "",
+			tOverrides: "",
 			placeholder: "weather.forecast_home",
 			selectItems: conditionItems,
 			selectValue: this._config.weather_conditions ?? "",
@@ -312,8 +334,11 @@ export class MacsCardEditor extends HTMLElement {
 			id: "battery_charge_sensor",
 			name: "Battery Charge",
 			label: "Use Battery Sensor?",
-			hint: null,
-			tooltip: "When enabled, the selected sensor is used and the M.A.C.S. Battery Charge entity/service is ignored. Macs Mood will turn sad at 20% Battery.",
+			tOverview: "When enabled, the selected sensor is used and the M.A.C.S. Battery Charge entity/service is ignored. Macs Mood will turn sad at 20% Battery.",
+			tPurpose: "",
+			tExpections: "",
+			tRequired: "",
+			tOverrides: "",
 			placeholder: "sensor.my_battery",
 			units: true,
 			minMax: true,
@@ -328,8 +353,11 @@ export class MacsCardEditor extends HTMLElement {
 			id: "battery_state_sensor",
 			name: "Battery State",
 			label: "Use Charging Sensor?",
-			hint: null,
-			tooltip: "When enabled, the selected sensor is used to detect charging state.",
+			tOverview: "When enabled, the selected sensor is used to detect charging state.",
+			tPurpose: "",
+			tExpections: "",
+			tRequired: "",
+			tOverrides: "",
 			placeholder: "sensor.ipad_battery_state",
 			selectItems: batteryStateItems,
 			selectValue: this._config.battery_state_sensor_entity ?? "",
@@ -340,8 +368,11 @@ export class MacsCardEditor extends HTMLElement {
 			id: "auto_brightness",
 			name: "Kiosk Mode",
 			label: "Enable Kiosk Mode?",
-			hint: null,
-			tooltip: "When enabled, the card uses its kiosk timer for dimming and sleep. Tip: hold anywhere on the card to toggle the sidebar and navbar.",
+			tOverview: "When enabled, the card uses its kiosk timer for dimming and sleep. Tip: hold anywhere on the card to toggle the sidebar and navbar.",
+			tPurpose: "",
+			tExpections: "",
+			tRequired: "",
+			tOverrides: "",
 			placeholder: "",
 			select: false,
 			entity: false,

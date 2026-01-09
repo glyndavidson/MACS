@@ -20,7 +20,6 @@ label {
 
 .hint {
     display: none;
-    opacity: 0.7;
     font-size: 90%;
     margin-top: 4px;
 }
@@ -31,16 +30,26 @@ label {
 
 .hint.open {
     display: block;
+    padding:6px;
     opacity: 1;
 }
 
+.hint .hint-heading{
+    display:block;
+    font-weight:bold;
+    margin-top:10px;
+}
+.hint .hint-content{
+    padding-left:6px;
+    font-weight: normal;
+    display: block;
+}
 .tooltip {
     width: 16px;
     height: 16px;
     cursor: help;
     opacity: 1;
     float: right;
-    color: var(--secondary-text-color);
 }
 
 .fullwidth {
