@@ -8,15 +8,18 @@
 /** 
  * TO-DO
  * --------
+ * - Update Custom Integrations examples and tooltips
+ * - finish improving editorOptions.js
+ * - thorough test of card editor
+ * - only show blowing leaves if weather condition is windy
+ * 
  * - test non-admin user
  * - add seasons: christmas, halloween etc.
  * - train "Hey Macs" wakeword
  * - change happy trigger from idle to responding. Actually, idle OR responding, whichever comes first.
  * - update readme screenshot
- * - create battery plugged in
- * - Update Custom Integrations examples and tooltips
  * - add a macs.show handler - "show me my shopping list", "show me my camera" etc? Shopping list likely easy, camera difficult.
- * - only show blowing leaves if weather condition is windy
+ * 
  * - rethink debugger. When first created, I thought backend could post to debug div, but it can't because it's in an iframe.
  * - so, use console for backend, and debug div for frontend, makes it much easier to separate then.
  * - highlight errors in debug ui.
