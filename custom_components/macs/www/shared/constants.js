@@ -76,14 +76,15 @@ export const DEFAULTS = {
     auto_brightness_pause_animations: true,
 };
 
+// change autoBrightness defaults to ""?
+
 export const DEFAULT_MAX_TEMP_C = 30;
 export const DEFAULT_MIN_TEMP_C = 5;
 export const DEFAULT_MAX_WIND_MPH = 50;
 export const DEFAULT_MIN_WIND_MPH = 10;
 export const DEFAULT_MAX_RAIN_MM = 10;
-
-export const MACS_MESSAGE_EVENT = "macs_message";
 export const DEFAULT_MIN_RAIN_MM = 0;
+export const MACS_MESSAGE_EVENT = "macs_message";
 
 // Unit options used by the card editor.
 export const TEMPERATURE_UNIT_ITEMS = [

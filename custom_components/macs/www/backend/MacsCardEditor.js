@@ -233,7 +233,11 @@ export class MacsCardEditor extends HTMLElement {
 	setConfig(config) {
 		this._config = { ...DEFAULTS, ...(config || {}) };
 		debug("setConfig", { config: this._config });
-		this._render();
+		if (!this._rendered) {
+			this._render();   // build DOM ONCE
+		} else {
+			this._sync();     // update existing DOM
+		}
 	}
 
 	set hass(hass) {
@@ -242,10 +246,10 @@ export class MacsCardEditor extends HTMLElement {
 
 	// render the card editor UI
 	async _render() {
+		// todo, this rebuilds the DOM on every change. (Disposes all html elems and event listeners, then rebuilds them all from scratch on every change!!!)
 		if (!this.shadowRoot) {
 			this.attachShadow({ mode: "open" });
 		}
-
 		let htmlOutput;
 
 		const { satelliteItems, pipelineItems, preferred, temperatureItems, windItems, precipitationItems, conditionItems, batteryItems, batteryStateItems } = await getComboboxItems(this._hass);

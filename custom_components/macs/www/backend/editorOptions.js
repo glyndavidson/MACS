@@ -3,8 +3,17 @@
  * --------------
  * Populates combo boxes for use by the card editor.
  * Obtains User Inputs with Fallbacks to Default Values
+ * Syncs UI with Config
  */
 
+
+import {DEFAULTS} from "../shared/constants.js";
+
+//###############################################################################################
+//                                                                                              #
+//                         Element / Config Keys	                                            #
+//                                                                                              #
+//###############################################################################################
 
 // Assistant Satellite
 const assistSatelitteKeys = {
@@ -261,110 +270,12 @@ async function searchForPipelines(hass) {
 
 //###############################################################################################
 //                                                                                              #
-//                         			Read User Inputs                                            #
+//                         			Synch config to UI                                          #
 //                                                                                              #
 //###############################################################################################
 
-// get the selected value of a combo box
-function getComboboxValue(el, e) {
-	// Prefer the event detail value when this element triggered the event.
-	if (e && e.currentTarget === el && e.detail && typeof e.detail.value !== "undefined") {
-		return e.detail.value;
-	}
-	// Fallback to HA combo-box selection.
-	if (el && el.selectedItem && typeof el.selectedItem.id !== "undefined") {
-		return el.selectedItem.id;
-	}
-	// Last resort: raw element value.
-	return el && typeof el.value !== "undefined" ? el.value : "";
-}
-
-// chick if a toggle switch is "checked" or not
-function getToggleValue(el, e, fallback) {
-	if (el) {
-		if (e && e.currentTarget === el) {
-			if (e.detail && typeof e.detail.value !== "undefined") {
-				return !!e.detail.value;
-			}
-			if (e.detail && typeof e.detail.checked !== "undefined") {
-				return !!e.detail.checked;
-			}
-		}
-		if (typeof el.checked !== "undefined") {
-			return !!el.checked;
-		}
-	}
-	return !!fallback;
-}
-
-// return a number input or fallback to default value
-function getNumberOrDefault(elem, defaultVal){
-    let val = elem ? elem.value : undefined;
-    if (val === "" || val === null || typeof val === "undefined") {
-        return defaultVal;
-    }
-	return Number(val);
-}
-
-
-// Reads all inputs for a HTML group
-function getUserInputs(shadowRoot, e, config, ids) {
-	// see why keys are available in the current group
-	const enabledKey = ids.enabled ? ids.enabled : false;
-	const selectKey = ids.select ? ids.select : false;
-	const customKey = ids.custom ? ids.custom : false;
-	const entityKey = ids.entity ? ids.entity : false;
-	const unitKey = ids.unit ? ids.unit : false;
-	const minKey = ids.min ? ids.min : false;
-	const maxKey = ids.max ? ids.max : false;
-	const kioskAnimKey = ids.kioskAnimations ? ids.kioskAnimations : false;
-	const kioskTimeoutKey = ids.kioskTimeout ? ids.kioskTimeout : false;
-
-	// get the corresponding html elements
-	const elemEnabled      = enabledKey 	 ? shadowRoot.getElementById(enabledKey) : null;
-	const elemSelect       = selectKey 		 ? shadowRoot.getElementById(selectKey) : null;
-	//const elemCustom       = customKey 		 ? root.getElementById(customKey) : null;
-	const elemEntityInput  = entityKey 		 ? shadowRoot.getElementById(entityKey) : null;
-	const elemUnit         = unitKey 		 ? shadowRoot.getElementById(unitKey) : null;
-	const elemMin          = minKey 		 ? shadowRoot.getElementById(minKey) : null;
-	const elemMax          = maxKey 		 ? shadowRoot.getElementById(maxKey) : null;
-	const elemKioskAnims   = kioskAnimKey 	 ? shadowRoot.getElementById(kioskAnimKey) : null;
-	const elemKioskTimeout = kioskTimeoutKey ? shadowRoot.getElementById(kioskTimeoutKey) : null;
-
-	// get the combo box selected val and chosen entity
-	const enabled = getToggleValue(elemEnabled, e, config && config[enabledKey]);
-	const selectValue = getComboboxValue(elemSelect, e);
-	const isCustom = selectValue === "custom";
-	const entityVal = isCustom ? ((elemEntityInput && elemEntityInput.value) || "") : selectValue;
-		
-	// enable/disable elems
-	if (elemSelect)elemSelect.disabled = !enabled;
-	if (elemEntityInput) elemEntityInput.disabled = !enabled || !isCustom;
-	if (elemUnit) elemUnit.disabled = !enabled;
-	if (elemMin) elemMin.disabled = !enabled;
-	if (elemMax) elemMax.disabled = !enabled;
-	if (elemKioskAnims) elemKioskAnims.disabled = !enabled;
-	if (elemKioskTimeout) elemKioskTimeout.disabled = !enabled;
-	
-	// prepare payload
-	let payload = {[enabledKey]: enabled};
-	if (selectKey){ 	  payload[entityKey] 	    = entityVal;	payload[customKey] = isCustom; }
-	if (unitKey) 		  payload[unitKey]			= String(elemUnit ? getComboboxValue(elemUnit, e) : ((config && config[unitKey]) || ""));
-	if (minKey)  		  payload[minKey] 			= getNumberOrDefault(config[minKey]);
-	if (maxKey)  	      payload[maxKey] 			= getNumberOrDefault(config[maxKey]);
-	if (kioskAnimKey)  	  payload[kioskAnimKey] 	= getToggleValue(kioskAnimKey, e, config && config[kioskAnimKey]);
-	if (kioskTimeoutKey)  payload[kioskTimeoutKey] 	= getNumberOrDefault(config[kioskTimeoutKey]);
-
-	return payload;
-}
-
-
-
-
-
-
-
-export function readInputs(shadowRoot, e, config) {
+// called my MacsCardEditor.js
+export function readInputs(shadowRoot, event, config) {
 	// Read all inputs or fall back to config.
 	if (!shadowRoot) {
 		return {
@@ -429,66 +340,22 @@ export function readInputs(shadowRoot, e, config) {
 	}
 
 	return {
-		...getUserInputs(shadowRoot, e, config, assistSatelitteKeys),
-		...getUserInputs(shadowRoot, e, config, assistPipelineKeys),
-		...getUserInputs(shadowRoot, e, config, temperatureKeys),
-		...getUserInputs(shadowRoot, e, config, windspeedKeys),
-		...getUserInputs(shadowRoot, e, config, precipitationKeys),
-		...getUserInputs(shadowRoot, e, config, weatherConditionKeys),
-		...getUserInputs(shadowRoot, e, config, batteryChargeKeys),
-		...getUserInputs(shadowRoot, e, config, batteryStateKeys),
-		...getUserInputs(shadowRoot, e, config, autoBrightnessKeys),
+		...getUserInputs(shadowRoot, event, config, assistSatelitteKeys),
+		...getUserInputs(shadowRoot, event, config, assistPipelineKeys),
+		...getUserInputs(shadowRoot, event, config, temperatureKeys),
+		...getUserInputs(shadowRoot, event, config, windspeedKeys),
+		...getUserInputs(shadowRoot, event, config, precipitationKeys),
+		...getUserInputs(shadowRoot, event, config, weatherConditionKeys),
+		...getUserInputs(shadowRoot, event, config, batteryChargeKeys),
+		...getUserInputs(shadowRoot, event, config, batteryStateKeys),
+		...getUserInputs(shadowRoot, event, config, autoBrightnessKeys),
 	};
 }
 
 
-
-
-
-//###############################################################################################
-//                                                                                              #
-//                         Sync...                                            #
-//                                                                                              #
-//###############################################################################################
-
-function setEnabledDisabled(elem, key, enabled){
-	if(key){
-		if (elem) {
-			elem.disabled = !enabled;
-		}
-	}
-}
-
-function setNumericValue(elem, key, config){
-	if(key){
-		if(elem){
-			const val = config && config[key];
-			if (elem.value !== val) {
-				elem.value = val === null || typeof val === "undefined" ? "" : String(val);
-			}
-		// 			if (max && max.value !== cfgMax) {
-		// 	max.value = cfgMax === null || typeof cfgMax === "undefined" ? "" : String(cfgMax);
-		// }
-		}
-	}
-}
-
-function setToggleState(elem, key, config){
-	if(key){
-		if(elem){
-			const val = !!(config && config[key]);
-			if (elem.checked !== val) {
-				elem.checked = val;
-			}
-		}
-	}
-}
-
-export function syncInputGroup(shadowRoot, config, items, ids){
-	if (!shadowRoot) {
-		return;
-	}
-
+// Reads all inputs for a HTML group
+function getUserInputs(shadowRoot, event, config, ids) {
+	// see why keys are available in the current group
 	const enabledKey = ids.enabled ? ids.enabled : false;
 	const selectKey = ids.select ? ids.select : false;
 	const customKey = ids.custom ? ids.custom : false;
@@ -499,66 +366,99 @@ export function syncInputGroup(shadowRoot, config, items, ids){
 	const kioskAnimKey = ids.kioskAnimations ? ids.kioskAnimations : false;
 	const kioskTimeoutKey = ids.kioskTimeout ? ids.kioskTimeout : false;
 
+	// get the corresponding html elements
 	const elemEnabled      = enabledKey 	 ? shadowRoot.getElementById(enabledKey) : null;
 	const elemSelect       = selectKey 		 ? shadowRoot.getElementById(selectKey) : null;
-	const elemEntity       = entityKey 		 ? shadowRoot.getElementById(entityKey) : null;
+	//const elemCustom       = customKey 		 ? root.getElementById(customKey) : null;
+	const elemEntityInput  = entityKey 		 ? shadowRoot.getElementById(entityKey) : null;
 	const elemUnit         = unitKey 		 ? shadowRoot.getElementById(unitKey) : null;
 	const elemMin          = minKey 		 ? shadowRoot.getElementById(minKey) : null;
 	const elemMax          = maxKey 		 ? shadowRoot.getElementById(maxKey) : null;
 	const elemKioskAnims   = kioskAnimKey 	 ? shadowRoot.getElementById(kioskAnimKey) : null;
 	const elemKioskTimeout = kioskTimeoutKey ? shadowRoot.getElementById(kioskTimeoutKey) : null;
 
-	const enabled = !!(config && config[enabledKey]);
-	console.log("enabled", enabled);
+	// get the combo box selected val and chosen entity
+	const enabled = getToggleValue(elemEnabled, event, config && config[enabledKey]);
+	const selectValue = getComboboxValue(elemSelect, event);
+	const isCustom = selectValue === "custom";
+	const entityVal = isCustom ? ((elemEntityInput && elemEntityInput.value) || "") : selectValue;
+			
+	// prepare payload
+	let payload = {[enabledKey]: enabled};
+	if (selectKey){ 	  payload[entityKey] 	    = entityVal;	payload[customKey] = isCustom; }
+	if (unitKey) 		  payload[unitKey]			= String(elemUnit ? getComboboxValue(elemUnit, event) : ((config && config[unitKey]) || ""));
+	
+	if (minKey)  		  payload[minKey] 			= getNumberOrDefault(elemMin, minKey);
+	if (maxKey)  	      payload[maxKey] 			= getNumberOrDefault(elemMax, minKey);
+	if (kioskTimeoutKey)  payload[kioskTimeoutKey] 	= getNumberOrDefault(elemKioskTimeout, kioskTimeoutKey);
 
-	if (elemEnabled && elemEnabled.checked !== enabled) {
-		elemEnabled.checked = enabled;
-	}
-	setEnabledDisabled(elemSelect, 		selectKey, 		enabled);
-	setEnabledDisabled(elemEntity, 		entityKey, 		enabled);
-	setEnabledDisabled(elemUnit, 		unitKey, 		enabled);
-	setEnabledDisabled(elemMin,			minKey,  		enabled);
-	setEnabledDisabled(elemMax, 		maxKey, 		enabled);
-	setEnabledDisabled(elemKioskAnims, 	kioskAnimKey, 	enabled);
-	setEnabledDisabled(elemKioskTimeout,kioskTimeoutKey,enabled);
-
-	if(selectKey){
-		if(elemSelect){
-			const eid = String((config && config[entityKey]) || "");
-
-			const knownSelect = Array.isArray(items) && items.some(function (s) {
-					return s.id === eid && s.id !== "custom";
-				});
-
-			const isCustom = !!(config && config[customKey]) || !knownSelect;
-			const nextSelect = isCustom ? "custom" : eid;
-
-			if (elemSelect && elemSelect.value !== nextSelect) {
-				elemSelect.value = nextSelect;
-			}
-			if (elemEntity && elemEntity.value !== eid && (!isCustom || !elemEntity.matches(":focus-within"))) {
-				elemEntity.value = eid;
-			}
-			elemEntity.enabled = enabled && isCustom;
-		}
-	}
-
-	if (unitKey) {
-		if(elemUnit){
-			const unitVal = String((config && config[unitKey]) || "");
-			if (elemUnit.value !== unitVal) {
-				elemUnit.value = unitVal;
-			}
-		}
-	}
-
-	setNumericValue(elemMin, minKey, config);
-	setNumericValue(elemMax, maxKey, config);
-	setNumericValue(elemKioskTimeout, kioskTimeoutKey, config);
-
-	setToggleState(elemKioskAnims, kioskAnimKey, config);
+	if (kioskAnimKey)  	  payload[kioskAnimKey] 	= getToggleValue(elemKioskAnims, event, config && config[kioskAnimKey]);
+	return payload;
 }
 
+
+// ___________________________________________
+//           HELPER FUNCTIONS
+
+// get the selected value of a combo box
+function getComboboxValue(el, e) {
+	// Prefer the event detail value when this element triggered the event.
+	if (e && e.currentTarget === el && e.detail && typeof e.detail.value !== "undefined") {
+		return e.detail.value;
+	}
+	// Fallback to HA combo-box selection.
+	if (el && el.selectedItem && typeof el.selectedItem.id !== "undefined") {
+		return el.selectedItem.id;
+	}
+	// Last resort: raw element value.
+	return el && typeof el.value !== "undefined" ? el.value : "";
+}
+
+// chick if a toggle switch is "checked" or not
+function getToggleValue(elem, event, fallback) {
+	if (elem) {
+		if (event && event.currentTarget === elem) {
+			if (event.detail && typeof event.detail.value !== "undefined") {
+				return !!event.detail.value;
+			}
+			if (event.detail && typeof event.detail.checked !== "undefined") {
+				return !!event.detail.checked;
+			}
+		}
+		if (typeof elem.checked !== "undefined") {
+			return !!elem.checked;
+		}
+	}
+	return !!fallback;
+}
+
+// return a number input or fallback to default value
+function getNumberOrDefault(elem, key){
+	if(key){
+		if(elem){
+			const val = elem ? elem.value : undefined;
+			if (val === "" || val === null || typeof val === "undefined") {
+				return DEFAULTS.key;
+			}
+			return Number(val);
+		}
+	}
+}
+
+
+
+
+
+
+
+
+//###############################################################################################
+//                                                                                              #
+//                         Sync UI to Config	                                                #
+//                                                                                              #
+//###############################################################################################
+
+// Called my MacsCardEditor.js
 export function syncInputs(shadowRoot, config, satelliteItems, pipelineItems, temperatureItems, windspeedItems, precipitationItems, weatherConditionItems, batteryChargeItems, batteryStateItems, autoBrightnessItems) {
 	syncInputGroup(shadowRoot, config, satelliteItems, assistSatelitteKeys);
 	syncInputGroup(shadowRoot, config, pipelineItems, assistPipelineKeys);
@@ -570,4 +470,177 @@ export function syncInputs(shadowRoot, config, satelliteItems, pipelineItems, te
 	syncInputGroup(shadowRoot, config, batteryStateItems, batteryStateKeys);
 	syncInputGroup(shadowRoot, config, autoBrightnessItems, autoBrightnessKeys);
 }
+
+// synchronises all html elements with user's config
+export function syncInputGroup(shadowRoot, config, items, keys){
+	// make sure the html root exists
+	if (!shadowRoot) {
+		return;
+	}
+
+	// set what config keys exist for the current html-group
+	const enabledKey = keys.enabled ? keys.enabled : false;
+	const selectKey = keys.select ? keys.select : false;
+	const customKey = keys.custom ? keys.custom : false;
+	const entityKey = keys.entity ? keys.entity : false;
+	const unitKey = keys.unit ? keys.unit : false;
+	const minKey = keys.min ? keys.min : false;
+	const maxKey = keys.max ? keys.max : false;
+	const kioskAnimKey = keys.kioskAnimations ? keys.kioskAnimations : false;
+	const kioskTimeoutKey = keys.kioskTimeout ? keys.kioskTimeout : false;
+
+	// get the HTML elements
+	// todo - gate these by keys-exist
+	const elemEnabled      = enabledKey 	 ? shadowRoot.getElementById(enabledKey) : false;
+	const elemSelect       = selectKey 		 ? shadowRoot.getElementById(selectKey) : false;
+	const elemEntity       = entityKey 		 ? shadowRoot.getElementById(entityKey) : false;
+	const elemUnit         = unitKey 		 ? shadowRoot.getElementById(unitKey) : false;
+	const elemMin          = minKey 		 ? shadowRoot.getElementById(minKey) : false;
+	const elemMax          = maxKey 		 ? shadowRoot.getElementById(maxKey) : false;
+	const elemKioskAnims   = kioskAnimKey 	 ? shadowRoot.getElementById(kioskAnimKey) : false;
+	const elemKioskTimeout = kioskTimeoutKey ? shadowRoot.getElementById(kioskTimeoutKey) : false;
+
+	// is the feature enabled
+	const enabled = !!(config && config[enabledKey]);
+	
+	// update toggle switches
+	setToggleState(elemEnabled, enabledKey, config);
+	setToggleState(elemKioskAnims, kioskAnimKey, config);
+
+	// update comboboxes
+	setSelectedValue(elemUnit, unitKey, config);
+
+	// update number inputs
+	setNumericValue(elemMin, minKey, config);
+	setNumericValue(elemMax, maxKey, config);
+	setNumericValue(elemKioskTimeout, kioskTimeoutKey, config);
+
+	// enable / disable group
+	setEnabledDisabled(elemSelect, 		selectKey, 		enabled);
+	setEnabledDisabled(elemEntity, 		entityKey, 		enabled);
+	setEnabledDisabled(elemUnit, 		unitKey, 		enabled);
+	setEnabledDisabled(elemMin,			minKey,  		enabled);
+	setEnabledDisabled(elemMax, 		maxKey, 		enabled);
+	setEnabledDisabled(elemKioskAnims, 	kioskAnimKey, 	enabled);
+	setEnabledDisabled(elemKioskTimeout,kioskTimeoutKey,enabled);
+
+
+	// entity select comboBox
+	if(selectKey){
+		// if the dropdown exists
+		if(elemSelect){
+			// get the stored entityId
+			const entityId = String((config && config[entityKey]) || "");
+
+			// Is the currently selected entityId one of the known items in the list — and not the special custom option?
+			// (i.e. No point trying to select this value in the combobox if it doesn't exist)
+			const knownSelect = Array.isArray(items) && items.some(function (s) {
+					return s.id === entityId && s.id !== "custom";
+				});
+			const isCustom = !!(config && config[customKey]) || !knownSelect;
+			const nextSelect = isCustom ? "custom" : entityId;
+			// update the selected value
+			if (elemSelect.value !== nextSelect) {
+				elemSelect.value = nextSelect;
+			}
+
+			// disable the entity input if the group is disabled, or if the selected combobox value is not custom
+			if(entityKey){
+				if (elemEntity){
+					if(elemEntity.value !== entityId){//} && (!isCustom || !elemEntity.matches(":focus-within"))) {
+						elemEntity.value = entityId;
+					}
+					const entityEnable = enabled && isCustom
+					elemEntity.disabled = !entityEnable;
+				}
+			}
+		}
+	}
+
+
+}
+
+
+// ___________________________________________
+//           HELPER FUNCTIONS
+
+// switch toggle
+function setToggleState(elem, key, config){
+	// if the configKey exists
+	if(key){
+		// if the htmlElem exists
+		if(elem){
+			// get stored value
+			const val = !!(config && config[key]);
+			// only update if values are different
+			if (elem.checked !== val) {
+				elem.checked = val;
+			}
+		}
+	}
+}
+
+
+// select combox value if it exists
+function setSelectedValue(elem, key, config){
+	// if the configKey exists
+	if(key){
+		// if the htmlElem exists
+		if (elem) {
+			// get the stored value
+			const val = String((config && config[key]) || "");
+			if (val){
+				// if combox has items
+				if (Array.isArray(elem.items)) {
+					// make sure the stored value exists int he combobox
+					if(elem.items.some(item => String(item.id ?? item.value) === val)){
+						// only update if values are different
+						if (elem.value !== val) {
+							elem.value = val;
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+// set values of number inputs. Allow blanks to use defaults
+function setNumericValue(elem, key, config){
+	// if the configKey exists
+	if(key){
+		// if the htmlElem exists
+		if(elem){
+			// get stored value
+			const val = config && config[key];
+			// only update if values are different
+			if (elem.value !== val) {
+				// allow blanks
+				if(val === null || typeof val === "undefined"){
+					elem.value = "";
+				}
+				else{
+					elem.value = String(val);
+				}
+			}
+		}
+	}
+}
+
+
+// enabled/disable UI elems
+function setEnabledDisabled(elem, key, enabled){
+	// if the configKey exists
+	if(key){
+		// if the htmlElem exists
+		if (elem) {
+			// only update if values are different
+			if(elem.disabled == enabled){
+				// enable/disable
+				elem.disabled = !enabled;
+			}
+		}
+	}
+}
+
 
