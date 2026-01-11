@@ -27,7 +27,6 @@ function createInputGroup(groups, definition) {
 		name: definition.name,
 		label: definition.label,
 		tOverview: definition.tOverview,
-		tPurpose: definition.tPurpose,
 		tExpections: definition.tExpections,
 		tRequired: definition.tRequired,
 		tOverrides: definition.tOverrides,
@@ -53,13 +52,12 @@ function createInputGroup(groups, definition) {
 
 
 
-function createHtmlGroup({ id, name, label, tOverview, tPurpose, tExpections, tRequired, tOverrides, placeholder, units = false, minMax = false, customInput = "", select = true, entity = true }) {
+function createHtmlGroup({ id, name, label, tOverview, tExpections, tRequired, tOverrides, placeholder, units = false, minMax = false, customInput = "", select = true, entity = true }) {
 	const ttOverview 	= getHintBlock("Overview", 		 tOverview);
-	const ttPurpose 	= getHintBlock("Purpose",		 tPurpose);
 	const ttExpections 	= getHintBlock("What to Expect", tExpections);
 	const ttRequired 	= getHintBlock("Required", 		 tRequired);
 	const ttOverrides 	= getHintBlock("Overrides", 	 tOverrides);
-	const hint = ttOverview + ttPurpose + ttExpections + ttRequired + ttOverrides;
+	const hint = ttOverview + ttExpections + ttRequired + ttOverrides;
 	
 	let htmlString = `
 		<!-- ${name} -->
@@ -102,7 +100,7 @@ function createHtmlGroup({ id, name, label, tOverview, tPurpose, tExpections, tR
 }
 
 function getHintBlock(heading, content){
-	return `<span class="hint-heading">${heading}</span><span class='hint-content'>${content}.</span><br>`;
+	return `<span class="hint-heading">${heading}</span><span class='hint-content'>${content}</span><br>`;
 }
 
 
@@ -261,12 +259,11 @@ export class MacsCardEditor extends HTMLElement {
 		createInputGroup(inputGroups, {
 			id: "assist_satellite",
 			name: "Assist Satellite",
-			label: "React to Wake-Words?",
-			tOverview: "When enabled, Macs's moods reflect the state of the selected Assist satellite",
-			tPurpose: "This provides a visual indication of whether or your wake-word has been triggered, and if the assistant is listening",
-			tExpections: "Wake word changes Macs's mood to listening. Whilst the Assistant is processing your input, Macs's mood changes to thinking. If your request was succesful, Macs's mood changes to happy. If the assistant didn't understand your request, his mood changes to confused. After a short delay, his mood returns to idle until another wake word is triggered",
-			tRequired: "An Assistant Satellite (Microphone), which broadcasts listening, processing, and idle states. (Macs was developed using the Atom Echo)",
-			tOverrides: "When enabled, Macs will ignore the value set in macs.mood",
+			label: "React to Wake Words?",
+			tOverview: "When enabled, Macs's moods reflect the state of the selected Assist satellite (microphone).<br>This provides a visual indication of whether your wake word has been triggered, and if the assistant is listening.",
+			tExpections: "Triggering the wake word changes Macs's mood to listening. While the assistant is processing your input, Macs's mood changes to thinking. If your request was successful, Macs’s mood changes to happy. If the assistant didn't understand your request, his mood changes to confused. After a short delay, his mood returns to idle until another wake word is triggered.",
+			tRequired: "An Assistant satellite (microphone) which broadcasts listening, processing, and idle states. (Macs was developed using the Atom Echo).",
+			tOverrides: "When enabled, this will override the value set in macs.mood.",
 			placeholder: "assist_satellite.my_device",
 			selectItems: satelliteItems,
 			selectValue: this._config.assist_satellite_entity ?? "",
@@ -277,10 +274,9 @@ export class MacsCardEditor extends HTMLElement {
 			id: "assist_pipeline",
 			name: "Assistant Pipeline",
 			label: "Display Dialogue?",
-			tOverview: "When enabled, Macs displays the dialogue with the selected Assistant",
-			tPurpose: "This provides a visual indication of what the assistant thinks you have said",
-			tExpections: "Any written or spoken dialogue with the chosen assistant displayed as text",
-			tRequired: "Admin account - To obtain assistant dialogue, Macs utilises Home Assistants debugging features which require the user to be logged in as admin",
+			tOverview: "When enabled, Macs displays any dialogue with the selected Assistant.<br>This provides a visual indication of what the assistant thinks you have said.",
+			tExpections: "Any written or spoken dialogue with the chosen assistant will be displayed as text.",
+			tRequired: "Admin account — to obtain assistant dialogue, Macs utilises Home Assistant's debugging features, which require the user to be logged in as an admin.",
 			tOverrides: "None",
 			placeholder: "01k...",
 			selectItems: pipelineItems,
@@ -292,11 +288,10 @@ export class MacsCardEditor extends HTMLElement {
 			id: "temperature_sensor",
 			name: "Temperature",
 			label: "Use Temperature Sensor?",
-			tOverview: "When enabled, Macs will give a visual indication of when temperatures are hot or cold",
-			tPurpose: "If this option is enabled, Macs will ignore macs.temperature, and use readings from this sensor instead",
-			tExpections: "",
-			tRequired: "",
-			tOverrides: "",
+			tOverview: "When enabled, Macs will give a visual indication of when temperatures are hot or cold.",
+			tExpections: "Macs works out the temperature as a percentage between your minimum and maximum values. At 0%, Macs will wear a scarf and have icicles. At 10%, the icicles will disappear. At 20%, Macs will return to normal. At 80%, Macs will wear a handkerchied. At 90%, Macs will wear a handkerchief and his eye bezels will overheat",
+			tRequired: "Any sensor that returns a numeric value",
+			tOverrides: "When enabled, the selected sensor is used and the number.macs_temperature entity is ignored.",
 			placeholder: "sensor.my_temperature",
 			units: true,
 			minMax: true,
@@ -311,11 +306,10 @@ export class MacsCardEditor extends HTMLElement {
 			id: "wind_sensor",
 			name: "Wind Sensor",
 			label: "Use Wind Sensor?",
-			tOverview: "When enabled, Macs will give a visual indication of wind speeds",
-			tPurpose: "If this option is enabled, Macs will ignore macs.temperature, and use readings from this sensor instead",
-			tExpections: "",
-			tRequired: "",
-			tOverrides: "",
+			tOverview: "When enabled, Macs will give a visual indication of wind speeds.",
+			tExpections: "Rain and snow speed, plus direction of travel, will be affected by the wind. If there is no precipitation and the weather condition is 'windy', leaves will blow across the screen. At strong wind speeds, Macs will be buffeted by the wind.",
+			tRequired: "Any sensor that returns a numeric value, plus, a weather-conditions sensor.",
+			tOverrides: "When enabled, the selected sensor is used and the number.macs_windspeed entity is ignored.",
 			placeholder: "sensor.my_wind_speed",
 			units: true,
 			minMax: true,
@@ -328,13 +322,12 @@ export class MacsCardEditor extends HTMLElement {
 
 		createInputGroup(inputGroups, {
 			id: "precipitation_sensor",
-			name: "Rainfall Sensor",
-			label: "Use Rainfall Sensor?",
-			tOverview: "When enabled, the selected sensor is used and the M.A.C.S. Precipitation entity/service is ignored.",
-			tPurpose: "",
-			tExpections: "",
-			tRequired: "",
-			tOverrides: "",
+			name: "Precipitation Sensor",
+			label: "Use Precipitation Sensor?",
+			tOverview: "When enabled, Macs will give a visual indication of rain and snow.",
+			tExpections: "Rain and/or snow will fall in Macs's environment. For either to appear, the weather-condition must be either 'rainy' or 'snowy'. The amount of rain or snow will change according to the value of the given sensor.",
+			tRequired: "Any sensor that returns a numeric value, plus, a weather-conditions sensor.",
+			tOverrides: "When enabled, the selected sensor is used and the number.macs_precipitation entity is ignored.",
 			placeholder: "sensor.my_rain",
 			units: true,
 			minMax: true,
@@ -349,11 +342,10 @@ export class MacsCardEditor extends HTMLElement {
 			id: "weather_conditions",
 			name: "Weather Conditions",
 			label: "Auto-Detect Weather Conditions?",
-			tOverview: "When enabled, conditions come from the selected weather entity and the condition toggles are ignored.",
-			tPurpose: "",
-			tExpections: "",
-			tRequired: "",
-			tOverrides: "",
+			tOverview: "Allows Macs to know the overall weather condition (foggy, rainy, windy, etc.).",
+			tExpections: "This sensor enables/disables other weather effects.",
+			tRequired: "A sensor that returns weather conditions as foggy, rainy, windy etc.",
+			tOverrides: "When enabled, all of Macs's own weather toggles (switch.macs_weather_conditions_rainy etc) will be ignored.",
 			placeholder: "weather.forecast_home",
 			selectItems: conditionItems,
 			selectValue: this._config.weather_conditions ?? "",
@@ -363,12 +355,11 @@ export class MacsCardEditor extends HTMLElement {
 		createInputGroup(inputGroups, {
 			id: "battery_charge_sensor",
 			name: "Battery Charge",
-			label: "Use Battery Sensor?",
-			tOverview: "When enabled, the selected sensor is used and the M.A.C.S. Battery Charge entity/service is ignored. Macs Mood will turn sad at 20% Battery.",
-			tPurpose: "",
-			tExpections: "",
-			tRequired: "",
-			tOverrides: "",
+			label: "Use Battery Charge Sensor?",
+			tOverview: "When enabled, Macs's mood will reflect the amount of battery charge remaining.",
+			tExpections: "At 20% battery, Macs's mood will change to sad. Between 20% and 0%, the glow in Macs's eyes will fade to nothing.",
+			tRequired: "Any sensor that returns a numeric value.",
+			tOverrides: "When enabled, the selected sensor is used and the switch.macs_battery_charge entity is ignored.",
 			placeholder: "sensor.my_battery",
 			units: true,
 			minMax: true,
@@ -383,11 +374,10 @@ export class MacsCardEditor extends HTMLElement {
 			id: "battery_state_sensor",
 			name: "Battery State",
 			label: "Use Charging Sensor?",
-			tOverview: "When enabled, the selected sensor is used to detect charging state.",
-			tPurpose: "",
-			tExpections: "",
-			tRequired: "",
-			tOverrides: "",
+			tOverview: "Allows Macs to know when a battery is being charged.",
+			tExpections: "If a battery is below 20%, and a charger is plugged in, this will prevent Macs from turning sad, and instead his eyes will pulse to reflect that he is charging.",
+			tRequired: "A sensor that returns 'charging'",
+			tOverrides: "When enabled, Macs will ignore the Battery Charge Sensor, plus the selected sensor is used and the switch.macs_charging entity is ignored.",
 			placeholder: "sensor.ipad_battery_state",
 			selectItems: batteryStateItems,
 			selectValue: this._config.battery_state_sensor_entity ?? "",
@@ -398,11 +388,10 @@ export class MacsCardEditor extends HTMLElement {
 			id: "auto_brightness",
 			name: "Kiosk Mode",
 			label: "Enable Kiosk Mode?",
-			tOverview: "When enabled, the card uses its kiosk timer for dimming and sleep. Tip: hold anywhere on the card to toggle the sidebar and navbar.",
-			tPurpose: "",
-			tExpections: "",
-			tRequired: "",
-			tOverrides: "",
+			tOverview: "When enabled, the card uses its kiosk timer for dimming and sleep.",
+			tExpections: "The screen will turn black when the timer reaches 0.<br>Pausing animations while sleeping reduces power consumption significantly.<br>Tip: press and hold to enter or exit full-screen mode.",
+			tRequired: "None",
+			tOverrides: "When enabled, the number.macs_brightness and switch.macs_animations_enabled entities are ignored.",
 			placeholder: "",
 			select: false,
 			entity: false,
