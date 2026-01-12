@@ -239,6 +239,7 @@ function searchForEntities(needle, haystack, hass, possibleDeviceClasses=null, p
 	return sorted;
 }
 
+// merge two comboboxes into one, removing duplicates.
 function mergeComboboxItems(...lists) {
 	const byId = new Map();
 
@@ -253,7 +254,6 @@ function mergeComboboxItems(...lists) {
 	});
 
 	const entries = Array.from(byId.values());
-	entries.sort((a, b) => a.name.localeCompare(b.name));
 	return [{ id: "custom", name: "Custom" }, ...entries];
 }
 
