@@ -132,7 +132,9 @@ export async function getComboboxItems(hass) {
 	comboxItems.batteryItems = searchForEntities("sensor", "entries", hass, ["battery"], ["battery", "charge", "batt"]);
 
 	// Gather likely battery state/is_charging sensors.
-	comboxItems.batteryStateItems = searchForEntities("sensor", "entries", hass, ["battery", "battery_charging", "power", "plug"], ["battery_state","battery state","is_charging","charging","charge","charge_state","charger","plugged","ac power","power"]);
+	const batteryStateSensors = searchForEntities("sensor", "entries", hass, ["battery", "battery_charging", "power", "plug"], ["battery_state","battery state","is_charging","charging","charge","charge_state","charger","plugged","ac power","power"]);
+	const batteryStateBinarySensors = searchForEntities("binary_sensor", "entries", hass, ["battery", "battery_charging", "power", "plug"], ["battery_state","battery state","is_charging","charging","charge","charge_state","charger","plugged","ac power","power"]);
+	comboxItems.batteryStateItems = mergeComboboxItems(batteryStateSensors, batteryStateBinarySensors);
 
 	return comboxItems;
 }
@@ -223,13 +225,36 @@ function searchForEntities(needle, haystack, hass, possibleDeviceClasses=null, p
 		}
 	}
 
-	// sort the results alphabetically
-	list.sort(function (a, b) {
+	// Sort alphabetically but keep Custom at the top.
+	const custom = list.find((item) => item.id === "custom");
+	const sorted = list.filter((item) => item.id !== "custom");
+	sorted.sort(function (a, b) {
 		return a.name.localeCompare(b.name);
 	});
+	if (custom) {
+		sorted.unshift(custom);
+	}
 
 	// return the list of compatible entities
-	return list;
+	return sorted;
+}
+
+function mergeComboboxItems(...lists) {
+	const byId = new Map();
+
+	lists.forEach((items) => {
+		(items || []).forEach((item) => {
+			if (!item || typeof item.id === "undefined") return;
+			if (item.id === "custom") return;
+			if (!byId.has(item.id)) {
+				byId.set(item.id, item);
+			}
+		});
+	});
+
+	const entries = Array.from(byId.values());
+	entries.sort((a, b) => a.name.localeCompare(b.name));
+	return [{ id: "custom", name: "Custom" }, ...entries];
 }
 
 // Gets the pipeline IDs for inclusion in the comboxboxes
@@ -290,67 +315,65 @@ export function readInputs(shadowRoot, event, config) {
 
 			// Temperature
 			temperature_sensor_enabled: !!(config && config.temperature_sensor_enabled),
-			temperature_sensor_entity: String((config && config.temperature_sensor_entity) || ""),
+			temperature_sensor_entity: String((config && config.temperature_sensor_entity) ?? ""),
 			temperature_sensor_custom: !!(config && config.temperature_sensor_custom),
-			temperature_sensor_unit: String((config && config.temperature_sensor_unit) || ""),
-			temperature_sensor_min: String((config && config.temperature_sensor_min) || ""),
-			temperature_sensor_max: String((config && config.temperature_sensor_max) || ""),
+			temperature_sensor_unit: String((config && config.temperature_sensor_unit) ?? ""),
+			temperature_sensor_min: String((config && config.temperature_sensor_min) ?? ""),
+			temperature_sensor_max: String((config && config.temperature_sensor_max) ?? ""),
 			
 			// Windspeed
 			wind_sensor_enabled: !!(config && config.wind_sensor_enabled),
-			wind_sensor_entity: String((config && config.wind_sensor_entity) || ""),
+			wind_sensor_entity: String((config && config.wind_sensor_entity) ?? ""),
 			wind_sensor_custom: !!(config && config.wind_sensor_custom),
-			wind_sensor_unit: String((config && config.wind_sensor_unit) || ""),
-			wind_sensor_min: String((config && config.wind_sensor_min) || ""),
-			wind_sensor_max: String((config && config.wind_sensor_max) || ""),
+			wind_sensor_unit: String((config && config.wind_sensor_unit) ?? ""),
+			wind_sensor_min: String((config && config.wind_sensor_min) ?? ""),
+			wind_sensor_max: String((config && config.wind_sensor_max) ?? ""),
 			
 			// Rainfall
 			precipitation_sensor_enabled: !!(config && config.precipitation_sensor_enabled),
-			precipitation_sensor_entity: String((config && config.precipitation_sensor_entity) || ""),
+			precipitation_sensor_entity: String((config && config.precipitation_sensor_entity) ?? ""),
 			precipitation_sensor_custom: !!(config && config.precipitation_sensor_custom),
-			precipitation_sensor_unit: String((config && config.precipitation_sensor_unit) || ""),
-			precipitation_sensor_min: String((config && config.precipitation_sensor_min) || ""),
-			precipitation_sensor_max: String((config && config.precipitation_sensor_max) || ""),
+			precipitation_sensor_unit: String((config && config.precipitation_sensor_unit) ?? ""),
+			precipitation_sensor_min: String((config && config.precipitation_sensor_min) ?? ""),
+			precipitation_sensor_max: String((config && config.precipitation_sensor_max) ?? ""),
 			
 			// Weather Condition
 			weather_conditions_enabled: !!(config && config.weather_conditions_enabled),
-			weather_conditions_entity: String((config && config.weather_conditions_entity) || ""),
+			weather_conditions_entity: String((config && config.weather_conditions_entity) ?? ""),
 			weather_conditions_custom: !!(config && config.weather_conditions_custom),
 			
 			// Battery charge %
 			battery_charge_sensor_enabled: !!(config && config.battery_charge_sensor_enabled),
-			battery_charge_sensor_entity: String((config && config.battery_charge_sensor_entity) || ""),
+			battery_charge_sensor_entity: String((config && config.battery_charge_sensor_entity) ?? ""),
 			battery_charge_sensor_custom: !!(config && config.battery_charge_sensor_custom),
-			battery_charge_sensor_unit: String((config && config.battery_charge_sensor_unit) || ""),
-			battery_charge_sensor_min: String((config && config.battery_charge_sensor_min) || ""),
-			battery_charge_sensor_max: String((config && config.battery_charge_sensor_max) || ""),
+			battery_charge_sensor_unit: String((config && config.battery_charge_sensor_unit) ?? ""),
+			battery_charge_sensor_min: String((config && config.battery_charge_sensor_min) ?? ""),
+			battery_charge_sensor_max: String((config && config.battery_charge_sensor_max) ?? ""),
 			
 			// Battery is Plugged in
 			battery_state_sensor_enabled: !!(config && config.battery_state_sensor_enabled),
-			battery_state_sensor_entity: String((config && config.battery_state_sensor_entity) || ""),
+			battery_state_sensor_entity: String((config && config.battery_state_sensor_entity) ?? ""),
 			battery_state_sensor_custom: !!(config && config.battery_state_sensor_custom),
 
 			// Kiosk Mode
 			auto_brightness_enabled: !!(config && config.auto_brightness_enabled),
-			auto_brightness_timeout_minutes: String((config && config.auto_brightness_timeout_minutes) || ""),
-			auto_brightness_min: String((config && config.auto_brightness_min) || ""),
-			auto_brightness_max: String((config && config.auto_brightness_max) || ""),
+			auto_brightness_timeout_minutes: String((config && config.auto_brightness_timeout_minutes) ?? ""),
+			auto_brightness_min: String((config && config.auto_brightness_min) ?? ""),
+			auto_brightness_max: String((config && config.auto_brightness_max) ?? ""),
 			auto_brightness_pause_animations: !!(config && config.auto_brightness_pause_animations),
 		};
 	}
 
 	return {
-		...stripEmptyDefaults({
-			...getUserInputs(shadowRoot, event, config, assistSatelitteKeys),
-			...getUserInputs(shadowRoot, event, config, assistPipelineKeys),
-			...getUserInputs(shadowRoot, event, config, temperatureKeys),
-			...getUserInputs(shadowRoot, event, config, windspeedKeys),
-			...getUserInputs(shadowRoot, event, config, precipitationKeys),
-			...getUserInputs(shadowRoot, event, config, weatherConditionKeys),
-			...getUserInputs(shadowRoot, event, config, batteryChargeKeys),
-			...getUserInputs(shadowRoot, event, config, batteryStateKeys),
-			...getUserInputs(shadowRoot, event, config, autoBrightnessKeys),
-		}),
+		...getUserInputs(shadowRoot, event, config, assistSatelitteKeys),
+		...getUserInputs(shadowRoot, event, config, assistPipelineKeys),
+		...getUserInputs(shadowRoot, event, config, temperatureKeys),
+		...getUserInputs(shadowRoot, event, config, windspeedKeys),
+		...getUserInputs(shadowRoot, event, config, precipitationKeys),
+		...getUserInputs(shadowRoot, event, config, weatherConditionKeys),
+		...getUserInputs(shadowRoot, event, config, batteryChargeKeys),
+		...getUserInputs(shadowRoot, event, config, batteryStateKeys),
+		...getUserInputs(shadowRoot, event, config, autoBrightnessKeys),
 	};
 }
 
@@ -395,6 +418,19 @@ function getUserInputs(shadowRoot, event, config, ids) {
 	if (kioskTimeoutKey)  payload[kioskTimeoutKey] 	= getNumberOrDefault(elemKioskTimeout, kioskTimeoutKey);
 
 	if (kioskAnimKey)  	  payload[kioskAnimKey] 	= getToggleValue(elemKioskAnims, event, config && config[kioskAnimKey]);
+	
+	
+	// If custom is selected but the entity is cleared, drop custom to fall back cleanly.
+	if (customKey && entityKey && payload[customKey] && payload[entityKey] === "") {
+		payload[customKey] = false;
+	}
+
+	// Remove empty inputs so config falls back to defaults.
+	Object.keys(payload).forEach((key) => {
+		if (Object.prototype.hasOwnProperty.call(DEFAULTS, key) && payload[key] === "") {
+			delete payload[key];
+		}
+	});
 	return payload;
 }
 
@@ -442,27 +478,11 @@ function getNumberOrDefault(elem, key){
 			if (val === "" || val === null || typeof val === "undefined") {
 				return "";
 			}
-			return Number(val);
+			const num = Number(val);
+			return Number.isFinite(num) ? num : "";
 		}
 	}
 }
-
-// Remove empty inputs when defaults are non-empty so config falls back cleanly.
-function stripEmptyDefaults(payload) {
-	if (!payload || typeof payload !== "object") {
-		return payload;
-	}
-	Object.keys(payload).forEach((key) => {
-		if (!Object.prototype.hasOwnProperty.call(DEFAULTS, key)) {
-			return;
-		}
-		if (payload[key] === "") {
-			delete payload[key];
-		}
-	});
-	return payload;
-}
-
 
 
 
@@ -554,7 +574,8 @@ export function syncInputGroup(shadowRoot, config, items, keys){
 			const knownSelect = Array.isArray(items) && items.some(function (s) {
 					return s.id === entityId && s.id !== "custom";
 				});
-			const isCustom = !!(config && config[customKey]) || !knownSelect;
+			const hasEntity = entityId !== "";
+			const isCustom = hasEntity && ( !!(config && config[customKey]) || !knownSelect );
 			const nextSelect = isCustom ? "custom" : entityId;
 			// update the selected value
 			if (elemSelect.value !== nextSelect) {
@@ -606,15 +627,13 @@ function setSelectedValue(elem, key, config){
 		if (elem) {
 			// get the stored value
 			const val = String((config && config[key]) || "");
-			if (val){
-				// if combox has items
-				if (Array.isArray(elem.items)) {
-					// make sure the stored value exists int he combobox
-					if(elem.items.some(item => String(item.id ?? item.value) === val)){
-						// only update if values are different
-						if (elem.value !== val) {
-							elem.value = val;
-						}
+			// if combox has items
+			if (Array.isArray(elem.items)) {
+				// make sure the stored value exists int he combobox
+				if (elem.items.some(item => String(item.id ?? item.value) === val)){
+					// only update if values are different
+					if (elem.value !== val) {
+						elem.value = val;
 					}
 				}
 			}
