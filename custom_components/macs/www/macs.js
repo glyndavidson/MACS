@@ -8,13 +8,10 @@
 /** 
  * TO-DO
  * --------
- * - Update Custom Integrations examples and tooltips
+ * - Update Custom Integrations examples
  * - thorough test of card editor
  * - leaves only appear at top
- * - battery charging toggle not working
  * - bug: deleting min/max doesn't update config
- * - fullscreen kiosk not working on desktop - possible clash with debug div?
- * - kiosk fullscreenmode f11 for browser
  * - rainy not working
  * 
  * - test non-admin user
@@ -27,6 +24,7 @@
  * - Use assist dialogue to display errors
  * 
  * NEW FEATURES
+ * - kiosk fullscreenmode f11 for browser
  * - add seasons: christmas, halloween etc.
  * - train "Hey Macs" wakeword
  * - add a macs.show handler - "show me my shopping list", "show me my camera" etc? Shopping list likely easy, camera difficult.

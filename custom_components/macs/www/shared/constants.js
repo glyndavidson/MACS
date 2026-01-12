@@ -135,21 +135,15 @@ export const CARD_EDITOR_INFO = `
 		<div class="group">
 			<div class="row">
 				<label>Custom Integrations</label>
-			<div>
-				<p>For custom integrations, like making him look surprised when a motion sensor is triggered, Macs works like any other device and exposes entities which allow full control over his behavior.
-				<br>Some examples are given below:</p>
-				<div class="entity-grid">
-					<div class="header">Entity</div>
-					<div class="header">Action</div>
+                <div>
+                    <p>For custom integrations, like making him look surprised when a motion sensor is triggered, Macs works like any other device and exposes entities which allow full control over his behavior.
+                    <br>Some examples are given below:</p>
+                    <div class="entity-grid">
+                        <div class="header">Entity</div>
+                        <div class="header">Action</div>
 
-					<div>select.macs_mood</div>
-					<div>macs.set_mood</div>
-
-						<div>number.macs_brightness</div>
-						<div>macs.set_brightness</div>
-
-						<div>switch.macs_animations_enabled</div>
-						<div>macs.set_animations_enabled</div>
+                        <div>select.macs_mood</div>
+                        <div>macs.set_mood</div>
 
 						<div>number.macs_temperature</div>
 						<div>macs.set_temperature</div>
@@ -157,8 +151,14 @@ export const CARD_EDITOR_INFO = `
 						<div>number.macs_windspeed</div>
 						<div>macs.set_windspeed</div>
 
-						<div>number.macs_precipitation</div>
-						<div>macs.set_precipitation</div>
+						<div>number.macs_battery_charge</div>
+						<div>macs.set_battery_charge</div>
+
+						<div>number.macs_brightness</div>
+						<div>macs.set_brightness</div>
+
+						<div>switch.macs_animations_enabled</div>
+						<div>macs.set_animations_enabled</div>
 					</div>
 				</div>
 			</div>
@@ -175,10 +175,6 @@ export const CARD_EDITOR_ABOUT = `
 				</div>
 			</div>
 			<div class="about-content" hidden>
-				<p>
-					<strong>M.A.C.S.</strong> (Mood-Aware Character SVG) is a playful Home Assistant card that adds personality to your smart home, responding visually to system events such as voice interactions and custom automations.
-				</p>
-
 				<p>
 					M.A.C.S. is being developed by <strong>Glyn Davidson</strong> (Developer, climber, and chronic tinkerer of occasionally useful tools) in his free time.
 				</p>
