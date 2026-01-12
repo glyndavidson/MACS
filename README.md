@@ -59,6 +59,63 @@ Typical uses:
 This makes MACS fully scriptable and system-driven, not just reactive to Assist.
 <br><br>
 
+## Entities and Services
+This table shows the MACS entities and services and which card features override the entities.
+
+### Entities
+| Entity | Type | Purpose | Overridden by card feature |
+| --- | --- | --- | --- |
+| select.macs_mood | select | Set the base mood. | Assist Satellite enabled can override mood. |
+| select.macs_debug | select | Set debug output level. | None. |
+| number.macs_brightness | number | Set brightness (0-100). | Kiosk Mode enabled. |
+| number.macs_battery_charge | number | Set battery charge (0-100). | Use Battery Charge Sensor enabled. |
+| number.macs_temperature | number | Set temperature intensity (0-100). | Use Temperature Sensor enabled. |
+| number.macs_windspeed | number | Set wind speed intensity (0-100). | Use Wind Sensor enabled. |
+| number.macs_precipitation | number | Set precipitation intensity (0-100). | Use Precipitation Sensor enabled. |
+| switch.macs_animations_enabled | switch | Enable or pause animations. | Kiosk Mode enabled. |
+| switch.macs_charging | switch | Set charging state. | Use Charging Sensor enabled. |
+| switch.macs_weather_conditions_snowy | switch | Toggle snowy condition. | Weather Conditions sensor enabled. |
+| switch.macs_weather_conditions_cloudy | switch | Toggle cloudy condition. | Weather Conditions sensor enabled. |
+| switch.macs_weather_conditions_rainy | switch | Toggle rainy condition. | Weather Conditions sensor enabled. |
+| switch.macs_weather_conditions_windy | switch | Toggle windy condition. | Weather Conditions sensor enabled. |
+| switch.macs_weather_conditions_sunny | switch | Toggle sunny condition. | Weather Conditions sensor enabled. |
+| switch.macs_weather_conditions_stormy | switch | Toggle stormy condition. | Weather Conditions sensor enabled. |
+| switch.macs_weather_conditions_foggy | switch | Toggle foggy condition. | Weather Conditions sensor enabled. |
+| switch.macs_weather_conditions_hail | switch | Toggle hail condition. | Weather Conditions sensor enabled. |
+| switch.macs_weather_conditions_lightning | switch | Toggle lightning condition. | Weather Conditions sensor enabled. |
+| switch.macs_weather_conditions_partlycloudy | switch | Toggle partly cloudy condition. | Weather Conditions sensor enabled. |
+| switch.macs_weather_conditions_pouring | switch | Toggle pouring condition. | Weather Conditions sensor enabled. |
+| switch.macs_weather_conditions_clear_night | switch | Toggle clear night condition. | Weather Conditions sensor enabled. |
+| switch.macs_weather_conditions_exceptional | switch | Toggle exceptional condition. | Weather Conditions sensor enabled. |
+
+### Services
+| Service | Purpose |
+| --- | --- |
+| macs.set_mood | Set the mood (select.macs_mood). |
+| macs.set_brightness | Set brightness (number.macs_brightness). |
+| macs.set_temperature | Set temperature intensity (number.macs_temperature). |
+| macs.set_windspeed | Set wind speed intensity (number.macs_windspeed). |
+| macs.set_precipitation | Set precipitation intensity (number.macs_precipitation). |
+| macs.set_battery_charge | Set battery charge (number.macs_battery_charge). |
+| macs.set_animations_enabled | Toggle animations (switch.macs_animations_enabled). |
+| macs.set_charging | Toggle charging (switch.macs_charging). |
+| macs.set_weather_conditions_snowy | Toggle snowy condition. |
+| macs.set_weather_conditions_cloudy | Toggle cloudy condition. |
+| macs.set_weather_conditions_rainy | Toggle rainy condition. |
+| macs.set_weather_conditions_windy | Toggle windy condition. |
+| macs.set_weather_conditions_sunny | Toggle sunny condition. |
+| macs.set_weather_conditions_stormy | Toggle stormy condition. |
+| macs.set_weather_conditions_foggy | Toggle foggy condition. |
+| macs.set_weather_conditions_hail | Toggle hail condition. |
+| macs.set_weather_conditions_lightning | Toggle lightning condition. |
+| macs.set_weather_conditions_partlycloudy | Toggle partly cloudy condition. |
+| macs.set_weather_conditions_pouring | Toggle pouring condition. |
+| macs.set_weather_conditions_clear_night | Toggle clear night condition. |
+| macs.set_weather_conditions_exceptional | Toggle exceptional condition. |
+| macs.send_user_message | Add a user dialogue bubble. |
+| macs.send_assistant_message | Add an assistant dialogue bubble. |
+<br><br>
+
 
 ## Roadmap
 Macs is currently under active development.

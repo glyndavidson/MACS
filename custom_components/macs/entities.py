@@ -33,6 +33,7 @@ def _load_debug_labels() -> list[str]:
 class MacsMoodSelect(SelectEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Mood"
+    _attr_translation_key = "mood"
     _attr_unique_id = "macs_mood"
     _attr_suggested_object_id = "macs_mood"
     _attr_icon = "mdi:emoticon"
@@ -59,6 +60,7 @@ class MacsMoodSelect(SelectEntity, RestoreEntity):
 class MacsBrightnessNumber(NumberEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Brightness"
+    _attr_translation_key = "brightness"
     _attr_unique_id = "macs_brightness"
     _attr_suggested_object_id = "macs_brightness"
     _attr_icon = "mdi:brightness-6"
@@ -93,6 +95,7 @@ class MacsBrightnessNumber(NumberEntity, RestoreEntity):
 class MacsBatteryChargeNumber(NumberEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Battery Charge"
+    _attr_translation_key = "battery_charge"
     _attr_unique_id = "macs_battery_charge"
     _attr_suggested_object_id = "macs_battery_charge"
     _attr_icon = "mdi:battery"
@@ -127,6 +130,7 @@ class MacsBatteryChargeNumber(NumberEntity, RestoreEntity):
 class MacsTemperatureNumber(NumberEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Temperature"
+    _attr_translation_key = "temperature"
     _attr_unique_id = "macs_temperature"
     _attr_suggested_object_id = "macs_temperature"
     _attr_icon = "mdi:thermometer"
@@ -161,6 +165,7 @@ class MacsTemperatureNumber(NumberEntity, RestoreEntity):
 class MacsWindSpeedNumber(NumberEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Wind Speed"
+    _attr_translation_key = "windspeed"
     _attr_unique_id = "macs_windspeed"
     _attr_suggested_object_id = "macs_windspeed"
     _attr_icon = "mdi:weather-windy"
@@ -195,6 +200,7 @@ class MacsWindSpeedNumber(NumberEntity, RestoreEntity):
 class MacsPrecipitationNumber(NumberEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Precipitation"
+    _attr_translation_key = "precipitation"
     _attr_unique_id = "macs_precipitation"
     _attr_suggested_object_id = "macs_precipitation"
     _attr_icon = "mdi:weather-rainy"
@@ -229,6 +235,7 @@ class MacsPrecipitationNumber(NumberEntity, RestoreEntity):
 class MacsAnimationsEnabledSwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Animations Enabled"
+    _attr_translation_key = "animations_enabled"
     _attr_unique_id = "macs_animations_enabled"
     _attr_suggested_object_id = "macs_animations_enabled"
     _attr_icon = "mdi:animation"
@@ -257,6 +264,7 @@ class MacsAnimationsEnabledSwitch(SwitchEntity, RestoreEntity):
 class MacsChargingSwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Charging"
+    _attr_translation_key = "charging"
     _attr_unique_id = "macs_charging"
     _attr_suggested_object_id = "macs_charging"
     _attr_icon = "mdi:battery-charging"
@@ -293,6 +301,7 @@ DEBUG_OPTIONS = (
 class MacsDebugSelect(SelectEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Debug"
+    _attr_translation_key = "debug"
     _attr_unique_id = "macs_debug"
     _attr_suggested_object_id = "macs_debug"
     _attr_icon = "mdi:bug"
@@ -319,6 +328,7 @@ class MacsDebugSelect(SelectEntity, RestoreEntity):
 class MacsWeatherConditionsSnowySwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Snowy"
+    _attr_translation_key = "weather_conditions_snowy"
     _attr_unique_id = "macs_weather_conditions_snowy"
     _attr_suggested_object_id = "macs_weather_conditions_snowy"
     _attr_icon = "mdi:snowflake"
@@ -347,6 +357,7 @@ class MacsWeatherConditionsSnowySwitch(SwitchEntity, RestoreEntity):
 class MacsWeatherConditionsCloudySwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Cloudy"
+    _attr_translation_key = "weather_conditions_cloudy"
     _attr_unique_id = "macs_weather_conditions_cloudy"
     _attr_suggested_object_id = "macs_weather_conditions_cloudy"
     _attr_icon = "mdi:weather-cloudy"
@@ -375,6 +386,7 @@ class MacsWeatherConditionsCloudySwitch(SwitchEntity, RestoreEntity):
 class MacsWeatherConditionsRainySwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Rainy"
+    _attr_translation_key = "weather_conditions_rainy"
     _attr_unique_id = "macs_weather_conditions_rainy"
     _attr_suggested_object_id = "macs_weather_conditions_rainy"
     _attr_icon = "mdi:weather-rainy"
@@ -403,6 +415,7 @@ class MacsWeatherConditionsRainySwitch(SwitchEntity, RestoreEntity):
 class MacsWeatherConditionsWindySwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Windy"
+    _attr_translation_key = "weather_conditions_windy"
     _attr_unique_id = "macs_weather_conditions_windy"
     _attr_suggested_object_id = "macs_weather_conditions_windy"
     _attr_icon = "mdi:weather-windy"
@@ -431,6 +444,7 @@ class MacsWeatherConditionsWindySwitch(SwitchEntity, RestoreEntity):
 class MacsWeatherConditionsSunnySwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Sunny"
+    _attr_translation_key = "weather_conditions_sunny"
     _attr_unique_id = "macs_weather_conditions_sunny"
     _attr_suggested_object_id = "macs_weather_conditions_sunny"
     _attr_icon = "mdi:weather-sunny"
@@ -459,6 +473,7 @@ class MacsWeatherConditionsSunnySwitch(SwitchEntity, RestoreEntity):
 class MacsWeatherConditionsStormySwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Stormy"
+    _attr_translation_key = "weather_conditions_stormy"
     _attr_unique_id = "macs_weather_conditions_stormy"
     _attr_suggested_object_id = "macs_weather_conditions_stormy"
     _attr_icon = "mdi:weather-lightning"
@@ -487,6 +502,7 @@ class MacsWeatherConditionsStormySwitch(SwitchEntity, RestoreEntity):
 class MacsWeatherConditionsFoggySwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Foggy"
+    _attr_translation_key = "weather_conditions_foggy"
     _attr_unique_id = "macs_weather_conditions_foggy"
     _attr_suggested_object_id = "macs_weather_conditions_foggy"
     _attr_icon = "mdi:weather-fog"
@@ -515,6 +531,7 @@ class MacsWeatherConditionsFoggySwitch(SwitchEntity, RestoreEntity):
 class MacsWeatherConditionsHailSwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Hail"
+    _attr_translation_key = "weather_conditions_hail"
     _attr_unique_id = "macs_weather_conditions_hail"
     _attr_suggested_object_id = "macs_weather_conditions_hail"
     _attr_icon = "mdi:weather-hail"
@@ -543,6 +560,7 @@ class MacsWeatherConditionsHailSwitch(SwitchEntity, RestoreEntity):
 class MacsWeatherConditionsLightningSwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Lightning"
+    _attr_translation_key = "weather_conditions_lightning"
     _attr_unique_id = "macs_weather_conditions_lightning"
     _attr_suggested_object_id = "macs_weather_conditions_lightning"
     _attr_icon = "mdi:weather-lightning"
@@ -571,6 +589,7 @@ class MacsWeatherConditionsLightningSwitch(SwitchEntity, RestoreEntity):
 class MacsWeatherConditionsPartlyCloudySwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Partly Cloudy"
+    _attr_translation_key = "weather_conditions_partlycloudy"
     _attr_unique_id = "macs_weather_conditions_partlycloudy"
     _attr_suggested_object_id = "macs_weather_conditions_partlycloudy"
     _attr_icon = "mdi:weather-partly-cloudy"
@@ -599,6 +618,7 @@ class MacsWeatherConditionsPartlyCloudySwitch(SwitchEntity, RestoreEntity):
 class MacsWeatherConditionsPouringSwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Pouring"
+    _attr_translation_key = "weather_conditions_pouring"
     _attr_unique_id = "macs_weather_conditions_pouring"
     _attr_suggested_object_id = "macs_weather_conditions_pouring"
     _attr_icon = "mdi:weather-pouring"
@@ -627,6 +647,7 @@ class MacsWeatherConditionsPouringSwitch(SwitchEntity, RestoreEntity):
 class MacsWeatherConditionsClearNightSwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Clear Night"
+    _attr_translation_key = "weather_conditions_clear_night"
     _attr_unique_id = "macs_weather_conditions_clear_night"
     _attr_suggested_object_id = "macs_weather_conditions_clear_night"
     _attr_icon = "mdi:weather-night"
@@ -655,6 +676,7 @@ class MacsWeatherConditionsClearNightSwitch(SwitchEntity, RestoreEntity):
 class MacsWeatherConditionsExceptionalSwitch(SwitchEntity, RestoreEntity):
     _attr_has_entity_name = True
     _attr_name = "Exceptional"
+    _attr_translation_key = "weather_conditions_exceptional"
     _attr_unique_id = "macs_weather_conditions_exceptional"
     _attr_suggested_object_id = "macs_weather_conditions_exceptional"
     _attr_icon = "mdi:alert-circle-outline"

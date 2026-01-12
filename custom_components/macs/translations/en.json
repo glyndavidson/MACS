@@ -1,0 +1,98 @@
+{
+  "entity": {
+    "select": {
+      "mood": {
+        "name": "Mood",
+        "description": "Ignored when Assist Satellite is enabled. Battery low can also force sad."
+      },
+      "debug": {
+        "name": "Debug",
+        "description": "Controls MACS debug output in the iframe."
+      }
+    },
+    "number": {
+      "brightness": {
+        "name": "Brightness",
+        "description": "Ignored when Kiosk Mode is enabled."
+      },
+      "battery_charge": {
+        "name": "Battery Charge",
+        "description": "Ignored when Use Battery Charge Sensor is enabled in the card."
+      },
+      "temperature": {
+        "name": "Temperature",
+        "description": "Ignored when Use Temperature Sensor is enabled in the card."
+      },
+      "windspeed": {
+        "name": "Wind Speed",
+        "description": "Ignored when Use Wind Sensor is enabled in the card."
+      },
+      "precipitation": {
+        "name": "Precipitation",
+        "description": "Ignored when Use Precipitation Sensor is enabled in the card."
+      }
+    },
+    "switch": {
+      "animations_enabled": {
+        "name": "Animations Enabled",
+        "description": "Ignored when Kiosk Mode is enabled."
+      },
+      "charging": {
+        "name": "Charging",
+        "description": "Ignored when Use Charging Sensor is enabled in the card."
+      },
+      "weather_conditions_snowy": {
+        "name": "Snowy",
+        "description": "Ignored when Weather Conditions sensor is enabled in the card."
+      },
+      "weather_conditions_cloudy": {
+        "name": "Cloudy",
+        "description": "Ignored when Weather Conditions sensor is enabled in the card."
+      },
+      "weather_conditions_rainy": {
+        "name": "Rainy",
+        "description": "Ignored when Weather Conditions sensor is enabled in the card."
+      },
+      "weather_conditions_windy": {
+        "name": "Windy",
+        "description": "Ignored when Weather Conditions sensor is enabled in the card."
+      },
+      "weather_conditions_sunny": {
+        "name": "Sunny",
+        "description": "Ignored when Weather Conditions sensor is enabled in the card."
+      },
+      "weather_conditions_stormy": {
+        "name": "Stormy",
+        "description": "Ignored when Weather Conditions sensor is enabled in the card."
+      },
+      "weather_conditions_foggy": {
+        "name": "Foggy",
+        "description": "Ignored when Weather Conditions sensor is enabled in the card."
+      },
+      "weather_conditions_hail": {
+        "name": "Hail",
+        "description": "Ignored when Weather Conditions sensor is enabled in the card."
+      },
+      "weather_conditions_lightning": {
+        "name": "Lightning",
+        "description": "Ignored when Weather Conditions sensor is enabled in the card."
+      },
+      "weather_conditions_partlycloudy": {
+        "name": "Partly Cloudy",
+        "description": "Ignored when Weather Conditions sensor is enabled in the card."
+      },
+      "weather_conditions_pouring": {
+        "name": "Pouring",
+        "description": "Ignored when Weather Conditions sensor is enabled in the card."
+      },
+      "weather_conditions_clear_night": {
+        "name": "Clear Night",
+        "description": "Ignored when Weather Conditions sensor is enabled in the card."
+      },
+      "weather_conditions_exceptional": {
+        "name": "Exceptional",
+        "description": "Ignored when Weather Conditions sensor is enabled in the card."
+      }
+    }
+  }
+}
