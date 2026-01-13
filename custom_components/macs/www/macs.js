@@ -11,6 +11,9 @@
  * - thorough test of card editor
  * - leaves only appear at top
  * - rainy not working
+ * - weather conditions are being applied before config payload it received. 
+ *   maybe, remove config payload, and rely solely on quary params
+ *   either that, or remove unneccessary query params. What's need?  version, debug. Is that it?
  * 
  * - test non-admin user
  * - change happy trigger from idle to responding. Actually, idle OR responding, whichever comes first.
@@ -20,6 +23,7 @@
  * - so, use console for backend, and debug div for frontend, makes it much easier to separate then.
  * - highlight errors in debug ui.
  * - Use assist dialogue to display errors
+ * - don't pass MacsFrontend debug functions to fx files. the namespace is wrong in debug output.
  * 
  * NEW FEATURES
  * - kiosk fullscreenmode f11 for browser

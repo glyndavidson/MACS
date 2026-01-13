@@ -14,7 +14,7 @@
     { "key": "mood_fx",          "label": "Mood Effects",      "filename": "moodFx.js" },
     { "key": "kiosk_fx",         "label": "Kiosk Effects",     "filename": "kioskFx.js" },
     { "key": "cursor_fx",        "label": "Cursor Effects",    "filename": "cursorFx.js" },
-    { "key": "particles_fx",     "label": "Paricle Effects",   "filename": "particleFx.js" }
+    { "key": "particle_fx",      "label": "Particle Effects",  "filename": "particleFx.js" }
   ],
   "defaults": [
     { "key": "animations_enabled", "default": true,   "entity": "animations_enabled" },

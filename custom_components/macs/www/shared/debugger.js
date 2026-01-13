@@ -421,7 +421,10 @@ export function createDebugger(namespace) {
             ? entries.map((entry) => entry.text).join("\n")
             : entries.map((entry) => entry.text).join(" ")
         ).trim();
-        enqueue(msg);
+        const { console: consoleFn, prefix } = LOG_LEVELS[level];
+        
+        const uiMessage = msg ? `<span style="color:#48c2b9">${ns}:</span><br><span>${msg}</span>` : ns;
+        enqueue(uiMessage);
         if (!enabledNow) {
             hideDebug();
             return;
@@ -430,7 +433,6 @@ export function createDebugger(namespace) {
             showDebug();
             flushQueue();
         }
-        const { console: consoleFn, prefix } = LOG_LEVELS[level];
         consoleFn(`${prefix} MACS: ${ns}`, ...args);
 
         // could do [🔵] _ [🔵] for warn, and [🟣] O [🟣] for error

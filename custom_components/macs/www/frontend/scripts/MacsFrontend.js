@@ -13,10 +13,14 @@ import { importWithVersion } from "./importHandler.js";
 const { createDebugger, setDebugOverride } = await importWithVersion("../../shared/debugger.js");
 const { QUERY_PARAMS, getQueryParamOrDefault, loadSharedConstants, getWeatherConditionKeys } = await importWithVersion("./helpers.js");
 const debug = createDebugger(import.meta.url);
-debug("Macs frontend Starting with Query Params:");
-debug(Object.fromEntries(QUERY_PARAMS.entries()));
+
+const paramsString = JSON.stringify(Object.fromEntries(QUERY_PARAMS.entries()), null, 2);
+
+debug("Macs frontend Starting with Query Params:\n" + paramsString);
+
 
 // Import JS Files
+debug("Loading files...");
 const { MessagePoster } = await importWithVersion("../../shared/messagePoster.js");
 const { MessageListener } = await importWithVersion("../../shared/messageListener.js");
 await importWithVersion("./assist-bridge.js");
@@ -27,8 +31,10 @@ const { createIdleFx } = await importWithVersion("./idleFx.js");
 const { createMoodFx } = await importWithVersion("./moodFx.js");
 const { createWeatherFx } = await importWithVersion("./weatherFx.js");
 
+// load defaults from JSON
 await loadSharedConstants();
 
+// Is the iframe being rendered in a card preview (we don't want kiosk mode etc)
 const isCardPreview = (() => {
 	const edit = getQueryParamOrDefault("edit");
 	return edit === "1" || edit === "true";
@@ -42,15 +48,18 @@ let moodFx = null;
 let kioskFx = null;
 
 let animationsPaused = false;
+let readySent = false;
 
 
-
+// Message poster for sending updates tot he backend
 const messagePoster = new MessagePoster({
 	sender: "frontend",
 	recipient: "backend",
 	getRecipientWindow: () => window.parent,
 	getTargetOrigin: () => window.location.origin,
 });
+// Message poster for emulating system dialogue in the front-end (Used for error reporting)
+// todo: move to debugger.js
 const assistMessagePoster = new MessagePoster({
 	sender: "frontend",
 	recipient: "all",
@@ -59,8 +68,7 @@ const assistMessagePoster = new MessagePoster({
 });
 
 
-
-
+// Listen for post messages
 const messageListener = new MessageListener({
 	recipient: "frontend",
 	getExpectedSource: () => window.parent,
@@ -68,10 +76,11 @@ const messageListener = new MessageListener({
 	allowNullOrigin: true,
 	onMessage: handleMessage,
 });
-let readySent = false;
 
 
-
+// highlights null values in config (i.e. a sensor error)
+// and fakes an assist dialogue to let the user know
+// todo: move to debugger.js
 const warnIfNull = (label, value) => {
 	if (value !== null) return false;
 	debug("warn", `${label} is null`);
@@ -89,12 +98,17 @@ const warnIfNull = (label, value) => {
 };
 
 
-
+// Applies configuration values (Used once at startup)
 const applyConfigPayload = (config) => {
+	// make sure we have a valid config
 	if (!config || typeof config !== "object") return;
+
+	// if using assist satellite, then auto adjust mood
 	if (typeof config.assist_satellite_enabled !== "undefined") {
 		if (moodFx) moodFx.setIdleSequenceEnabled(!!config.assist_satellite_enabled);
 	}
+
+	// Kiosk Mode
 	const hasAutoBrightnessConfig = [
 		"auto_brightness_enabled",
 		"auto_brightness_timeout_minutes",
@@ -105,32 +119,47 @@ const applyConfigPayload = (config) => {
 	if (hasAutoBrightnessConfig && kioskFx) {
 		kioskFx.setAutoBrightnessConfig(config);
 	}
+
+	// battery charging
 	if (typeof config.battery_state_sensor_enabled !== "undefined") {
 		if (batteryFx) batteryFx.setBatteryStateSensorEnabled(!!config.battery_state_sensor_enabled);
 	}
+
+	// debug mode
 	if (typeof config.debug_mode !== "undefined") {
 		setDebugOverride(config.debug_mode, debug);
 	}
 };
 
+// Applies sensor values (Used any time a sensor value updates)
 const applySensorPayload = (sensors) => {
+	// make sure we have a valid object
 	if (!sensors || typeof sensors !== "object") return;
+
 	const weatherConditionKeys = getWeatherConditionKeys();
+
+	// Set the temperature
 	if (typeof sensors.temperature !== "undefined") {
 		if (!warnIfNull("temperature", sensors.temperature) && weatherFx) {
 			weatherFx.setTemperature(sensors.temperature);
 		}
 	}
+
+	// Set the windspeed
 	if (typeof sensors.windspeed !== "undefined") {
 		if (!warnIfNull("windspeed", sensors.windspeed) && weatherFx) {
 			weatherFx.setWindSpeed(sensors.windspeed);
 		}
 	}
+
+	// Set the precipitation
 	if (typeof sensors.precipitation !== "undefined") {
 		if (!warnIfNull("precipitation", sensors.precipitation) && weatherFx) {
 			weatherFx.setPrecipitation(sensors.precipitation);
 		}
 	}
+
+	// Set weather conditions
 	if (weatherConditionKeys.length && weatherFx) {
 		const conditions = {};
 		let hasAny = false;
@@ -144,11 +173,15 @@ const applySensorPayload = (sensors) => {
 			weatherFx.setWeatherConditions(conditions);
 		}
 	}
+
+	// Set battery charge level
 	if (typeof sensors.battery_charge !== "undefined") {
 		if (!warnIfNull("battery_charge", sensors.battery_charge) && batteryFx) {
 			batteryFx.setBattery(sensors.battery_charge);
 		}
 	}
+
+	// Set battery charging state (bool)
 	if (typeof sensors.charging !== "undefined") {
 		if (!warnIfNull("charging", sensors.charging) && batteryFx) {
 			batteryFx.setBatteryState(sensors.charging);
@@ -250,6 +283,8 @@ function handleMessage(payload) {
     }
 }
 
+
+// pause animations when screen timeout is reached is reduce power consumption
 const setAnimationsPaused = (paused) => {
 	const next = !!paused;
 	if (animationsPaused === next) return;
@@ -271,7 +306,6 @@ const setAnimationsPaused = (paused) => {
 
 
 
-
 const initFx = (factory, overrides = {}) => {
 	if (typeof factory !== "function") return null;
 	return factory({
@@ -284,7 +318,7 @@ const initFx = (factory, overrides = {}) => {
 	});
 };
 
-debug("Initialising files");
+
 idleFx = initFx(createIdleFx);
 moodFx = initFx(createMoodFx);
 cursorFx = initFx(createCursorFx);

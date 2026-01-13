@@ -86,12 +86,12 @@ const applyConfigPayload = (payload) => {
   } else {
     maxMessages = MAX_MESSAGES_FALLBACK;
   }
-  debug("config", { assist_pipeline_entity: injectedPipelineId, max_messages: maxMessages });
+  debug("Config", { assist_pipeline_entity: injectedPipelineId, max_messages: maxMessages });
 };
 
 const applyTurnsPayload = (turns) => {
   const incoming = Array.isArray(turns) ? turns : [];
-  debug("turns", { count: incoming.length });
+  debug("Turns", { count: incoming.length });
   // Keep newest-first, cap to something sane (card already caps, but belt & braces)
   const nextMessages = [];
   incoming.forEach((t) => {
