@@ -6,7 +6,7 @@ It visualises Assist interactions and broader system context using a living SVG 
 
 Rather than showing buttons and graphs, MACS shows state, mood, and intent, giving your smart home a friendly, readable presence.
 
-![Screenshot of Macs in Home Assistant Dashboard](https://github.com/glyndavidson/MACS/blob/main/resources/screenshot.png)
+![Screenshot of Macs in Home Assistant Dashboard](https://raw.githubusercontent.com/glyndavidson/MACS/main/resources/screenshot.png)
 <br><br>
 
 
@@ -24,7 +24,7 @@ It is:
 - A status glance
 - A playful way to visualise the state of various home assistant entities.
 
-![Concept sketches for Macs](https://github.com/glyndavidson/MACS/blob/main/resources/art-philosophy.png?raw=true)
+![Concept sketches for Macs](https://raw.githubusercontent.com/glyndavidson/MACS/main/resources/art-philosophy.png)
 
 Perfect for:
 - Wall tablets
@@ -128,5 +128,5 @@ Macs is licensed under "Creative Commons Attribution-NonCommercial-ShareAlike 4.
 ## Support Macs
 If you find Macs useful, please consider [buying me a coffee](https://buymeacoffee.com/glyndavidson) to support my work.<br>
 
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%F0%9F%8D%BA-yellow)](https://buymeacoffee.com/glyndavidson)
+[![Buy me a coffee](https://raw.githubusercontent.com/glyndavidson/MACS/main/resources/coffee.png)](https://buymeacoffee.com/glyndavidson)
 <br><br>
