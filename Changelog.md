@@ -1,5 +1,9 @@
 # Changelog
 
+## [v1.0.5] - 2026-01-14
+- Fixed: Card not loading
+<br><br>
+
 ## [v1.0.4] - 2026-01-14
 - Changed: Code efficiency improvements in frontend.
 - Changed: File-naming for Hacs integration.

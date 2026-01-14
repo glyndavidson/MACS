@@ -107,6 +107,31 @@ const warnIfNull = (label, value) => {
 };
 
 
+// pause animations when screen timeout is reached is reduce power consumption
+const setAnimationsPaused = (paused) => {
+	const next = !!paused;
+	if (animationsPaused === next) return;
+	animationsPaused = next;
+	const body = document.body;
+	if (body) body.classList.toggle("animations-paused", animationsPaused);
+	if (idleFx) idleFx.setPaused(animationsPaused);
+
+	if (animationsPaused) {
+		if (cursorFx) cursorFx.reset();
+		if (weatherFx) weatherFx.reset();
+		return;
+	}
+
+	if (weatherFx) weatherFx.refresh(true);
+};
+
+
+window.addEventListener('resize', () => {
+	if (weatherFx) weatherFx.handleResize();
+});
+
+
+
 // Applies configuration values (Used once at startup)
 const applyConfigPayload = (config) => {
 	// make sure we have a valid config
@@ -367,28 +392,6 @@ function handleMessage(payload) {
 }
 
 
-// pause animations when screen timeout is reached is reduce power consumption
-const setAnimationsPaused = (paused) => {
-	const next = !!paused;
-	if (animationsPaused === next) return;
-	animationsPaused = next;
-	const body = document.body;
-	if (body) body.classList.toggle("animations-paused", animationsPaused);
-	if (idleFx) idleFx.setPaused(animationsPaused);
-
-	if (animationsPaused) {
-		if (cursorFx) cursorFx.reset();
-		if (weatherFx) weatherFx.reset();
-		return;
-	}
-
-	if (weatherFx) weatherFx.refresh(true);
-};
-
-
-window.addEventListener('resize', () => {
-	if (weatherFx) weatherFx.handleResize();
-});
 
 
 
