@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.0.3] - 2026-01-
+## [1.0.3] - 2026-01-14
 - New: Kiosk-Mode now gives true fullscreen when viewed in a browser.
 - New: Press escape to exit kiosk-mode.
 
