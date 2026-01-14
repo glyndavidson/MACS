@@ -10,15 +10,10 @@ Rather than showing buttons and graphs, MACS shows state, mood, and intent, givi
 <br><br>
 
 
-## Buy me a Coffee
-If you find Macs useful, please consider [buying me a coffee](https://buymeacoffee.com/glyndavidson) to encourage continued development.<br>
-
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-%F0%9F%8D%BA-yellow)](https://buymeacoffee.com/glyndavidson)
+## What MACS Does
+Originally, I developed Macs because I wasn't sure if my Wake Words were triggering and if Home Assistant was listening to, and understanding my requests. I wanted some feedback so that I could see what was happening. Since then, Macs has grown into more than just a friendly assistant - he now pulls data from multiple sensors and can visualise many aspects of your smart home.
 <br><br>
 
-
-## What MACS Does
-Originally, I developed Macs because I wasn't sure if my Wake Words were triggering and if Home Assistant was listening to, and understanding my requests. I wanted some feedback so that I could see what was happening. Since fixing this problem, Macs has grown into more than just a friendly assistant - he now pulls data from multiplke sensors and can visualise things like weather forecasts, battery charging, etc.
 
 
 ## Design Philosophy
@@ -121,16 +116,12 @@ This table shows the MACS entities and services and which card features override
 Macs is currently under active development.
 
 Feedback is welcome and valuable:
-- Bugs -> open an issue
-- Videos/screenshots -> massively helpful
-- Platform quirks -> especially tablets
+For any bugs or feature requests, please [open an issue](https://github.com/glyndavidson/MACS/issues)
 <br><br>
 
 
 ## License
-MIT License  
-Fork it. Modify it. Improve it.  
-Just don't be a dick.
+Macs is licensed under "Creative Commons Attribution-NonCommercial-ShareAlike 4.0"
 <br><br>
 
 
