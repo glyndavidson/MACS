@@ -1,6 +1,6 @@
 # Changelog
 
-## [v1.0.5] - 2026-01-15
+## [v1.0.6] - 2026-01-15
 - Changed: Added Home Assistant install link to Readme
 <br><br>
 
