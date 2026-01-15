@@ -1,8 +1,14 @@
 # Changelog
 
+## [v1.0.5] - 2026-01-15
+- Changed: Added Home Assistant install link to Readme
+<br><br>
+
+
 ## [v1.0.5] - 2026-01-14
 - Fixed: Card not loading
 <br><br>
+
 
 ## [v1.0.4] - 2026-01-14
 - Changed: Code efficiency improvements in frontend.
