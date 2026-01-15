@@ -1,7 +1,12 @@
 # Changelog
 
+## [v1.0.7] - 2026-01-16
+- Fixed: Support for older Home Assistant Versions.
+<br><br>
+
+
 ## [v1.0.6] - 2026-01-15
-- Changed: Added Home Assistant install link to Readme
+- Changed: Added Home Assistant install link to Readme.
 <br><br>
 
 
